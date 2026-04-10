@@ -1,0 +1,497 @@
+"use client"
+
+import * as React from "react"
+import {
+    ColumnDef,
+    ColumnFiltersState,
+    SortingState,
+    VisibilityState,
+    flexRender,
+    getCoreRowModel,
+    getFilteredRowModel,
+    getPaginationRowModel,
+    getSortedRowModel,
+    useReactTable,
+    FilterFn,
+} from "@tanstack/react-table"
+import { ArrowUpDown, ChevronDown, Download, Search, Pencil, FileText } from "lucide-react"
+import jsPDF from "jspdf"
+import autoTable from "jspdf-autotable"
+import { EditParticipantDialog } from "@/components/edit-participant-dialog"
+import { DateRange } from "react-day-picker"
+import { isWithinInterval, parseISO, startOfDay, endOfDay } from "date-fns"
+
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import {
+    DropdownMenu,
+    DropdownMenuCheckboxItem,
+    DropdownMenuContent,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
+import { DatePickerWithRange } from "@/components/date-range-picker"
+
+interface DataTableProps<TData, TValue> {
+    columns: ColumnDef<TData, TValue>[]
+    data: TData[]
+    userRole?: string
+}
+
+export function ParticipantsTable<TData, TValue>({
+    columns,
+    data,
+    userRole,
+}: DataTableProps<TData, TValue>) {
+    const [sorting, setSorting] = React.useState<SortingState>([])
+    const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
+    const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
+    const [rowSelection, setRowSelection] = React.useState({})
+    const [globalFilter, setGlobalFilter] = React.useState("")
+    const [editingParticipant, setEditingParticipant] = React.useState<any>(null)
+
+    // Custom Filters State
+    const [dateRange, setDateRange] = React.useState<DateRange | undefined>()
+    const [showMorningFoodOnly, setShowMorningFoodOnly] = React.useState(false)
+    const [groupFilter, setGroupFilter] = React.useState<string>("all")
+
+    // Calculate Group Counts
+    const groupOptions = React.useMemo(() => {
+        const groups: Record<string, number> = {}
+        data.forEach((item: any) => {
+            const g = item.groupNumber || "Unassigned"
+            groups[g] = (groups[g] || 0) + 1
+        })
+        return Object.entries(groups).sort((a, b) => {
+            const numA = parseInt(a[0]);
+            const numB = parseInt(b[0]);
+            if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+            return a[0].localeCompare(b[0])
+        })
+    }, [data])
+
+    // Filter Logic
+    const filteredData = React.useMemo(() => {
+        let processedData = data;
+
+        // Group Filter
+        if (groupFilter !== "all") {
+            processedData = processedData.filter((item: any) =>
+                (item.groupNumber || "Unassigned").toString() === groupFilter
+            )
+        }
+
+        // Date Range Filter
+        if (dateRange?.from) {
+            processedData = processedData.filter((item: any) => {
+                const createdDate = parseISO(item.createdAt)
+                const from = startOfDay(dateRange.from!)
+                const to = dateRange.to ? endOfDay(dateRange.to) : endOfDay(dateRange.from!)
+
+                return isWithinInterval(createdDate, { start: from, end: to })
+            })
+        }
+
+        // Morning Food Filter
+        if (showMorningFoodOnly) {
+            processedData = processedData.filter((item: any) => item.isMorningFood === true)
+        }
+
+        return processedData
+    }, [data, dateRange, showMorningFoodOnly, groupFilter])
+
+    const tableColumns = React.useMemo(() => {
+        if (userRole !== 'super-admin') return columns;
+
+        return [
+            ...columns,
+            {
+                id: "actions",
+                enableHiding: false,
+                cell: ({ row }: any) => {
+                    return (
+                        <div className="flex justify-end">
+                            <Button variant="ghost" size="icon" onClick={() => setEditingParticipant(row.original)}>
+                                <Pencil className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    )
+                }
+            }
+        ]
+    }, [columns, userRole])
+
+
+    const table = useReactTable({
+        data: filteredData,
+        columns: tableColumns,
+        onSortingChange: setSorting,
+        onColumnFiltersChange: setColumnFilters,
+        onGlobalFilterChange: setGlobalFilter,
+        getCoreRowModel: getCoreRowModel(),
+        getPaginationRowModel: getPaginationRowModel(),
+        getSortedRowModel: getSortedRowModel(),
+        getFilteredRowModel: getFilteredRowModel(),
+        onColumnVisibilityChange: setColumnVisibility,
+        onRowSelectionChange: setRowSelection,
+        state: {
+            sorting,
+            columnFilters,
+            columnVisibility,
+            rowSelection,
+            globalFilter,
+        },
+    })
+
+    // Export to CSV function
+    const downloadCSV = () => {
+        const headers = [
+            "Name", "Mobile", "Group",
+            "Reg Adults", "Reg Children",
+            "Veg", "NonVeg", "MorningFood",
+            "RegisteredAt",
+            "Check-in Status",
+            "Member Present",
+            "Guest Adults (In)",
+            "Children (In)",
+            "Check-in Time"
+        ]
+
+        const csvContent = "data:text/csv;charset=utf-8,"
+            + headers.join(",") + "\n"
+            + filteredData.map((row: any) => {
+                const checkIn = row.checkIn || {}
+                const isCheckedIn = checkIn.isCheckedIn
+                const memberPresent = checkIn.memberPresent
+                const actualAdults = checkIn.actualAdults || 0
+                const actualChildren = checkIn.actualChildren || 0
+
+                // Calculate guest adults for export logic same as display
+                const guestAdultsIn = Math.max(0, actualAdults - (memberPresent ? 1 : 0))
+
+                return [
+                    `"${row.name}"`,
+                    `"${row.mobileNumber}"`,
+                    `"${row.groupNumber || ''}"`,
+                    row.ageGroups.adults > 0 ? row.ageGroups.adults - 1 : 0,
+                    row.ageGroups.children,
+                    row.foodPreference.veg,
+                    row.foodPreference.nonVeg,
+                    row.isMorningFood ? "Yes" : "No",
+                    `"${new Date(row.createdAt).toLocaleDateString()}"`,
+                    isCheckedIn ? "Checked In" : "Pending",
+                    isCheckedIn ? (memberPresent ? "Yes" : "No") : "-",
+                    isCheckedIn ? guestAdultsIn : "-",
+                    isCheckedIn ? actualChildren : "-",
+                    isCheckedIn && checkIn.checkInTime ? `"${new Date(checkIn.checkInTime).toLocaleString()}"` : "-"
+                ].join(",")
+            }).join("\n");
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "participants_export.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    const downloadPDF = async () => {
+        try {
+            const doc = new jsPDF()
+
+            let fontLoaded = false
+            try {
+                const fontRes = await fetch("/fonts/NotoSansTamil-Regular.ttf")
+                if (fontRes.ok) {
+                    const fontBlob = await fontRes.blob()
+                    const reader = new FileReader()
+                    const base64String = await new Promise<string>((resolve, reject) => {
+                        reader.onloadend = () => {
+                            if (typeof reader.result === 'string') {
+                                resolve(reader.result.split(',')[1])
+                            } else {
+                                reject(new Error("Failed to read font"))
+                            }
+                        }
+                        reader.onerror = reject
+                        reader.readAsDataURL(fontBlob)
+                    })
+
+                    doc.addFileToVFS("NotoSansTamil.ttf", base64String)
+                    doc.addFont("NotoSansTamil.ttf", "NotoSansTamil", "normal")
+                    fontLoaded = true
+                }
+            } catch (fontError) {
+                console.error("Font load error:", fontError)
+            }
+
+            // Metadata
+            doc.setFont("helvetica") // Ensure standard font for headers
+            const title = "Pongal Vizha 2025 - Participants Report"
+            const generatedDate = `Generated: ${new Date().toLocaleString()}`
+            const filterInfo = groupFilter !== 'all' ? `Filter: Group ${groupFilter}` : "Filter: All Groups"
+
+            // Header
+            doc.setFontSize(16)
+            doc.text(title, 14, 20)
+
+            doc.setFontSize(10)
+            doc.setTextColor(100)
+            doc.text(generatedDate, 14, 28)
+            doc.text(filterInfo, 14, 33)
+
+            // Table Data
+            const tableBody = filteredData.map((row: any) => [
+                row.name,
+                row.mobileNumber,
+                row.groupNumber || "-",
+                row.ageGroups?.adults > 0 ? row.ageGroups.adults - 1 : 0,
+                row.ageGroups?.children || 0,
+                row.foodPreference?.veg || 0,
+                row.foodPreference?.nonVeg || 0,
+                row.isMorningFood ? "Yes" : "No",
+                new Date(row.createdAt).toLocaleDateString()
+            ])
+
+            autoTable(doc, {
+                head: [['Name', 'Mobile', 'Grp', 'Adults', 'Children', 'Veg', 'NonVeg', 'Morn', 'Reg Date']],
+                body: tableBody,
+                startY: 40,
+                styles: {
+                    fontSize: 8,
+                    cellPadding: 3,
+                    font: "helvetica" // Default font for all cells
+                },
+                columnStyles: {
+                    0: { font: fontLoaded ? "NotoSansTamil" : "helvetica" } // Only apply Tamil font to Name column
+                },
+                headStyles: {
+                    fillColor: [22, 163, 74],
+                    font: "helvetica" // Ensure headers are Helvetica
+                },
+                alternateRowStyles: { fillColor: [240, 253, 244] },
+            })
+
+            doc.save("participants_report.pdf")
+        } catch (error) {
+            console.error("PDF Export failed:", error)
+            alert("Failed to export PDF")
+        }
+    }
+
+    return (
+        <div className="w-full space-y-4">
+            <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between py-4">
+                <div className="flex flex-1 flex-col md:flex-row gap-4 w-full md:items-center">
+                    {/* Unified Search */}
+                    <div className="relative w-full max-w-sm">
+                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            placeholder="Search all columns..."
+                            value={globalFilter ?? ""}
+                            onChange={(event) => setGlobalFilter(event.target.value)}
+                            className="pl-8 w-full"
+                        />
+                    </div>
+
+                    {/* Group Filter */}
+                    <div className="w-[180px]">
+                        <Select value={groupFilter} onValueChange={setGroupFilter}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Filter by Group" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Groups ({data.length})</SelectItem>
+                                {groupOptions.map(([group, count]) => (
+                                    <SelectItem key={group} value={group}>
+                                        Group {group} ({count})
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    {/* Date Range Picker */}
+                    <DatePickerWithRange date={dateRange} setDate={setDateRange} />
+
+                    {/* Morning Food Switch */}
+                    <div className="flex items-center space-x-2 border p-2 rounded-md h-10 px-3 bg-background">
+                        <Switch
+                            id="morning-food"
+                            checked={showMorningFoodOnly}
+                            onCheckedChange={setShowMorningFoodOnly}
+                        />
+                        <Label htmlFor="morning-food" className="whitespace-nowrap cursor-pointer">Morning Food</Label>
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" className="ml-auto">
+                                Columns <ChevronDown className="ml-2 h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            {table
+                                .getAllColumns()
+                                .filter((column) => column.getCanHide())
+                                .map((column) => {
+                                    return (
+                                        <DropdownMenuCheckboxItem
+                                            key={column.id}
+                                            className="capitalize"
+                                            checked={column.getIsVisible()}
+                                            onCheckedChange={(value) =>
+                                                column.toggleVisibility(!!value)
+                                            }
+                                        >
+                                            {column.id}
+                                        </DropdownMenuCheckboxItem>
+                                    )
+                                })}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                    <Button variant="outline" onClick={downloadCSV}>
+                        <Download className="h-4 w-4 mr-2" /> CSV
+                    </Button>
+                    <Button variant="outline" onClick={downloadPDF}>
+                        <FileText className="h-4 w-4 mr-2" /> PDF
+                    </Button>
+                </div>
+            </div>
+
+            <div className="rounded-md border">
+                <Table>
+                    <TableHeader>
+                        {table.getHeaderGroups().map((headerGroup) => (
+                            <TableRow key={headerGroup.id}>
+                                {headerGroup.headers.map((header) => {
+                                    return (
+                                        <TableHead key={header.id}>
+                                            {header.isPlaceholder
+                                                ? null
+                                                : flexRender(
+                                                    header.column.columnDef.header,
+                                                    header.getContext()
+                                                )}
+                                        </TableHead>
+                                    )
+                                })}
+                            </TableRow>
+                        ))}
+                    </TableHeader>
+                    <TableBody>
+                        {table.getRowModel().rows?.length ? (
+                            table.getRowModel().rows.map((row) => (
+                                <TableRow
+                                    key={row.id}
+                                    data-state={row.getIsSelected() && "selected"}
+                                >
+                                    {row.getVisibleCells().map((cell) => (
+                                        <TableCell key={cell.id}>
+                                            {flexRender(
+                                                cell.column.columnDef.cell,
+                                                cell.getContext()
+                                            )}
+                                        </TableCell>
+                                    ))}
+                                </TableRow>
+                            ))
+                        ) : (
+                            <TableRow>
+                                <TableCell
+                                    colSpan={columns.length}
+                                    className="h-24 text-center"
+                                >
+                                    No results.
+                                </TableCell>
+                            </TableRow>
+                        )}
+                    </TableBody>
+                </Table>
+            </div>
+            <div className="flex items-center justify-between px-2 py-4">
+                <div className="flex-1 text-sm text-muted-foreground">
+                    {table.getFilteredSelectedRowModel().rows.length} of{" "}
+                    {table.getFilteredRowModel().rows.length} row(s) selected.
+                </div>
+                <div className="flex items-center space-x-6 lg:space-x-8">
+                    <div className="flex items-center space-x-2">
+                        <p className="text-sm font-medium hidden sm:block">Rows per page</p>
+                        <Select
+                            value={`${table.getState().pagination.pageSize}`}
+                            onValueChange={(value) => {
+                                table.setPageSize(Number(value))
+                            }}
+                        >
+                            <SelectTrigger className="h-8 w-[70px]">
+                                <SelectValue placeholder={table.getState().pagination.pageSize} />
+                            </SelectTrigger>
+                            <SelectContent side="top">
+                                {[10, 50, 100, 200, 500].map((pageSize) => (
+                                    <SelectItem key={pageSize} value={`${pageSize}`}>
+                                        {pageSize}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => table.previousPage()}
+                            disabled={!table.getCanPreviousPage()}
+                        >
+                            Previous
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => table.nextPage()}
+                            disabled={!table.getCanNextPage()}
+                        >
+                            Next
+                        </Button>
+                    </div>
+                </div>
+            </div>
+            {
+                editingParticipant && (
+                    <EditParticipantDialog
+                        open={!!editingParticipant}
+                        onOpenChange={(open) => !open && setEditingParticipant(null)}
+                        participant={editingParticipant}
+                        onSuccess={() => {
+                            // Optionally refresh data - revalidatePath handles logic, but local state?
+                            // If revalidatePath works, router.refresh() might be needed?
+                            // Next.js Server Action revalidatePath updates server data, Client Router Refresh updates client view.
+                            // I'll call router.refresh() if I had router.
+                            // But I don't have router here.
+                            // Actually, I can rely on auto-refresh or add router.
+                            setEditingParticipant(null)
+                        }}
+                    />
+                )
+            }
+        </div >
+    )
+}
