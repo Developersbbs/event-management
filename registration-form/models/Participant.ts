@@ -67,9 +67,11 @@ const ParticipantSchema = new mongoose.Schema({
     },
 
     name: String,
+    email: String,
     businessName: String,
     businessCategory: String,
     location: String,
+    ticketType: String,
 
     //  ADD THIS (EVENT LINK)
     eventId: {

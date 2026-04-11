@@ -50,6 +50,7 @@ const TAMIL_NADU_DISTRICTS = [
 
 const personalDetailsSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.string().email("Please enter a valid email"),
   businessName: z.string().min(2, "Business name is required"),
   businessCategory: z.string().min(1, "Please enter a business category"),
   location: z.string().min(1, "Please select a location"),
@@ -65,14 +66,17 @@ export function RegisterForm() {
   // Registration Data State
   const [verifiedPhone, setVerifiedPhone] = useState("")
   const [personalData, setPersonalData] = useState({ 
-    name: "", 
+    name: "",
+    email: "",
     businessName: "", 
     businessCategory: "",
     location: ""
   })
   const [eventData, setEventData] = useState({
-    ageGroups: { adults: 1, children: 0 },
-    foodPreference: { veg: 1, nonVeg: 0 },
+    guestCount: 0,
+    ticketType: "",
+    paymentMethod: "cash",
+    foodPreference: { veg: 0, nonVeg: 0 },
     isMorningFood: false,
   })
   const [existingParticipant, setExistingParticipant] = useState<any>(null)
@@ -83,7 +87,8 @@ export function RegisterForm() {
   const personalForm = useForm<z.infer<typeof personalDetailsSchema>>({
     resolver: zodResolver(personalDetailsSchema),
     defaultValues: { 
-      name: "", 
+      name: "",
+      email: "",
       businessName: "", 
       businessCategory: "",
       location: ""
@@ -92,20 +97,8 @@ export function RegisterForm() {
 
   // --- Derived State (Pricing) ---
   const totalGuests = useMemo(() => {
-    const { adults, children } = eventData.ageGroups
-    return (parseInt(adults as any) || 0) + (parseInt(children as any) || 0)
-  }, [eventData.ageGroups])
-
-  // Update Food Prefs when total guests changes
-  useEffect(() => {
-    setEventData(prev => ({
-      ...prev,
-      foodPreference: {
-        veg: Math.max(0, totalGuests - (prev.foodPreference.nonVeg || 0)),
-        nonVeg: prev.foodPreference.nonVeg || 0
-      }
-    }))
-  }, [totalGuests])
+    return eventData.guestCount + 1 // +1 for the registrant
+  }, [eventData.guestCount])
 
 
 
@@ -153,10 +146,13 @@ export function RegisterForm() {
       const payload = {
         mobileNumber: verifiedPhone,
         name: personalData.name,
+        email: personalData.email,
         businessName: personalData.businessName,
         businessCategory: personalData.businessCategory,
         location: personalData.location,
-        ageGroups: eventData.ageGroups,
+        guestCount: eventData.guestCount,
+        ticketType: eventData.ticketType,
+        paymentMethod: eventData.paymentMethod,
         foodPreference: eventData.foodPreference,
         isMorningFood: eventData.isMorningFood,
       }
@@ -273,17 +269,21 @@ export function RegisterForm() {
                   setVerifiedPhone(phoneForm.getValues("phoneNumber")) // Ensure phone is set
                   setPersonalData({
                     name: existingParticipant.name || "",
+                    email: existingParticipant.email || "",
                     businessName: existingParticipant.businessName || "",
                     businessCategory: existingParticipant.businessCategory || "",
                     location: existingParticipant.location || ""
                   })
                   setEventData({
-                    ageGroups: existingParticipant.ageGroups || { adults: 1, children: 0 },
-                    foodPreference: existingParticipant.foodPreference || { veg: 1, nonVeg: 0 },
+                    guestCount: existingParticipant.guestCount || 0,
+                    ticketType: existingParticipant.ticketType || "",
+                    paymentMethod: existingParticipant.paymentMethod || "cash",
+                    foodPreference: existingParticipant.foodPreference || { veg: 0, nonVeg: 0 },
                     isMorningFood: existingParticipant.isMorningFood || false
                   })
                   personalForm.reset({
                     name: existingParticipant.name || "",
+                    email: existingParticipant.email || "",
                     businessName: existingParticipant.businessName || "",
                     businessCategory: existingParticipant.businessCategory || "",
                     location: existingParticipant.location || ""
@@ -308,7 +308,7 @@ export function RegisterForm() {
         <CardHeader>
           {renderStepsIndicator()}
           <CardTitle>Personal Details</CardTitle>
-          <CardDescription>Tell us a bit about yourself.</CardDescription>
+          {/* <CardDescription>Tell us a bit about yourself.</CardDescription> */}
         </CardHeader>
         <CardContent>
           <Form {...personalForm}>
@@ -317,6 +317,14 @@ export function RegisterForm() {
                 <FormItem>
                   <FormLabel>Full Name</FormLabel>
                   <FormControl><Input placeholder="Enter your name" {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={personalForm.control} name="email" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl><Input type="email" placeholder="Enter your email" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
@@ -373,11 +381,9 @@ export function RegisterForm() {
 
   // --- Step 4: Event Details (Pricing, Guests, Food) ---
   if (step === Step.EVENT_DETAILS) {
-    const updateCount = (key: keyof typeof eventData.ageGroups, delta: number) => {
-      // Current logic: Adults min 1
-      const current = eventData.ageGroups[key]
-      const next = Math.max(key === 'adults' ? 1 : 0, current + delta)
-      setEventData(prev => ({ ...prev, ageGroups: { ...prev.ageGroups, [key]: next } }))
+    const updateGuestCount = (delta: number) => {
+      const next = Math.max(0, eventData.guestCount + delta)
+      setEventData(prev => ({ ...prev, guestCount: next }))
     }
 
     return (
@@ -387,116 +393,171 @@ export function RegisterForm() {
           <CardTitle>Event Details</CardTitle>
           <CardDescription>Customize your participation.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-8">
-          {/* Guest Counts */}
-          <div className="space-y-4">
+        <CardContent className="space-y-6">
+          {/* Guest Count */}
+          <div className="space-y-3">
             <div className="flex items-center gap-2">
               <Users className="h-5 w-5 text-primary" />
-              <h3 className="font-semibold">Guest Counts</h3>
+              <h3 className="font-semibold">Guest Count</h3>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Item Helper */}
-              {[
-                { key: 'adults', label: 'Adults (15+)' },
-                { key: 'children', label: 'Children (5-15)' },
-              ].map((item) => (
-                <div key={item.key} className="flex items-center justify-between p-3 border rounded-lg bg-card/50">
-                  <div>
-                    <div className="font-medium">{item.label}</div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => updateCount(item.key as any, -1)}><Minus className="h-3 w-3" /></Button>
-                    <span className="w-4 text-center">{eventData.ageGroups[item.key as keyof typeof eventData.ageGroups]}</span>
-                    <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => updateCount(item.key as any, 1)}><Plus className="h-3 w-3" /></Button>
-                  </div>
-                </div>
-              ))}
+            <div className="flex items-center gap-4">
+              <Button 
+                variant="outline" 
+                size="icon" 
+                className="h-10 w-10" 
+                onClick={() => updateGuestCount(-1)}
+                disabled={eventData.guestCount <= 0}
+              >
+                <Minus className="h-4 w-4" />
+              </Button>
+              <span className="text-xl font-semibold w-8 text-center">{eventData.guestCount}</span>
+              <Button 
+                variant="outline" 
+                size="icon" 
+                className="h-10 w-10" 
+                onClick={() => updateGuestCount(1)}
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+              <span className="text-sm text-muted-foreground ml-2">
+                Total: {totalGuests} person{totalGuests !== 1 ? 's' : ''}
+              </span>
             </div>
           </div>
 
           <Separator />
 
-          {/* Food Preference */}
-          <div className="space-y-4">
+          {/* Ticket Type */}
+          <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <Utensils className="h-5 w-5 text-primary" />
-              <h3 className="font-semibold">Food Preference</h3>
+              <Receipt className="h-5 w-5 text-primary" />
+              <h3 className="font-semibold">Ticket Type</h3>
+            </div>
+            <Select 
+              value={eventData.ticketType} 
+              onValueChange={(value) => setEventData(prev => ({ ...prev, ticketType: value }))}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select ticket type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="General">General</SelectItem>
+                <SelectItem value="VIP">VIP</SelectItem>
+                <SelectItem value="Premium">Premium</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <Separator />
+
+          {/* Payment Method */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Receipt className="h-5 w-5 text-primary" />
+              <h3 className="font-semibold">Payment Method</h3>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <Button
+                type="button"
+                variant={eventData.paymentMethod === 'cash' ? 'default' : 'outline'}
+                className="w-full h-14"
+                onClick={() => setEventData(prev => ({ ...prev, paymentMethod: 'cash' }))}
+              >
+                <div className="flex flex-col items-center">
+                  <span className="font-semibold">Cash</span>
+                  <span className="text-xs opacity-80">Admin Approval</span>
+                </div>
+              </Button>
+              <Button
+                type="button"
+                variant={eventData.paymentMethod === 'online' ? 'default' : 'outline'}
+                className="w-full h-14"
+                onClick={() => setEventData(prev => ({ ...prev, paymentMethod: 'online' }))}
+                disabled
+              >
+                <div className="flex flex-col items-center">
+                  <span className="font-semibold">Online</span>
+                  <span className="text-xs opacity-80">Coming Soon</span>
+                </div>
+              </Button>
+            </div>
+            {eventData.paymentMethod === 'cash' && (
+              <Alert className="border-blue-200 bg-blue-50">
+                <Info className="h-4 w-4 text-blue-600" />
+                <AlertDescription className="text-blue-700 text-sm">
+                  Cash payment requires admin approval. Please pay at the venue.
+                </AlertDescription>
+              </Alert>
+            )}
+          </div>
+
+          <Separator />
+
+          {/* Food Preference (Optional) */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Utensils className="h-5 w-5 text-primary" />
+                <h3 className="font-semibold">Food Preference</h3>
+              </div>
+              <span className="text-xs text-muted-foreground">Optional</span>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="non-veg">Non-Veg</Label>
                 <Input
                   id="non-veg"
-                  type="text"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  value={eventData.foodPreference.nonVeg.toString()}
+                  type="number"
+                  min="0"
+                  max={totalGuests}
+                  value={eventData.foodPreference.nonVeg || ''}
+                  placeholder="0"
                   onChange={(e) => {
-                    const value = e.target.value;
-                    // Allow empty input for better UX, treat as 0 for logic but keep empty string in UI if needed
-                    // In this case, we simply parse it. If empty/NaN, default to 0 for logic, but we might want to let user see empty.
-                    // However, simplified approach: if empty -> 0.
-                    // Better approach for "free typing":
-                    // If user types "", we set state to 0 (or a special "empty" state if we had one).
-                    // But here we're bound by eventData.foodPreference.nonVeg being a number.
-                    // To truly fix "0 not cleared", we need to handle the string representation intermediate.
-                    // BUT, a quick fix requested: "free typing".
-                    // The issue "0 is not cleared" usually means `value={0}` renders "0", and user has to delete it.
-                    // If we change input type to text/number and handle "NaN" or empty string.
-
-                    if (value === "") {
-                      setEventData(prev => ({
-                        ...prev,
-                        foodPreference: { nonVeg: 0, veg: totalGuests }
-                      }))
-                      return;
-                    }
-
-                    const val = parseInt(value);
-                    if (!isNaN(val) && val <= totalGuests) {
+                    const val = parseInt(e.target.value) || 0
+                    if (val <= totalGuests) {
                       setEventData(prev => ({
                         ...prev,
                         foodPreference: { nonVeg: val, veg: totalGuests - val }
                       }))
                     }
                   }}
-                  onFocus={(e) => e.target.select()} // Auto-select on focus to make overwriting easy
                   className="bg-red-50/50 border-red-200"
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="veg">Veg</Label>
-                <Input id="veg" value={eventData.foodPreference.veg} readOnly className="bg-green-50/50 border-green-200 cursor-not-allowed" />
+                <Input
+                  id="veg"
+                  type="number"
+                  value={eventData.foodPreference.veg || ''}
+                  readOnly
+                  className="bg-green-50/50 border-green-200 cursor-not-allowed"
+                />
               </div>
             </div>
 
-            <div className="flex items-center space-x-2 border p-4 rounded-lg bg-orange-50/50 border-orange-100 mt-4">
+            <div className="flex items-center space-x-2 border p-4 rounded-lg bg-orange-50/50 border-orange-100">
               <Checkbox
                 id="morning-food"
                 checked={eventData.isMorningFood}
                 onCheckedChange={(c) => setEventData(prev => ({ ...prev, isMorningFood: !!c }))}
               />
               <div>
-                <Label htmlFor="morning-food" className="font-medium cursor-pointer">காலை உணவு தேவை (Morning Food Required)</Label>
+                <Label htmlFor="morning-food" className="font-medium cursor-pointer">Morning Food Required</Label>
                 <p className="text-xs text-muted-foreground">Select if you plan to attend the morning breakfast.</p>
               </div>
             </div>
           </div>
-
-          <Alert className="border-yellow-200 bg-yellow-50 dark:border-yellow-900/50 dark:bg-yellow-900/20">
-            <Info className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
-            <AlertTitle className="text-yellow-800 dark:text-yellow-300 font-semibold mb-1">Important Note</AlertTitle>
-            <AlertDescription className="text-yellow-700 dark:text-yellow-400 font-medium">
-              நுழைவுக் கட்டணத்தை உங்கள் பொறுப்பாளரிடம் செலுத்தவும் (Please pay the entrance fee to your in-charge).
-            </AlertDescription>
-          </Alert>
 
           {dbError && <Alert variant="destructive"><AlertCircle className="h-4 w-4" /><AlertTitle>Error</AlertTitle><AlertDescription>{dbError}</AlertDescription></Alert>}
 
         </CardContent>
         <CardFooter className="flex justify-between">
           <Button variant="ghost" onClick={() => setStep(Step.PERSONAL_DETAILS)}>Back</Button>
-          <Button onClick={onFinalSubmit} disabled={isSubmitting}>
+          <Button 
+            onClick={onFinalSubmit} 
+            disabled={isSubmitting || !eventData.ticketType}
+          >
             {isSubmitting ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : "Complete Registration"}
           </Button>
         </CardFooter>

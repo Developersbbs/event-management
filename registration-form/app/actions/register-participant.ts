@@ -3,23 +3,19 @@
 import dbConnect from "@/lib/db"
 import Participant from "@/models/Participant"
 import Event from "@/models/Event"
-import mongoose from "mongoose"
 
 export async function registerParticipant(data: any) {
-    const session = await mongoose.startSession()
-
     try {
         await dbConnect()
-
-        session.startTransaction()
 
         const {
             mobileNumber,
             name,
+            email,
             businessName,
             businessCategory,
             location,
-            paymentMethod,
+            paymentMethod = "cash",
             foodPreference,
             guestCount = 0,
             ticketType,
@@ -38,10 +34,10 @@ export async function registerParticipant(data: any) {
             isActive: true,
             startDate: { $lte: now },
             endDate: { $gte: now }
-        }).session(session)
+        })
 
         if (!activeEvent) {
-            throw new Error("No active registration period found.")
+            throw new Error("No active event")
         }
 
         // FIND TICKET
@@ -50,76 +46,60 @@ export async function registerParticipant(data: any) {
         )
 
         if (!selectedTicket) {
-            throw new Error("Invalid ticket type")
+            throw new Error("Invalid ticket")
         }
 
-        // CAPACITY CHECK (IMPORTANT)
         const totalPeople = guestCount + 1
 
         if (activeEvent.registeredCount + totalPeople > activeEvent.maxCapacity) {
-            throw new Error("Event is full")
+            throw new Error("Event full")
         }
 
-        // PRICE CALCULATION
         let pricePerPerson = selectedTicket.price
 
         if (isMember) {
-            pricePerPerson -= 200 // optional discount
+            pricePerPerson -= 200
         }
 
         const totalAmount = totalPeople * pricePerPerson
 
-        // CHECK DUPLICATE
-        const existingParticipant = await Participant.findOne({ mobileNumber }).session(session)
+        // PAYMENT LOGIC
+        let paymentStatus = "pending"
+        let approvalStatus = "pending"
 
-        if (existingParticipant && existingParticipant.isRegistered) {
-            throw new Error("This mobile number is already registered.")
+        if (paymentMethod === "online") {
+            paymentStatus = "completed"
+            approvalStatus = "approved"
         }
 
-        // CREATE / UPDATE PARTICIPANT
-        const participant = await Participant.findOneAndUpdate(
-            { mobileNumber },
-            {
-                $set: {
-                    name,
-                    businessName,
-                    businessCategory,
-                    location,
-                    paymentMethod,
-                    paymentStatus: "pending",
-                    foodPreference,
-                    isRegistered: true,
+        const participant = await Participant.create({
+            mobileNumber,
+            name,
+            email,
+            businessName,
+            businessCategory,
+            location,
+            paymentMethod,
+            paymentStatus,
+            approvalStatus,
+            foodPreference,
+            isRegistered: true,
+            eventId: activeEvent._id,
+            guestCount,
+            ticketType,
+            ticketPrice: pricePerPerson,
+            totalAmount,
+            isMember
+        })
 
-                    // NEW FIELDS
-                    eventId: activeEvent._id,
-                    guestCount,
-                    ticketType,
-                    ticketPrice: pricePerPerson,
-                    totalAmount,
-                    isMember,
-
-                    updatedAt: new Date(),
-                },
-                $setOnInsert: {
-                    createdAt: new Date(),
-                },
-            },
-            { upsert: true, new: true, setDefaultsOnInsert: true, session }
-        )
-
-        // UPDATE EVENT COUNTS
+        // update counts
         selectedTicket.soldCount += totalPeople
-
-        await activeEvent.save({ session })
+        await activeEvent.save()
 
         await Event.findByIdAndUpdate(
             activeEvent._id,
-            { $inc: { registeredCount: totalPeople } },
-            { session }
+            { $inc: { registeredCount: totalPeople } }
         )
-
-        await session.commitTransaction()
-        session.endSession()
 
         return {
             success: true,
@@ -128,9 +108,6 @@ export async function registerParticipant(data: any) {
         }
 
     } catch (error: any) {
-        await session.abortTransaction()
-        session.endSession()
-
         console.error("Error registering participant:", error)
 
         return {
