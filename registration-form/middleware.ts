@@ -3,6 +3,8 @@ import type { NextRequest } from 'next/server'
 import { jwtVerify } from 'jose'
 import { getCurrentUser } from '@/lib/auth'
 
+export const runtime = 'nodejs'
+
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl
     
