@@ -1,0 +1,72 @@
+import { NextRequest, NextResponse } from 'next/server'
+import dbConnect from "@/lib/db"
+import Event from '@/models/Event'
+import { getCurrentUser } from '@/lib/auth'
+
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    await dbConnect()
+    const event = await Event.findById(params.id)
+    
+    if (!event) {
+      return NextResponse.json({ error: 'Event not found' }, { status: 404 })
+    }
+    
+    return NextResponse.json(event)
+  } catch (error) {
+    console.error('Error fetching event:', error)
+    return NextResponse.json({ error: 'Failed to fetch event' }, { status: 500 })
+  }
+}
+
+export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    const user = await getCurrentUser()
+    
+    if (!user || user.role !== 'super-admin') {
+      return NextResponse.json({ error: 'Unauthorized. Only super admin can update events.' }, { status: 403 })
+    }
+
+    const eventData = await request.json()
+    
+    await dbConnect()
+    
+    const event = await Event.findByIdAndUpdate(
+      params.id,
+      { ...eventData, updatedBy: user.id.toString() },
+      { new: true, runValidators: true }
+    )
+    
+    if (!event) {
+      return NextResponse.json({ error: 'Event not found' }, { status: 404 })
+    }
+    
+    return NextResponse.json(event)
+  } catch (error) {
+    console.error('Error updating event:', error)
+    return NextResponse.json({ error: 'Failed to update event' }, { status: 500 })
+  }
+}
+
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    const user = await getCurrentUser()
+    
+    if (!user || user.role !== 'super-admin') {
+      return NextResponse.json({ error: 'Unauthorized. Only super admin can delete events.' }, { status: 403 })
+    }
+
+    await dbConnect()
+    
+    const event = await Event.findByIdAndDelete(params.id)
+    
+    if (!event) {
+      return NextResponse.json({ error: 'Event not found' }, { status: 404 })
+    }
+    
+    return NextResponse.json({ message: 'Event deleted successfully' })
+  } catch (error) {
+    console.error('Error deleting event:', error)
+    return NextResponse.json({ error: 'Failed to delete event' }, { status: 500 })
+  }
+}

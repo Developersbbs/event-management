@@ -2,6 +2,7 @@
 
 import dbConnect from "@/lib/db"
 import Participant from "@/models/Participant"
+import Event from "@/models/Event"
 
 export async function registerParticipant(data: any) {
     try {
@@ -10,29 +11,53 @@ export async function registerParticipant(data: any) {
         const {
             mobileNumber,
             name,
-            groupNumber,
-            ageGroups,
+            businessName,
+            businessCategory,
+            location,
+            paymentMethod,
             foodPreference,
-            isMorningFood,
         } = data
 
         // Validate essential data
-        if (!mobileNumber || !name || !groupNumber) {
+        if (!mobileNumber || !name) {
             return { success: false, error: "Missing required fields" }
         }
 
-        // Upsert the participant
-        // We match by mobileNumber.
-        // We set isRegistered to true.
+        // Check if there's an active event
+        const now = new Date()
+        const activeEvent = await Event.findOne({
+            isActive: true,
+            startDate: { $lte: now },
+            endDate: { $gte: now }
+        })
+
+        if (!activeEvent) {
+            return { success: false, error: "No active registration period found." }
+        }
+
+        // Check if event is at full capacity
+        if (activeEvent.registeredCount >= activeEvent.maxCapacity) {
+            return { success: false, error: "Registration is closed due to maximum capacity." }
+        }
+
+        // Check if participant is already registered
+        const existingParticipant = await Participant.findOne({ mobileNumber })
+        if (existingParticipant && existingParticipant.isRegistered) {
+            return { success: false, error: "This mobile number is already registered." }
+        }
+
+        // Create or update participant
         const participant = await Participant.findOneAndUpdate(
             { mobileNumber },
             {
                 $set: {
                     name,
-                    groupNumber,
-                    ageGroups,
+                    businessName,
+                    businessCategory,
+                    location,
+                    paymentMethod,
+                    paymentStatus: "pending",
                     foodPreference,
-                    isMorningFood,
                     isRegistered: true,
                     updatedAt: new Date(),
                 },
@@ -41,6 +66,12 @@ export async function registerParticipant(data: any) {
                 },
             },
             { upsert: true, new: true, setDefaultsOnInsert: true }
+        )
+
+        // Increment the registered count for the event
+        await Event.findByIdAndUpdate(
+            activeEvent._id,
+            { $inc: { registeredCount: 1 } }
         )
 
         return { success: true, id: participant._id.toString() }

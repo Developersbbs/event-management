@@ -17,6 +17,7 @@ import {
   IconSearch,
   IconSettings,
   IconUsers,
+  IconCalendarEvent,
 } from "@tabler/icons-react"
 
 import { NavDocuments } from "@/components/nav-documents"
@@ -165,6 +166,11 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
       title: "Group Stats",
       url: "/admin/groups",
       icon: IconChartBar,
+    },
+    {
+      title: "Events",
+      url: "/admin/events",
+      icon: IconCalendarEvent,
     },
     {
       title: "Check-in",

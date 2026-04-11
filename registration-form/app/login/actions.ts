@@ -30,7 +30,11 @@ export async function login(prevState: any, formData: FormData) {
             process.env.JWT_SECRET || 'default-secret-change-me'
         )
 
-        const token = await new SignJWT({ sub: user._id, role: user.role, email: user.email })
+        const token = await new SignJWT({ 
+            sub: user._id.toString(), // ✅ Convert ObjectId to string
+            role: user.role, 
+            email: user.email 
+        })
             .setProtectedHeader({ alg: 'HS256' })
             .setIssuedAt()
             .setExpirationTime('24h')

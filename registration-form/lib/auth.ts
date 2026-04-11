@@ -3,6 +3,7 @@ import { jwtVerify } from 'jose'
 
 export type AuthUser = {
     id: string
+    _id?: string  // Optional for MongoDB documents
     role: string
     email: string
 }
@@ -17,14 +18,24 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
         const secret = new TextEncoder().encode(
             process.env.JWT_SECRET || 'default-secret-change-me'
         )
+
         const { payload } = await jwtVerify(token, secret)
 
+        const userId = payload.sub
+
+        //  STRICT VALIDATION
+        if (!userId || typeof userId !== 'string') {
+            throw new Error("Invalid token: userId missing")
+        }
+
         return {
-            id: payload.sub as string,
+            id: userId,
             role: payload.role as string,
             email: payload.email as string
         }
+
     } catch (error) {
+        console.error("Auth error:", error)
         return null
     }
 }

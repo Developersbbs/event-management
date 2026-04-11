@@ -7,11 +7,99 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Calendar, MapPin, Sun, Wheat, Utensils, Music, Menu, Heart, Info, ArrowRight, Instagram, Facebook, Twitter, Mail, Clock } from "lucide-react"
+import { Calendar, MapPin, Sun, Wheat, Utensils, Music, Menu, Heart, Info, ArrowRight, Instagram, Facebook, Twitter, Mail, Clock, AlertCircle } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { useState, useEffect } from "react"
+
+interface EventStatus {
+  isActive: boolean
+  isUpcoming: boolean
+  isPast: boolean
+  event?: {
+    _id: string
+    eventName: string
+    startDate: string
+    endDate: string
+    location: string
+    maxCapacity: number
+    registeredCount: number
+  }
+  message?: string
+}
 
 export default function PongalLandingPage() {
   const router = useRouter()
+  const [eventStatus, setEventStatus] = useState<EventStatus | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchEventStatus = async () => {
+      try {
+        const response = await fetch("/api/events/active")
+        const data = await response.json()
+        
+        if (data) {
+          const now = new Date()
+          const start = new Date(data.startDate)
+          const end = new Date(data.endDate)
+          
+          let status: EventStatus = {
+            isActive: false,
+            isUpcoming: false,
+            isPast: false,
+            event: data
+          }
+          
+          if (data.isActive && now >= start && now <= end) {
+            status.isActive = true
+            if (data.registeredCount >= data.maxCapacity) {
+              status.isActive = false
+              status.message = "Registration is closed due to maximum capacity"
+            }
+          } else if (now < start) {
+            status.isUpcoming = true
+            status.message = `Registration opens on ${start.toLocaleDateString('en-IN', {
+              day: '2-digit',
+              month: 'short',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            })}`
+          } else {
+            status.isPast = true
+            status.message = "Registration has ended"
+          }
+          
+          setEventStatus(status)
+        } else {
+          setEventStatus({
+            isActive: false,
+            isUpcoming: false,
+            isPast: false,
+            message: "No events scheduled at the moment"
+          })
+        }
+      } catch (error) {
+        console.error("Error fetching event status:", error)
+        setEventStatus({
+          isActive: false,
+          isUpcoming: false,
+          isPast: false,
+          message: "Unable to check registration status"
+        })
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchEventStatus()
+  }, [])
+
+  const handleRegistrationClick = () => {
+    if (eventStatus?.isActive) {
+      router.push('/register')
+    }
+  }
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-primary selection:text-primary-foreground font-sans">
       {/* Navbar */}
@@ -27,7 +115,14 @@ export default function PongalLandingPage() {
             {/* <Link href="#about" className="hover:text-primary transition-colors">About</Link>
             <Link href="#events" className="hover:text-primary transition-colors">Events</Link>
             <Link href="#contact" className="hover:text-primary transition-colors">Contact</Link> */}
-            <Button disabled size="sm" className="rounded-full px-6 opacity-50 cursor-not-allowed">Registration Closed</Button>
+            <Button 
+              onClick={handleRegistrationClick} 
+              size="sm" 
+              className="rounded-full px-6"
+              disabled={loading || !eventStatus?.isActive}
+            >
+              {loading ? "Loading..." : eventStatus?.isActive ? "Open Registration" : "Registration Closed"}
+            </Button>
           </nav>
 
           {/* Mobile Nav */}
@@ -46,7 +141,13 @@ export default function PongalLandingPage() {
                 <Link href="#gallery" className="text-lg font-medium hover:text-primary">Gallery</Link>
                 <Link href="#contact" className="text-lg font-medium hover:text-primary">Contact</Link>
                 <div className="w-full">
-                  <Button disabled className="w-full opacity-50 cursor-not-allowed">Registration Closed</Button>
+                  <Button 
+                      onClick={handleRegistrationClick} 
+                      className="w-full"
+                      disabled={loading || !eventStatus?.isActive}
+                    >
+                      {loading ? "Loading..." : eventStatus?.isActive ? "Open Registration" : "Registration Closed"}
+                    </Button>
                 </div>
               </div>
             </SheetContent>
@@ -74,8 +175,13 @@ export default function PongalLandingPage() {
               தமிழ் பாரம்பரியத்தைப் போற்றும் இந்த இனிய பொங்கல் விழாவில் சொந்தங்கள் அனைவரும் கலந்து கொண்டு மகிழ்ச்சியைப் பகிர்ந்து கொள்ள அன்புடன் வரவேற்கிறோம்.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-              <Button disabled size="lg" className="rounded-full text-base h-12 px-8 shadow-lg shadow-primary/20 opacity-50 cursor-not-allowed">
-                Registration Closed
+              <Button 
+                onClick={handleRegistrationClick} 
+                size="lg" 
+                className="rounded-full text-base h-12 px-8 shadow-lg shadow-primary/20"
+                disabled={loading || !eventStatus?.isActive}
+              >
+                {loading ? "Loading..." : eventStatus?.isActive ? "Open Registration" : "Registration Closed"}
               </Button>
               <Button disabled size="lg" variant="outline" className="rounded-full text-base h-12 px-8 opacity-50 cursor-not-allowed">
                 Schedule (Coming Soon)
@@ -98,6 +204,18 @@ export default function PongalLandingPage() {
                 <span>டோனாகேல கேம்ப்,அன்னனூர், சென்னை</span>
               </div>
             </div>
+            
+            {/* Event Status Message */}
+            {!loading && eventStatus && !eventStatus.isActive && (
+              <div className="mt-6 max-w-md mx-auto">
+                <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg border">
+                  <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground">
+                    {eventStatus.message}
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         </section>
 
@@ -250,7 +368,15 @@ export default function PongalLandingPage() {
                 <li><Link href="#" className="hover:text-primary-foreground transition-colors">About Us</Link></li>
                 <li><Link href="#" className="hover:text-primary-foreground transition-colors">Events Schedule</Link></li>
                 <li><Link href="#" className="hover:text-primary-foreground transition-colors">Gallery</Link></li>
-                <li><span className="text-primary-foreground/50 cursor-not-allowed">Register (Closed)</span></li>
+                <li>
+                  <button 
+                    onClick={handleRegistrationClick}
+                    className="hover:text-primary-foreground transition-colors text-left"
+                    disabled={loading || !eventStatus?.isActive}
+                  >
+                    {loading ? "Loading..." : eventStatus?.isActive ? "Register" : "Register (Closed)"}
+                  </button>
+                </li>
               </ul>
             </div>
 
