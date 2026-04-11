@@ -4,7 +4,22 @@ import dbConnect from "@/lib/db"
 import Participant from "@/models/Participant"
 import Event from "@/models/Event"
 
-export async function registerParticipant(data: any) {
+interface RegisterParticipantData {
+    mobileNumber: string
+    name: string
+    email?: string
+    businessName?: string
+    businessCategory?: string
+    location?: string
+    paymentMethod?: string
+    foodPreference?: { veg: number; nonVeg: number }
+    isMorningFood?: boolean
+    guestCount?: number
+    ticketType: string
+    isMember?: boolean
+}
+
+export async function registerParticipant(data: RegisterParticipantData) {
     try {
         await dbConnect()
 
@@ -106,7 +121,7 @@ export async function registerParticipant(data: any) {
 
         // FIND TICKET
         const selectedTicket = activeEvent.ticketsPrice.find(
-            (t: any) => t.name === ticketType
+            (t: { name: string; price: number; soldCount: number }) => t.name === ticketType
         )
 
         if (!selectedTicket) {
@@ -196,27 +211,27 @@ export async function registerParticipant(data: any) {
             totalAmount
         }
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Error registering participant:", error)
 
         // Handle specific MongoDB errors
-        if (error.code === 11000) {
+        if (error && typeof error === 'object' && 'code' in error && error.code === 11000) {
             return {
                 success: false,
                 error: "This mobile number is already registered for this event"
             }
         }
 
-        if (error.name === "ValidationError") {
+        if (error && typeof error === 'object' && 'name' in error && error.name === "ValidationError") {
             return {
                 success: false,
-                error: "Validation failed: " + Object.values(error.errors).map((e: any) => e.message).join(", ")
+                error: "Validation failed: " + Object.values((error as unknown as { errors: Record<string, { message: string }> }).errors).map((e) => e.message).join(", ")
             }
         }
 
         return {
             success: false,
-            error: error.message || "Failed to register. Please try again later."
+            error: error instanceof Error ? error.message : "Failed to register. Please try again later."
         }
     }
 }

@@ -43,7 +43,7 @@ export default function PongalLandingPage() {
           const start = new Date(data.startDate)
           const end = new Date(data.endDate)
           
-          let status: EventStatus = {
+          const status: EventStatus = {
             isActive: false,
             isUpcoming: false,
             isPast: false,

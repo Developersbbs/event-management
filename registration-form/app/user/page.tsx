@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { getCurrentUser } from "@/lib/auth"
 import { checkRegistration } from "@/app/actions/check-registration"
-import { Calendar, MapPin, Phone, Mail, Users, Receipt, Clock, CheckCircle, XCircle, AlertCircle } from "lucide-react"
+import { MapPin, Phone, Mail, Users, Receipt, Clock, CheckCircle, XCircle, AlertCircle } from "lucide-react"
 import Link from "next/link"
 
 export default async function UserDashboard() {
@@ -187,7 +187,7 @@ export default async function UserDashboard() {
                             </CardHeader>
                             <CardContent>
                                 <CardDescription>
-                                    You have an account but haven't completed registration yet.
+                                    You have an account but haven&apos;t completed registration yet.
                                     Please complete your registration to participate in the event.
                                 </CardDescription>
                                 <div className="mt-4">
@@ -208,7 +208,7 @@ export default async function UserDashboard() {
                         </CardHeader>
                         <CardContent>
                             <CardDescription>
-                                You haven't registered for the event yet. Please complete your registration to participate.
+                                You haven&apos;t registered for the event yet. Please complete your registration to participate.
                             </CardDescription>
                             <div className="mt-4">
                                 <Link href="/register">

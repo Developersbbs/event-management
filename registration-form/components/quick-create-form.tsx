@@ -47,6 +47,7 @@ export function QuickCreateForm() {
         ageGroups: { adults: 1, children: 0 },
         foodPreference: { veg: 1, nonVeg: 0 },
         isMorningFood: false,
+        ticketType: "General",
     })
     const [existingParticipant, setExistingParticipant] = useState<any>(null)
 
@@ -106,13 +107,16 @@ export function QuickCreateForm() {
     const onFinalSubmit = async () => {
         setIsSubmitting(true)
         try {
+            const { adults, children } = eventData.ageGroups
+            const guestCount = (parseInt(adults as any) || 0) + (parseInt(children as any) || 0)
+
             const payload = {
                 mobileNumber: verifiedPhone,
                 name: personalData.name,
-                groupNumber: personalData.groupNumber,
-                ageGroups: eventData.ageGroups,
+                guestCount,
                 foodPreference: eventData.foodPreference,
                 isMorningFood: eventData.isMorningFood,
+                ticketType: eventData.ticketType,
             }
 
             const result = await registerParticipant(payload)
@@ -200,7 +204,8 @@ export function QuickCreateForm() {
                                 setEventData({
                                     ageGroups: existingParticipant.ageGroups || { adults: 1, children: 0 },
                                     foodPreference: existingParticipant.foodPreference || { veg: 1, nonVeg: 0 },
-                                    isMorningFood: existingParticipant.isMorningFood || false
+                                    isMorningFood: existingParticipant.isMorningFood || false,
+                                    ticketType: existingParticipant.ticketType || "General"
                                 })
                                 personalForm.reset({
                                     name: existingParticipant.name || "",
@@ -399,7 +404,7 @@ export function QuickCreateForm() {
                         phoneForm.reset()
                         personalForm.reset()
                         setPersonalData({ name: "", groupNumber: "" })
-                        setEventData({ ageGroups: { adults: 1, children: 0 }, foodPreference: { veg: 1, nonVeg: 0 }, isMorningFood: false })
+                        setEventData({ ageGroups: { adults: 1, children: 0 }, foodPreference: { veg: 1, nonVeg: 0 }, isMorningFood: false, ticketType: "General" })
                         setVerifiedPhone("")
                     }}>Add Another</Button>
                 </CardContent>

@@ -4,6 +4,8 @@ import { GalleryVerticalEnd, AlertCircle, ArrowLeft } from "lucide-react"
 import { RegisterForm } from "@/components/Register-form"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
@@ -39,7 +41,7 @@ export default function RegisterPage() {
           const start = new Date(data.startDate)
           const end = new Date(data.endDate)
           
-          let status: EventStatus = {
+          const status: EventStatus = {
             isActive: false,
             isUpcoming: false,
             isPast: false,
@@ -96,12 +98,12 @@ export default function RegisterPage() {
       <div className="grid min-h-svh lg:grid-cols-2">
         <div className="flex flex-col gap-4 p-6 md:p-10">
           <div className="flex justify-center gap-2 md:justify-start">
-            <a href="/" className="flex items-center gap-2 font-medium">
+            <Link href="/" className="flex items-center gap-2 font-medium">
               <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
                 <GalleryVerticalEnd className="size-4" />
               </div>
               பொங்கல் விழா
-            </a>
+            </Link>
           </div>
           <div className="flex flex-1 items-center justify-center">
             <div className="w-full max-w-xl text-center">
@@ -110,10 +112,11 @@ export default function RegisterPage() {
           </div>
         </div>
         <div className="bg-muted relative hidden lg:block">
-          <img
+          <Image
             src="/assets/register-banner.jpg"
             alt="Image"
-            className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
+            fill
+            className="object-cover dark:brightness-[0.2] dark:grayscale"
           />
         </div>
       </div>
@@ -125,12 +128,12 @@ export default function RegisterPage() {
       <div className="grid min-h-svh lg:grid-cols-2">
         <div className="flex flex-col gap-4 p-6 md:p-10">
           <div className="flex justify-center gap-2 md:justify-start">
-            <a href="/" className="flex items-center gap-2 font-medium">
+            <Link href="/" className="flex items-center gap-2 font-medium">
               <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
                 <GalleryVerticalEnd className="size-4" />
               </div>
               பொங்கல் விழா
-            </a>
+            </Link>
           </div>
           <div className="flex flex-1 items-center justify-center">
             <div className="w-full max-w-xl">
@@ -155,10 +158,11 @@ export default function RegisterPage() {
           </div>
         </div>
         <div className="bg-muted relative hidden lg:block">
-          <img
+          <Image
             src="/assets/register-banner.jpg"
             alt="Image"
-            className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
+            fill
+            className="object-cover dark:brightness-[0.2] dark:grayscale"
           />
         </div>
       </div>
@@ -169,12 +173,12 @@ export default function RegisterPage() {
     <div className="grid min-h-svh lg:grid-cols-2">
       <div className="flex flex-col gap-4 p-6 md:p-10">
         <div className="flex justify-center gap-2 md:justify-start">
-          <a href="/" className="flex items-center gap-2 font-medium">
+          <Link href="/" className="flex items-center gap-2 font-medium">
             <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
               <GalleryVerticalEnd className="size-4" />
             </div>
             பொங்கல் விழா
-          </a>
+          </Link>
         </div>
         <div className="flex flex-1 items-center justify-center">
           <div className="w-full max-w-xl">

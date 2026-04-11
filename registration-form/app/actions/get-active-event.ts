@@ -34,11 +34,11 @@ export async function getActiveEvent() {
                 updatedAt: activeEvent.updatedAt?.toISOString(),
             }
         }
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Error fetching active event:", error)
         return {
             success: false,
-            error: error.message || "Failed to fetch active event"
+            error: error instanceof Error ? error.message : "Failed to fetch active event"
         }
     }
 }

@@ -1,6 +1,15 @@
 import mongoose from "mongoose"
 
-const UserSchema = new mongoose.Schema({
+interface IUserDocument {
+    email: string
+    password?: string
+    role: string
+    inviteToken?: string
+    inviteTokenExpiry?: Date
+    createdAt: Date
+}
+
+const UserSchema = new mongoose.Schema<IUserDocument>({
     email: {
         type: String,
         required: [true, "Please provide an email"],
@@ -8,7 +17,7 @@ const UserSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: function (this: any) {
+        required: function (this: IUserDocument) {
             // Password is required only if inviteToken is NOT present
             // If inviteToken is present, it means user is invited and hasn't set password yet
             return !this.inviteToken

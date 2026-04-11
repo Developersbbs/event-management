@@ -19,7 +19,6 @@ interface MongooseCache {
  * during API Route usage.
  */
 declare global {
-    // eslint-disable-next-line no-var
     var mongoose: MongooseCache | undefined;
 }
 

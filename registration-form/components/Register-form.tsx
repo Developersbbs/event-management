@@ -18,7 +18,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox"
 import { Loader2, CheckCircle2, AlertCircle, Plus, Minus, Phone, Users, Utensils, Receipt, Info } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 
 enum Step {
@@ -63,7 +62,7 @@ export function RegisterForm() {
   const [isCheckingDb, setIsCheckingDb] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [dbError, setDbError] = useState<string | null>(null)
-  const [activeEvent, setActiveEvent] = useState<any>(null)
+  const [activeEvent, setActiveEvent] = useState<{ _id: string; eventName: string; startDate: string; endDate: string; ticketsPrice: { name: string; price: number }[] } | null>(null)
   const [isLoadingEvent, setIsLoadingEvent] = useState(false)
 
   // Registration Data State
@@ -82,7 +81,7 @@ export function RegisterForm() {
     foodPreference: { veg: 0, nonVeg: 0 },
     isMorningFood: false,
   })
-  const [existingParticipant, setExistingParticipant] = useState<any>(null)
+  const [existingParticipant, setExistingParticipant] = useState<{ mobileNumber: string; name: string; isRegistered: boolean; email?: string; businessName?: string; businessCategory?: string; location?: string; guestCount?: number; ticketType?: string; paymentMethod?: string; foodPreference?: { veg: number; nonVeg: number }; isMorningFood?: boolean } | null>(null)
 
   // Forms
   const phoneForm = useForm<z.infer<typeof phoneSchema>>({ resolver: zodResolver(phoneSchema), defaultValues: { phoneNumber: "+91" } })
@@ -105,7 +104,7 @@ export function RegisterForm() {
 
   const pricePerPerson = useMemo(() => {
     if (!activeEvent || !eventData.ticketType) return 0
-    const ticket = activeEvent.ticketsPrice?.find((t: any) => t.name === eventData.ticketType)
+    const ticket = activeEvent.ticketsPrice?.find((t: { name: string; price: number }) => t.name === eventData.ticketType)
     return ticket?.price || 0
   }, [activeEvent, eventData.ticketType])
 
@@ -158,7 +157,7 @@ export function RegisterForm() {
           setVerifiedPhone(ph)
           setStep(Step.PERSONAL_DETAILS)
         }
-      } catch (err) {
+      } catch {
         setDbError("System error checking registration.")
       } finally {
         setIsCheckingDb(false)
@@ -213,7 +212,7 @@ export function RegisterForm() {
       } else {
         setDbError(result.error || "Registration failed.")
       }
-    } catch (e) {
+    } catch {
       setDbError("An unexpected error occurred. Please try again.")
     } finally {
       setIsSubmitting(false)
@@ -318,25 +317,25 @@ export function RegisterForm() {
                 onClick={() => {
                   setVerifiedPhone(phoneForm.getValues("phoneNumber")) // Ensure phone is set
                   setPersonalData({
-                    name: existingParticipant.name || "",
-                    email: existingParticipant.email || "",
-                    businessName: existingParticipant.businessName || "",
-                    businessCategory: existingParticipant.businessCategory || "",
-                    location: existingParticipant.location || ""
+                    name: existingParticipant?.name || "",
+                    email: existingParticipant?.email || "",
+                    businessName: existingParticipant?.businessName || "",
+                    businessCategory: existingParticipant?.businessCategory || "",
+                    location: existingParticipant?.location || ""
                   })
                   setEventData({
-                    guestCount: existingParticipant.guestCount || 0,
-                    ticketType: existingParticipant.ticketType || "",
-                    paymentMethod: existingParticipant.paymentMethod || "cash",
-                    foodPreference: existingParticipant.foodPreference || { veg: 0, nonVeg: 0 },
-                    isMorningFood: existingParticipant.isMorningFood || false
+                    guestCount: existingParticipant?.guestCount || 0,
+                    ticketType: existingParticipant?.ticketType || "",
+                    paymentMethod: existingParticipant?.paymentMethod || "cash",
+                    foodPreference: existingParticipant?.foodPreference || { veg: 0, nonVeg: 0 },
+                    isMorningFood: existingParticipant?.isMorningFood || false
                   })
                   personalForm.reset({
-                    name: existingParticipant.name || "",
-                    email: existingParticipant.email || "",
-                    businessName: existingParticipant.businessName || "",
-                    businessCategory: existingParticipant.businessCategory || "",
-                    location: existingParticipant.location || ""
+                    name: existingParticipant?.name || "",
+                    email: existingParticipant?.email || "",
+                    businessName: existingParticipant?.businessName || "",
+                    businessCategory: existingParticipant?.businessCategory || "",
+                    location: existingParticipant?.location || ""
                   })
                   setStep(Step.PERSONAL_DETAILS)
                 }}
@@ -503,7 +502,7 @@ export function RegisterForm() {
                 <SelectValue placeholder={isLoadingEvent ? "Loading ticket types..." : "Select ticket type"} />
               </SelectTrigger>
               <SelectContent>
-                {activeEvent?.ticketsPrice?.map((ticket: any) => (
+                {activeEvent?.ticketsPrice?.map((ticket: { name: string; price: number }) => (
                   <SelectItem key={ticket.name} value={ticket.name}>
                     {ticket.name} - ₹{ticket.price}
                   </SelectItem>

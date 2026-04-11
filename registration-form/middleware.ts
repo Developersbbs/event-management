@@ -8,14 +8,14 @@ export async function middleware(request: NextRequest) {
     // Read token from cookie
     const token = request.cookies.get("admin_token")?.value
 
-    let user: any = null
+    let user: { sub?: string; role?: string; email?: string; name?: string; mobileNumber?: string } | null = null
 
     if (token) {
         try {
             const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'default-secret-change-me')
             const { payload } = await jwtVerify(token, secret)
             user = payload
-        } catch (err) {
+        } catch {
             console.log("Invalid token in middleware")
         }
     }

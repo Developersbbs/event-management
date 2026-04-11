@@ -41,9 +41,9 @@ export function usePhoneAuth() {
             const confirmation = await signInWithPhoneNumber(auth, phoneNumber, window.recaptchaVerifier)
             setConfirmationResult(confirmation)
             return true
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error("Error sending OTP:", err)
-            setError(err.message || "Failed to send OTP")
+            setError(err instanceof Error ? err.message : "Failed to send OTP")
             // Reset recaptcha on error so it can be retried
             if (window.recaptchaVerifier) {
                 window.recaptchaVerifier.clear()
@@ -64,9 +64,9 @@ export function usePhoneAuth() {
             }
             const result = await confirmationResult.confirm(otp)
             return result.user
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error("Error verifying OTP:", err)
-            setError(err.message || "Invalid OTP")
+            setError(err instanceof Error ? err.message : "Invalid OTP")
             return null
         } finally {
             setLoading(false)
@@ -78,6 +78,6 @@ export function usePhoneAuth() {
 
 declare global {
     interface Window {
-        recaptchaVerifier: any
+        recaptchaVerifier: RecaptchaVerifier | undefined
     }
 }
