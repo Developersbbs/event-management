@@ -1,18 +1,27 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { jwtVerify } from 'jose'
-import { getCurrentUser } from '@/lib/auth'
-
-export const runtime = 'nodejs'
 
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl
-    
-    // Get current user
-    const user = await getCurrentUser()
+
+    // Read token from cookie
+    const token = request.cookies.get("admin_token")?.value
+
+    let user: any = null
+
+    if (token) {
+        try {
+            const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'default-secret-change-me')
+            const { payload } = await jwtVerify(token, secret)
+            user = payload
+        } catch (err) {
+            console.log("Invalid token in middleware")
+        }
+    }
 
     // Public routes - no authentication required
-    const publicRoutes = ['/login', '/register']
+    const publicRoutes = ['/login', '/register', '/', '/setup-account']
     if (publicRoutes.some(route => pathname.startsWith(route))) {
         return NextResponse.next()
     }
