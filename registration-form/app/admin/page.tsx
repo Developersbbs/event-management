@@ -15,8 +15,13 @@ export default async function Page() {
   // Fallback for null stats if fetch fails (though generic error handling is better)
   const safeStats = stats || {
     totalRegistrations: 0,
-    totalAdults: 0,
-    totalChildren: 0,
+    totalGuests: 0,
+    totalAmount: 0,
+    pendingApprovals: 0,
+    approvedRegistrations: 0,
+    rejectedRegistrations: 0,
+    cashPayments: 0,
+    onlinePayments: 0,
     vegCount: 0,
     nonVegCount: 0,
     morningFoodCount: 0,

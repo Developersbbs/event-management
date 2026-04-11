@@ -1,4 +1,4 @@
-import { IconUsers, IconSoup, IconSalad, IconCoffee } from "@tabler/icons-react"
+import { IconUsers, IconSoup, IconSalad, IconCoffee, IconCurrencyRupee, IconClock, IconCheck, IconX } from "@tabler/icons-react"
 import {
   Card,
   CardDescription,
@@ -10,8 +10,13 @@ import {
 interface SectionCardsProps {
   stats: {
     totalRegistrations: number
-    totalAdults: number
-    totalChildren: number
+    totalGuests: number
+    totalAmount: number
+    pendingApprovals: number
+    approvedRegistrations: number
+    rejectedRegistrations: number
+    cashPayments: number
+    onlinePayments: number
     vegCount: number
     nonVegCount: number
     morningFoodCount: number
@@ -30,10 +35,47 @@ export function SectionCards({ stats }: SectionCardsProps) {
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            Adults: {stats.totalAdults} | Children: {stats.totalChildren}
+            <IconUsers className="size-4 text-blue-500" /> Total Guests: {stats.totalGuests}
           </div>
           <div className="text-muted-foreground">
-            Total Attendees: {stats.totalRegistrations + stats.totalAdults + stats.totalChildren}
+            Total Amount: ₹{stats.totalAmount}
+          </div>
+        </CardFooter>
+      </Card>
+
+      <Card className="@container/card">
+        <CardHeader>
+          <CardDescription>Payment Methods</CardDescription>
+          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+            {stats.cashPayments + stats.onlinePayments}
+          </CardTitle>
+        </CardHeader>
+        <CardFooter className="flex-col items-start gap-1.5 text-sm">
+          <div className="line-clamp-1 flex gap-2 font-medium">
+            <IconCurrencyRupee className="size-4 text-green-500" /> Cash: {stats.cashPayments}
+          </div>
+          <div className="line-clamp-1 flex gap-2 font-medium">
+            <IconClock className="size-4 text-blue-500" /> Online: {stats.onlinePayments}
+          </div>
+        </CardFooter>
+      </Card>
+
+      <Card className="@container/card">
+        <CardHeader>
+          <CardDescription>Approval Status</CardDescription>
+          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+            {stats.pendingApprovals + stats.approvedRegistrations + stats.rejectedRegistrations}
+          </CardTitle>
+        </CardHeader>
+        <CardFooter className="flex-col items-start gap-1.5 text-sm">
+          <div className="line-clamp-1 flex gap-2 font-medium">
+            <IconClock className="size-4 text-orange-500" /> Pending: {stats.pendingApprovals}
+          </div>
+          <div className="line-clamp-1 flex gap-2 font-medium">
+            <IconCheck className="size-4 text-green-500" /> Approved: {stats.approvedRegistrations}
+          </div>
+          <div className="line-clamp-1 flex gap-2 font-medium">
+            <IconX className="size-4 text-red-500" /> Rejected: {stats.rejectedRegistrations}
           </div>
         </CardFooter>
       </Card>

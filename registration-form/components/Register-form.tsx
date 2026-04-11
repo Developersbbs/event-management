@@ -7,6 +7,7 @@ import * as z from "zod"
 import { usePhoneAuth } from "@/hooks/use-phone-auth"
 import { checkRegistration } from "@/app/actions/check-registration"
 import { registerParticipant } from "@/app/actions/register-participant"
+import { getActiveEvent } from "@/app/actions/get-active-event"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -62,6 +63,8 @@ export function RegisterForm() {
   const [isCheckingDb, setIsCheckingDb] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [dbError, setDbError] = useState<string | null>(null)
+  const [activeEvent, setActiveEvent] = useState<any>(null)
+  const [isLoadingEvent, setIsLoadingEvent] = useState(false)
 
   // Registration Data State
   const [verifiedPhone, setVerifiedPhone] = useState("")
@@ -99,6 +102,34 @@ export function RegisterForm() {
   const totalGuests = useMemo(() => {
     return eventData.guestCount + 1 // +1 for the registrant
   }, [eventData.guestCount])
+
+  const pricePerPerson = useMemo(() => {
+    if (!activeEvent || !eventData.ticketType) return 0
+    const ticket = activeEvent.ticketsPrice?.find((t: any) => t.name === eventData.ticketType)
+    return ticket?.price || 0
+  }, [activeEvent, eventData.ticketType])
+
+  const totalAmount = useMemo(() => {
+    return totalGuests * pricePerPerson
+  }, [totalGuests, pricePerPerson])
+
+  // Fetch active event on mount
+  useEffect(() => {
+    const fetchEvent = async () => {
+      setIsLoadingEvent(true)
+      try {
+        const result = await getActiveEvent()
+        if (result.success && result.event) {
+          setActiveEvent(result.event)
+        }
+      } catch (error) {
+        console.error("Failed to fetch active event:", error)
+      } finally {
+        setIsLoadingEvent(false)
+      }
+    }
+    fetchEvent()
+  }, [])
 
 
 
@@ -141,7 +172,26 @@ export function RegisterForm() {
   }
 
   const onFinalSubmit = async () => {
+    // Client-side validation before submission
+    if (!eventData.ticketType) {
+      setDbError("Please select a ticket type")
+      return
+    }
+
+    if (!activeEvent) {
+      setDbError("Unable to load event details. Please refresh the page.")
+      return
+    }
+
+    // Validate food preferences
+    const totalFoodCount = (eventData.foodPreference.veg || 0) + (eventData.foodPreference.nonVeg || 0)
+    if (totalFoodCount > totalGuests) {
+      setDbError(`Total food count (${totalFoodCount}) cannot exceed total guests (${totalGuests})`)
+      return
+    }
+
     setIsSubmitting(true)
+    setDbError(null)
     try {
       const payload = {
         mobileNumber: verifiedPhone,
@@ -164,7 +214,7 @@ export function RegisterForm() {
         setDbError(result.error || "Registration failed.")
       }
     } catch (e) {
-      setDbError("An unexpected error occurred.")
+      setDbError("An unexpected error occurred. Please try again.")
     } finally {
       setIsSubmitting(false)
     }
@@ -394,6 +444,17 @@ export function RegisterForm() {
           <CardDescription>Customize your participation.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
+          {/* Active Event Error Alert */}
+          {!isLoadingEvent && !activeEvent && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>No Active Event</AlertTitle>
+              <AlertDescription>
+                Unable to load event details. Please contact the administrator or try again later.
+              </AlertDescription>
+            </Alert>
+          )}
+
           {/* Guest Count */}
           <div className="space-y-3">
             <div className="flex items-center gap-2">
@@ -436,16 +497,38 @@ export function RegisterForm() {
             <Select 
               value={eventData.ticketType} 
               onValueChange={(value) => setEventData(prev => ({ ...prev, ticketType: value }))}
+              disabled={isLoadingEvent}
             >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select ticket type" />
+                <SelectValue placeholder={isLoadingEvent ? "Loading ticket types..." : "Select ticket type"} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="General">General</SelectItem>
-                <SelectItem value="VIP">VIP</SelectItem>
-                <SelectItem value="Premium">Premium</SelectItem>
+                {activeEvent?.ticketsPrice?.map((ticket: any) => (
+                  <SelectItem key={ticket.name} value={ticket.name}>
+                    {ticket.name} - ₹{ticket.price}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
+            
+            {/* Pricing Display */}
+            {eventData.ticketType && pricePerPerson > 0 && (
+              <div className="bg-muted/50 rounded-lg p-4 space-y-2">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">Price per person:</span>
+                  <span className="font-semibold text-lg">₹{pricePerPerson}</span>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">Total guests:</span>
+                  <span className="font-medium">{totalGuests}</span>
+                </div>
+                <Separator />
+                <div className="flex justify-between items-center">
+                  <span className="font-semibold">Total Amount:</span>
+                  <span className="font-bold text-xl text-primary">₹{totalAmount}</span>
+                </div>
+              </div>
+            )}
           </div>
 
           <Separator />
@@ -556,7 +639,7 @@ export function RegisterForm() {
           <Button variant="ghost" onClick={() => setStep(Step.PERSONAL_DETAILS)}>Back</Button>
           <Button 
             onClick={onFinalSubmit} 
-            disabled={isSubmitting || !eventData.ticketType}
+            disabled={isSubmitting || !eventData.ticketType || !activeEvent}
           >
             {isSubmitting ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : "Complete Registration"}
           </Button>
@@ -581,6 +664,8 @@ export function RegisterForm() {
             <div className="flex justify-between"><span>Name:</span><span className="font-medium">{personalData.name}</span></div>
             <div className="flex justify-between"><span>Mobile:</span><span className="font-medium">{verifiedPhone}</span></div>
             <div className="flex justify-between"><span>Total Guests:</span><span className="font-medium">{totalGuests}</span></div>
+            <div className="flex justify-between"><span>Ticket Type:</span><span className="font-medium">{eventData.ticketType}</span></div>
+            <div className="flex justify-between"><span>Total Amount:</span><span className="font-bold text-primary">₹{totalAmount}</span></div>
             <div className="flex justify-between"><span>Morning Food:</span><span className="font-medium">{eventData.isMorningFood ? "Yes" : "No"}</span></div>
           </div>
           <Button className="w-full" onClick={() => window.location.reload()}>Register Another</Button>

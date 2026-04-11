@@ -1,45 +1,44 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { jwtVerify } from 'jose'
+import { getCurrentUser } from '@/lib/auth'
 
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl
+    
+    // Get current user
+    const user = await getCurrentUser()
 
-    // Only protect /admin routes
+    // Public routes - no authentication required
+    const publicRoutes = ['/login', '/register']
+    if (publicRoutes.some(route => pathname.startsWith(route))) {
+        return NextResponse.next()
+    }
+
+    // If no user, redirect to login
+    if (!user) {
+        return NextResponse.redirect(new URL('/login', request.url))
+    }
+
+    // Admin routes protection
     if (pathname.startsWith('/admin')) {
-        const token = request.cookies.get('admin_token')?.value
-
-        // No token → redirect
-        if (!token) {
-            return NextResponse.redirect(new URL('/login', request.url))
+        // Only admin and super-admin can access admin routes
+        if (user.role !== 'admin' && user.role !== 'super-admin') {
+            // Regular users trying to access admin - redirect to register
+            return NextResponse.redirect(new URL('/register', request.url))
         }
+    }
 
-        try {
-            const secret = new TextEncoder().encode(
-                process.env.JWT_SECRET || 'default-secret-change-me'
-            )
-
-            const { payload } = await jwtVerify(token, secret)
-
-            // IMPORTANT: ROLE CHECK
-            const role = payload.role as string
-
-            if (!role || (role !== 'admin' && role !== 'super-admin')) {
-                return NextResponse.redirect(new URL('/unauthorized', request.url))
-            }
-
-            return NextResponse.next()
-
-        } catch (error) {
-            console.error("Middleware auth error:", error)
-
-            return NextResponse.redirect(new URL('/login', request.url))
-        }
+    // Regular users - only allow register page
+    if (user.role === 'user' && !pathname.startsWith('/register')) {
+        return NextResponse.redirect(new URL('/register', request.url))
     }
 
     return NextResponse.next()
 }
 
 export const config = {
-    matcher: ['/admin/:path*'],
+    matcher: [
+        '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    ],
 }

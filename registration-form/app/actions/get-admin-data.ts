@@ -12,27 +12,48 @@ export async function getAdminData() {
 
         const stats = {
             totalRegistrations: participants.length,
-            totalAdults: 0,
-            totalChildren: 0,
+            totalGuests: 0,
+            totalAmount: 0,
+            pendingApprovals: 0,
+            approvedRegistrations: 0,
+            rejectedRegistrations: 0,
+            cashPayments: 0,
+            onlinePayments: 0,
             vegCount: 0,
             nonVegCount: 0,
             morningFoodCount: 0,
         }
 
         participants.forEach((p: any) => {
-            // Safely handle potential missing fields if schema changed over time
-            const adults = p.ageGroups?.adults || 0
-            const children = p.ageGroups?.children || 0
+            // Handle new schema fields for participants
+            const guestCount = p.guestCount || 0
+            const totalAmount = p.totalAmount || 0
             const veg = p.foodPreference?.veg || 0
             const nonVeg = p.foodPreference?.nonVeg || 0
+            const paymentMethod = p.paymentMethod || "cash"
+            const approvalStatus = p.approvalStatus || "pending"
 
-            // Exclude the member themselves from the "Adults" stats (Guest Adults only)
-            stats.totalAdults += (adults > 0 ? adults - 1 : 0)
-            stats.totalChildren += children
+            stats.totalGuests += guestCount
+            stats.totalAmount += totalAmount
             stats.vegCount += veg
             stats.nonVegCount += nonVeg
+            
+            if (paymentMethod === "cash") {
+                stats.cashPayments += 1
+            } else {
+                stats.onlinePayments += 1
+            }
+
+            if (approvalStatus === "pending") {
+                stats.pendingApprovals += 1
+            } else if (approvalStatus === "approved") {
+                stats.approvedRegistrations += 1
+            } else if (approvalStatus === "rejected") {
+                stats.rejectedRegistrations += 1
+            }
+
             if (p.isMorningFood) {
-                stats.morningFoodCount += (adults + children)
+                stats.morningFoodCount += (guestCount + 1) // +1 for registrant
             }
         })
 

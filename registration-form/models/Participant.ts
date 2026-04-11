@@ -79,6 +79,10 @@ const ParticipantSchema = new mongoose.Schema({
         ref: "Event",
     },
 
+    eventDate: {
+        type: Date,
+    },
+
     // ADD THIS (RESCHEDULE)
     isRescheduled: {
         type: Boolean,
@@ -91,6 +95,9 @@ const ParticipantSchema = new mongoose.Schema({
     guestCount: {
         type: Number,
         default: 0
+    },
+    ticketPrice: {
+        type: Number,
     },
     isMember: {
         type: Boolean,
