@@ -36,11 +36,34 @@ const eventSchema = new mongoose.Schema({
         default: true,
     },
 
+    //  TICKET PRICING SYSTEM
+    ticketsPrice: [
+        {
+            name: {
+                type: String,
+                required: true,
+            },
+            price: {
+                type: Number,
+                required: true,
+            },
+            soldCount: {
+                type: Number,
+                default: 0,
+            },
+        }
+    ],
+
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User", // super admin
+        ref: "User",
     },
 
 }, { timestamps: true })
 
-export default mongoose.models.Event || mongoose.model("Event", eventSchema)
+// FIX (VERY IMPORTANT)
+if (mongoose.models.Event) {
+    delete mongoose.models.Event
+}
+
+export default mongoose.model("Event", eventSchema)

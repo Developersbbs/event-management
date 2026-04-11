@@ -14,8 +14,14 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Calendar, Plus } from "lucide-react"
+import { Calendar, Plus, Minus } from "lucide-react"
 import { toast } from "sonner"
+
+interface TicketPrice {
+  name: string
+  price: number
+  soldCount: number
+}
 
 interface Event {
   _id?: string
@@ -25,6 +31,7 @@ interface Event {
   location: string
   maxCapacity: number
   isActive: boolean
+  ticketsPrice?: TicketPrice[]
 }
 
 interface EventScheduleDialogProps {
@@ -43,13 +50,38 @@ export function EventScheduleDialog({ event, onSuccess, children }: EventSchedul
     location: event?.location || "",
     maxCapacity: event?.maxCapacity || 100,
     isActive: event?.isActive ?? true,
+    ticketsPrice: event?.ticketsPrice || [
+      { name: "General", price: 0, soldCount: 0 }
+    ],
   })
+
+  const [tickets, setTickets] = useState<TicketPrice[]>(
+    event?.ticketsPrice || [{ name: "General", price: 0, soldCount: 0 }]
+  )
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
 
     try {
+      // ✅ FRONTEND SAFETY: Validate tickets before sending
+      if (!tickets.length) {
+        toast.error("Add at least one ticket")
+        setLoading(false)
+        return
+      }
+
+      // ✅ FILTER EMPTY TICKETS: Remove invalid entries
+      const cleanedTickets = tickets.filter(
+        t => t.name && t.price >= 0
+      )
+
+      if (cleanedTickets.length === 0) {
+        toast.error("Please fill in all ticket details")
+        setLoading(false)
+        return
+      }
+
       const url = event?._id 
         ? `/api/events/${event._id}` 
         : "/api/events"
@@ -65,6 +97,7 @@ export function EventScheduleDialog({ event, onSuccess, children }: EventSchedul
           ...formData,
           startDate: new Date(formData.startDate),
           endDate: new Date(formData.endDate),
+          ticketsPrice: cleanedTickets, // ✅ Send cleaned tickets
         }),
       })
 
@@ -86,7 +119,9 @@ export function EventScheduleDialog({ event, onSuccess, children }: EventSchedul
           location: "",
           maxCapacity: 100,
           isActive: true,
+          ticketsPrice: [{ name: "General", price: 0, soldCount: 0 }],
         })
+        setTickets([{ name: "General", price: 0, soldCount: 0 }])
       }
     } catch (error) {
       console.error("Error saving event:", error)
@@ -101,6 +136,22 @@ export function EventScheduleDialog({ event, onSuccess, children }: EventSchedul
       ...prev,
       [field]: value
     }))
+  }
+
+  const addTicket = () => {
+    setTickets([...tickets, { name: "", price: 0, soldCount: 0 }])
+  }
+
+  const removeTicket = (index: number) => {
+    if (tickets.length > 1) {
+      setTickets(tickets.filter((_, i) => i !== index))
+    }
+  }
+
+  const updateTicket = (index: number, field: keyof TicketPrice, value: string | number) => {
+    const newTickets = [...tickets]
+    newTickets[index] = { ...newTickets[index], [field]: value }
+    setTickets(newTickets)
   }
 
   return (
@@ -183,6 +234,64 @@ export function EventScheduleDialog({ event, onSuccess, children }: EventSchedul
                 min="1"
                 required
               />
+            </div>
+
+            {/* 🎫 Ticket Pricing Section */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label>Ticket Pricing</Label>
+                <Button type="button" variant="outline" size="sm" onClick={addTicket}>
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add Ticket
+                </Button>
+              </div>
+              
+              {tickets.map((ticket, index) => (
+                <div key={index} className="grid grid-cols-3 gap-2 items-end">
+                  <div className="grid gap-1">
+                    <Label className="text-xs">Name</Label>
+                    <Input
+                      placeholder="e.g., General"
+                      value={ticket.name}
+                      onChange={(e) => updateTicket(index, "name", e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="grid gap-1">
+                    <Label className="text-xs">Price (₹)</Label>
+                    <Input
+                      type="number"
+                      placeholder="0"
+                      value={ticket.price}
+                      onChange={(e) => updateTicket(index, "price", parseFloat(e.target.value) || 0)}
+                      min="0"
+                      required
+                    />
+                  </div>
+                  <div className="flex gap-1">
+                    <div className="grid gap-1 flex-1">
+                      <Label className="text-xs">Sold</Label>
+                      <Input
+                        type="number"
+                        value={ticket.soldCount}
+                        disabled
+                        className="bg-muted"
+                      />
+                    </div>
+                    {tickets.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => removeTicket(index)}
+                        className="mt-5"
+                      >
+                        <Minus className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
 
             <div className="flex items-center space-x-2">

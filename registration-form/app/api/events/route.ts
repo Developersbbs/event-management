@@ -49,12 +49,17 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
 
+    // 🔍 DEBUG: Check what's coming from frontend
+    console.log("BODY:", body)
+    console.log("TICKETS:", body.ticketsPrice)
+
     const {
       eventName,
       startDate,
       endDate,
       location,
-      maxCapacity
+      maxCapacity,
+      ticketsPrice
     } = body
 
     // VALIDATION
@@ -73,14 +78,29 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    //  CREATE EVENT
+    // ✅ STRONG VALIDATION: Handle tickets properly
+    let finalTickets = body.ticketsPrice
+
+    if (!Array.isArray(finalTickets) || finalTickets.length === 0) {
+      finalTickets = [{ name: "General", price: 0, soldCount: 0 }]
+    }
+
+    // ✅ FILTER EMPTY TICKETS: Remove invalid entries
+    finalTickets = finalTickets.filter(ticket => 
+      ticket.name && ticket.price >= 0
+    )
+
+    console.log("FINAL TICKETS TO SAVE:", finalTickets)
+
+    // ✅ CLEAN EVENT CREATION
     const event = new Event({
       eventName,
       startDate,
       endDate,
       location,
       maxCapacity: maxCapacity || 100,
-      createdBy: userId //  FIXED
+      ticketsPrice: finalTickets, // ✅ Fixed
+      createdBy: userId
     })
 
     await event.save()

@@ -86,7 +86,14 @@ const ParticipantSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Event",
     },
-
+    guestCount: {
+        type: Number,
+        default: 0
+    },
+    isMember: {
+        type: Boolean,
+        default: false,
+    },
     paymentMethod: {
         type: String,
         enum: ["cash", "online"],
@@ -117,7 +124,7 @@ const ParticipantSchema = new mongoose.Schema({
 
     approvedRole: {
         type: String,
-        enum: ["admin", "superadmin"],
+        enum: ["admin", "super-admin"],
     },
 
     foodPreference: {

@@ -40,7 +40,15 @@ export async function getEventStatus(): Promise<EventStatus> {
           isActive: false,
           isUpcoming: true,
           isPast: false,
-          event: upcomingEvent,
+          event: {
+            _id: upcomingEvent._id.toString(),
+            eventName: upcomingEvent.eventName,
+            startDate: upcomingEvent.startDate,
+            endDate: upcomingEvent.endDate,
+            location: upcomingEvent.location,
+            maxCapacity: upcomingEvent.maxCapacity,
+            registeredCount: upcomingEvent.registeredCount
+          },
           message: `Registration will open on ${upcomingEvent.startDate.toLocaleDateString('en-IN', {
             day: '2-digit',
             month: 'short',
@@ -65,7 +73,15 @@ export async function getEventStatus(): Promise<EventStatus> {
         isActive: false,
         isUpcoming: false,
         isPast: false,
-        event: activeEvent,
+        event: {
+          _id: activeEvent._id.toString(),
+          eventName: activeEvent.eventName,
+          startDate: activeEvent.startDate,
+          endDate: activeEvent.endDate,
+          location: activeEvent.location,
+          maxCapacity: activeEvent.maxCapacity,
+          registeredCount: activeEvent.registeredCount
+        },
         message: "Registration is closed due to maximum capacity"
       }
     }
@@ -74,7 +90,15 @@ export async function getEventStatus(): Promise<EventStatus> {
       isActive: true,
       isUpcoming: false,
       isPast: false,
-      event: activeEvent
+      event: {
+        _id: activeEvent._id.toString(),
+        eventName: activeEvent.eventName,
+        startDate: activeEvent.startDate,
+        endDate: activeEvent.endDate,
+        location: activeEvent.location,
+        maxCapacity: activeEvent.maxCapacity,
+        registeredCount: activeEvent.registeredCount
+      }
     }
   } catch (error) {
     console.error("Error checking event status:", error)

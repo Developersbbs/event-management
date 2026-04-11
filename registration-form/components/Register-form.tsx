@@ -37,9 +37,22 @@ const otpSchema = z.object({
   otp: z.string().length(6, "OTP must be 6 digits")
 })
 
+// Tamil Nadu Districts for Location
+const TAMIL_NADU_DISTRICTS = [
+  "Ariyalur", "Chengalpattu", "Chennai", "Coimbatore", "Cuddalore", 
+  "Dharmapuri", "Dindigul", "Erode", "Kallakurichi", "Kanchipuram",
+  "Kanyakumari", "Karur", "Krishnagiri", "Madurai", "Nagapattinam",
+  "Namakkal", "Nilgiris", "Perambalur", "Pudukkottai", "Ramanathapuram",
+  "Ranipet", "Salem", "Sivaganga", "Tenkasi", "Thanjavur", "Theni",
+  "Thoothukudi", "Tiruchirappalli", "Tirunelveli", "Tirupathur", "Tiruppur",
+  "Tiruvallur", "Tiruvannamalai", "Tiruvarur", "Vellore", "Viluppuram", "Virudhunagar"
+]
+
 const personalDetailsSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
-  groupNumber: z.string().min(1, "Please select a group number"),
+  businessName: z.string().min(2, "Business name is required"),
+  businessCategory: z.string().min(1, "Please enter a business category"),
+  location: z.string().min(1, "Please select a location"),
 })
 
 export function RegisterForm() {
@@ -51,7 +64,12 @@ export function RegisterForm() {
 
   // Registration Data State
   const [verifiedPhone, setVerifiedPhone] = useState("")
-  const [personalData, setPersonalData] = useState({ name: "", groupNumber: "" })
+  const [personalData, setPersonalData] = useState({ 
+    name: "", 
+    businessName: "", 
+    businessCategory: "",
+    location: ""
+  })
   const [eventData, setEventData] = useState({
     ageGroups: { adults: 1, children: 0 },
     foodPreference: { veg: 1, nonVeg: 0 },
@@ -64,7 +82,12 @@ export function RegisterForm() {
   const otpForm = useForm<z.infer<typeof otpSchema>>({ resolver: zodResolver(otpSchema), defaultValues: { otp: "" } })
   const personalForm = useForm<z.infer<typeof personalDetailsSchema>>({
     resolver: zodResolver(personalDetailsSchema),
-    defaultValues: { name: "", groupNumber: "" }
+    defaultValues: { 
+      name: "", 
+      businessName: "", 
+      businessCategory: "",
+      location: ""
+    }
   })
 
   // --- Derived State (Pricing) ---
@@ -130,7 +153,9 @@ export function RegisterForm() {
       const payload = {
         mobileNumber: verifiedPhone,
         name: personalData.name,
-        groupNumber: personalData.groupNumber,
+        businessName: personalData.businessName,
+        businessCategory: personalData.businessCategory,
+        location: personalData.location,
         ageGroups: eventData.ageGroups,
         foodPreference: eventData.foodPreference,
         isMorningFood: eventData.isMorningFood,
@@ -248,7 +273,9 @@ export function RegisterForm() {
                   setVerifiedPhone(phoneForm.getValues("phoneNumber")) // Ensure phone is set
                   setPersonalData({
                     name: existingParticipant.name || "",
-                    groupNumber: existingParticipant.groupNumber || ""
+                    businessName: existingParticipant.businessName || "",
+                    businessCategory: existingParticipant.businessCategory || "",
+                    location: existingParticipant.location || ""
                   })
                   setEventData({
                     ageGroups: existingParticipant.ageGroups || { adults: 1, children: 0 },
@@ -257,7 +284,9 @@ export function RegisterForm() {
                   })
                   personalForm.reset({
                     name: existingParticipant.name || "",
-                    groupNumber: existingParticipant.groupNumber || ""
+                    businessName: existingParticipant.businessName || "",
+                    businessCategory: existingParticipant.businessCategory || "",
+                    location: existingParticipant.location || ""
                   })
                   setStep(Step.PERSONAL_DETAILS)
                 }}
@@ -292,25 +321,47 @@ export function RegisterForm() {
                 </FormItem>
               )} />
 
-              <FormField control={personalForm.control} name="groupNumber" render={({ field }) => (
+              <FormField control={personalForm.control} name="businessName" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Group Number (குழு எண்)</FormLabel>
+                  <FormLabel>Business Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter your business name" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={personalForm.control} name="businessCategory" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Business Category</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter your business category" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={personalForm.control} name="location" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Location</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select Group" />
+                        <SelectValue placeholder="Select district" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {[...Array(23)].map((_, i) => (
-                        <SelectItem key={i} value={(i + 1).toString()}>{`குழு எண் ${i + 1}`}</SelectItem>
+                      {TAMIL_NADU_DISTRICTS.map((district) => (
+                        <SelectItem key={district} value={district}>
+                          {district}
+                        </SelectItem>
                       ))}
-                      <SelectItem value="covai">கோவை குழு (Covai Group)</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
                 </FormItem>
               )} />
+
 
               <Button type="submit" className="w-full">Next: Event Details</Button>
             </form>
