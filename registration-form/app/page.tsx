@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Calendar, MapPin, Sun, Menu, ArrowRight, Instagram, Facebook, Twitter, Mail, Clock, AlertCircle } from "lucide-react"
+import { Calendar, MapPin, Sun, Menu, ArrowRight, Instagram, Facebook, Twitter, Mail, Clock, AlertCircle, Earth } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 
@@ -36,19 +36,19 @@ export default function PongalLandingPage() {
       try {
         const response = await fetch("/api/events/active")
         const data = await response.json()
-        
+
         if (data) {
           const now = new Date()
           const start = new Date(data.startDate)
           const end = new Date(data.endDate)
-          
+
           const status: EventStatus = {
             isActive: false,
             isUpcoming: false,
             isPast: false,
             event: data
           }
-          
+
           if (data.isActive && now >= start && now <= end) {
             status.isActive = true
             if (data.registeredCount >= data.maxCapacity) {
@@ -68,7 +68,7 @@ export default function PongalLandingPage() {
             status.isPast = true
             status.message = "Registration has ended"
           }
-          
+
           setEventStatus(status)
         } else {
           setEventStatus({
@@ -105,8 +105,8 @@ export default function PongalLandingPage() {
       <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Sun className="h-6 w-6 text-primary animate-spin-slow" />
-            <span className="text-xl font-bold tracking-tight">பொங்கல் விழா</span>
+            <Earth className="h-6 w-6 text-primary animate-spin-slow" />
+            <span className="text-xl font-bold tracking-tight">RIFAH ANNUAL SUMMIT</span>
           </div>
 
           {/* Desktop Nav */}
@@ -114,9 +114,9 @@ export default function PongalLandingPage() {
             {/* <Link href="#about" className="hover:text-primary transition-colors">About</Link>
             <Link href="#events" className="hover:text-primary transition-colors">Events</Link>
             <Link href="#contact" className="hover:text-primary transition-colors">Contact</Link> */}
-            <Button 
-              onClick={handleRegistrationClick} 
-              size="sm" 
+            <Button
+              onClick={handleRegistrationClick}
+              size="sm"
               className="rounded-full px-6"
               disabled={loading || !eventStatus?.isActive}
             >
@@ -140,13 +140,13 @@ export default function PongalLandingPage() {
                 <Link href="#gallery" className="text-lg font-medium hover:text-primary">Gallery</Link>
                 <Link href="#contact" className="text-lg font-medium hover:text-primary">Contact</Link>
                 <div className="w-full">
-                  <Button 
-                      onClick={handleRegistrationClick} 
-                      className="w-full"
-                      disabled={loading || !eventStatus?.isActive}
-                    >
-                      {loading ? "Loading..." : eventStatus?.isActive ? "Open Registration" : "Registration Closed"}
-                    </Button>
+                  <Button
+                    onClick={handleRegistrationClick}
+                    className="w-full"
+                    disabled={loading || !eventStatus?.isActive}
+                  >
+                    {loading ? "Loading..." : eventStatus?.isActive ? "Open Registration" : "Registration Closed"}
+                  </Button>
                 </div>
               </div>
             </SheetContent>
@@ -164,46 +164,65 @@ export default function PongalLandingPage() {
           </div>
 
           <div className="container mx-auto px-4 flex flex-col items-center text-center relative z-10">
-            <Badge variant="outline" className="mb-6 px-4 py-1 border-primary/20 text-primary bg-primary/5 uppercase tracking-widest text-xs">
+            {/* <Badge variant="outline" className="mb-6 px-4 py-1 border-primary/20 text-primary bg-primary/5 uppercase tracking-widest text-xs">
               தமிழ் பாரம்பரியத்தைப் போற்றும்
-            </Badge>
+            </Badge> */}
             <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter mb-4 bg-gradient-to-b from-foreground to-foreground/70 bg-clip-text text-transparent h-auto py-2">
-              பொங்கல் விழா <span className="text-primary block md:inline">2026</span>
+              RIFAH ANNUAL SUMMIT <span className="text-primary block md:inline">2026</span>
             </h1>
             <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mb-10 leading-relaxed px-4">
-              தமிழ் பாரம்பரியத்தைப் போற்றும் இந்த இனிய பொங்கல் விழாவில் சொந்தங்கள் அனைவரும் கலந்து கொண்டு மகிழ்ச்சியைப் பகிர்ந்து கொள்ள அன்புடன் வரவேற்கிறோம்.
+              Rifah Annual Summit 2026 <br />
+              Together For Sustainable Future
             </p>
             <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-              <Button 
-                onClick={handleRegistrationClick} 
-                size="lg" 
+              <Button
+                onClick={handleRegistrationClick}
+                size="lg"
                 className="rounded-full text-base h-12 px-8 shadow-lg shadow-primary/20"
                 disabled={loading || !eventStatus?.isActive}
               >
                 {loading ? "Loading..." : eventStatus?.isActive ? "Open Registration" : "Registration Closed"}
               </Button>
-              <Button disabled size="lg" variant="outline" className="rounded-full text-base h-12 px-8 opacity-50 cursor-not-allowed">
+              {/* <Button disabled size="lg" variant="outline" className="rounded-full text-base h-12 px-8 opacity-50 cursor-not-allowed">
                 Schedule (Coming Soon)
-              </Button>
+              </Button> */}
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-8 mt-12 md:mt-16 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-primary" />
-                <span>Feb 08, 2026</span>
+            {!loading && eventStatus?.event && (
+              <div className="flex flex-col md:flex-row flex-wrap justify-center items-center gap-4 sm:gap-6 lg:gap-8 mt-12 md:mt-16 text-sm text-muted-foreground w-full px-4">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-primary shrink-0" />
+                  <span className="text-center md:text-left">
+                    {new Date(eventStatus.event.startDate).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: '2-digit',
+                      year: 'numeric'
+                    })}
+                  </span>
+                </div>
+                <div className="hidden md:block h-4 w-px bg-border"></div>
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-primary shrink-0" />
+                  <span className="text-center md:text-left">
+                    {new Date(eventStatus.event.startDate).toLocaleTimeString('en-US', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      hour12: true
+                    })} - {new Date(eventStatus.event.endDate).toLocaleTimeString('en-US', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      hour12: true
+                    })}
+                  </span>
+                </div>
+                <div className="hidden md:block h-4 w-px bg-border"></div>
+                <div className="flex items-center gap-2 text-center md:text-left">
+                  <MapPin className="h-4 w-4 text-primary shrink-0" />
+                  <span className="break-words max-w-[250px] md:max-w-none">{eventStatus.event.location}</span>
+                </div>
               </div>
-              <div className="hidden sm:block h-4 w-px bg-border"></div>
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-primary" />
-                <span>நேரம்: காலை 7:30 முதல் மாலை 6:30 வரை</span>
-              </div>
-              <div className="hidden sm:block h-4 w-px bg-border"></div>
-              <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-primary" />
-                <span>டோனாகேல கேம்ப்,அன்னனூர், சென்னை</span>
-              </div>
-            </div>
-            
+            )}
+
             {/* Event Status Message */}
             {!loading && eventStatus && !eventStatus.isActive && (
               <div className="mt-6 max-w-md mx-auto">
@@ -352,11 +371,11 @@ export default function PongalLandingPage() {
             {/* Brand */}
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-primary-foreground">
-                <Sun className="h-6 w-6 text-primary-foreground animate-spin-slow" />
-                <span className="text-xl font-bold tracking-tight">பொங்கல் விழா</span>
+                <Earth className="h-6 w-6 text-primary-foreground animate-spin-slow" />
+                <span className="text-xl font-bold tracking-tight">RIFAH ANNUAL SUMMIT</span>
               </div>
               <p className="text-sm leading-relaxed text-primary-foreground/80">
-                Celebrating the essence of Tamil culture. Join us in preserving our rich heritage for future generations.
+                Rifah Annual Summit 2026 Together For Sustainable Future             
               </p>
             </div>
 
@@ -368,7 +387,7 @@ export default function PongalLandingPage() {
                 <li><Link href="#" className="hover:text-primary-foreground transition-colors">Events Schedule</Link></li>
                 <li><Link href="#" className="hover:text-primary-foreground transition-colors">Gallery</Link></li>
                 <li>
-                  <button 
+                  <button
                     onClick={handleRegistrationClick}
                     className="hover:text-primary-foreground transition-colors text-left"
                     disabled={loading || !eventStatus?.isActive}

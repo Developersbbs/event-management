@@ -8,6 +8,7 @@ import {
   IconListDetails,
   IconUsers,
   IconCalendarEvent,
+  IconWorld,
 } from "@tabler/icons-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -71,8 +72,8 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
               <a href="#">
-                <IconInnerShadowTop className="!size-5" />
-                <span className="text-base font-semibold">பொங்கல் விழா</span>
+                <IconWorld className="!size-5" />
+                <span className="text-base font-semibold">RIFAH ANNUAL SUMMIT</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>

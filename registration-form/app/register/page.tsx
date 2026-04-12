@@ -1,6 +1,6 @@
 "use client"
 
-import { GalleryVerticalEnd, AlertCircle, ArrowLeft } from "lucide-react"
+import { GalleryVerticalEnd,Earth, AlertCircle, ArrowLeft } from "lucide-react"
 import { RegisterForm } from "@/components/Register-form"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
@@ -100,9 +100,9 @@ export default function RegisterPage() {
           <div className="flex justify-center gap-2 md:justify-start">
             <Link href="/" className="flex items-center gap-2 font-medium">
               <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
-                <GalleryVerticalEnd className="size-4" />
+                <Earth className="size-4" />
               </div>
-              பொங்கல் விழா
+              RIFAH ANNUAL SUMMIT
             </Link>
           </div>
           <div className="flex flex-1 items-center justify-center">
@@ -113,7 +113,7 @@ export default function RegisterPage() {
         </div>
         <div className="bg-muted relative hidden lg:block">
           <Image
-            src="/assets/register-banner.jpg"
+            src="/assets/register-banner.jpeg"
             alt="Image"
             fill
             className="object-cover dark:brightness-[0.2] dark:grayscale"
@@ -130,9 +130,9 @@ export default function RegisterPage() {
           <div className="flex justify-center gap-2 md:justify-start">
             <Link href="/" className="flex items-center gap-2 font-medium">
               <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
-                <GalleryVerticalEnd className="size-4" />
+                <Earth className="size-4" />
               </div>
-              பொங்கல் விழா
+              RIFAH ANNUAL SUMMIT
             </Link>
           </div>
           <div className="flex flex-1 items-center justify-center">
@@ -159,7 +159,7 @@ export default function RegisterPage() {
         </div>
         <div className="bg-muted relative hidden lg:block">
           <Image
-            src="/assets/register-banner.jpg"
+            src="/assets/register-banner.jpeg"
             alt="Image"
             fill
             className="object-cover dark:brightness-[0.2] dark:grayscale"
@@ -175,9 +175,9 @@ export default function RegisterPage() {
         <div className="flex justify-center gap-2 md:justify-start">
           <Link href="/" className="flex items-center gap-2 font-medium">
             <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
-              <GalleryVerticalEnd className="size-4" />
+              <Earth className="size-4" />
             </div>
-            பொங்கல் விழா
+            RIFAH ANNUAL SUMMIT
           </Link>
         </div>
         <div className="flex flex-1 items-center justify-center">
@@ -188,7 +188,7 @@ export default function RegisterPage() {
       </div>
       <div className="bg-muted relative hidden lg:block">
         <Image
-          src="/assets/register-banner.jpg"
+          src="/assets/register-banner.jpeg"
           alt="Image"
           fill
           className="object-cover dark:brightness-[0.2] dark:grayscale"
