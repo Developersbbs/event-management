@@ -139,8 +139,7 @@ export function CheckInTable() {
                                 <TableHead className="w-[250px]">Participant</TableHead>
                                 <TableHead className="text-center">Registered</TableHead>
                                 <TableHead className="text-center">Member</TableHead>
-                                <TableHead className="text-center">Guest Adults</TableHead>
-                                <TableHead className="text-center">Children</TableHead>
+                                <TableHead className="text-center">Guests</TableHead>
                                 <TableHead className="text-center">Balance</TableHead>
                                 <TableHead className="text-right">Action</TableHead>
                             </TableRow>
@@ -152,7 +151,7 @@ export function CheckInTable() {
                                 ))
                             ) : (
                                 <TableRow>
-                                    <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                                    <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
                                         {loading ? "Loading..." : (
                                             view === 'search'
                                                 ? (query.length < 2 ? "Enter search query..." : "No participants found.")
@@ -184,36 +183,32 @@ function CheckInRow({ participant, onRefresh }: { participant: IParticipant, onR
     const dbActualAdults = participant.checkIn?.actualAdults ?? 0
     const dbActualChildren = participant.checkIn?.actualChildren ?? 0
 
-    const getInitialGuestAdults = () => {
+    const getInitialGuests = () => {
         if (!isCheckedIn) return 0
-        return Math.max(0, dbActualAdults - (dbMemberPresent ? 1 : 0))
+        const totalActual = dbActualAdults + dbActualChildren
+        return Math.max(0, totalActual - (dbMemberPresent ? 1 : 0))
     }
 
     const [memberPresent, setMemberPresent] = React.useState(
         isCheckedIn ? (participant.checkIn?.memberPresent ?? false) : false
     )
-    const [guestAdults, setGuestAdults] = React.useState(getInitialGuestAdults())
-    const [guestChildren, setGuestChildren] = React.useState(
-        isCheckedIn ? dbActualChildren : 0
-    )
+    const [guestsCheckedIn, setGuestsCheckedIn] = React.useState(getInitialGuests())
 
     const [saving, setSaving] = React.useState(false)
 
-    // Constraints
-    const maxGuestAdults = Math.max(0, regAdults - 1)
-    const maxGuestChildren = regChildren
+    // Constraints - Registrant + Guests = Total Registered People
+    const regGuestsCount = participant.guestCount ?? Math.max(0, (regAdults + regChildren) - 1)
+    const maxGuests = regGuestsCount
 
-    const currentActualAdults = (memberPresent ? 1 : 0) + guestAdults
-    const balanceAdults = regAdults - currentActualAdults
-    const balanceChildren = regChildren - guestChildren
-    const isFullCheckIn = balanceAdults === 0 && balanceChildren === 0
+    const currentActualTotal = (memberPresent ? 1 : 0) + guestsCheckedIn
+    const balanceGuests = regGuestsCount - guestsCheckedIn
+    const isFullCheckIn = balanceGuests === 0 && (memberPresent || regAdults === 0)
 
     const handleSave = async () => {
         setSaving(true)
         const res = await performCheckIn(participant._id, {
             memberPresent,
-            guestAdults,
-            guestChildren
+            guestCount: guestsCheckedIn
         })
         setSaving(false)
         if (res.success) {
@@ -232,10 +227,10 @@ function CheckInRow({ participant, onRefresh }: { participant: IParticipant, onR
                 <Badge variant="outline" className="mt-1">{participant.location || "Unassigned"}</Badge>
             </TableCell>
             <TableCell className="text-center">
-                <div className="text-sm">
-                    <div>A: {regAdults}</div>
-                    <div>C: {regChildren}</div>
+                <div className="text-sm font-medium">
+                    Guests: {regGuestsCount}
                 </div>
+                <div className="text-[10px] text-muted-foreground">Total: {regAdults + regChildren}</div>
             </TableCell>
 
             {/* Member Checkbox */}
@@ -247,52 +242,28 @@ function CheckInRow({ participant, onRefresh }: { participant: IParticipant, onR
                 />
             </TableCell>
 
-            {/* Guest Adults */}
             <TableCell className="text-center">
                 <div className="flex items-center justify-center gap-2">
                     <Button
                         variant="outline" size="icon" className="h-6 w-6"
-                        onClick={() => setGuestAdults(Math.max(0, guestAdults - 1))}
+                        onClick={() => setGuestsCheckedIn(Math.max(0, guestsCheckedIn - 1))}
                     >
                         <Minus className="h-3 w-3" />
                     </Button>
-                    <span className="w-4 font-mono font-bold">{guestAdults}</span>
+                    <span className="w-4 font-mono font-bold">{guestsCheckedIn}</span>
                     <Button
                         variant="outline" size="icon" className="h-6 w-6"
-                        disabled={guestAdults >= maxGuestAdults}
-                        onClick={() => setGuestAdults(guestAdults + 1)}
+                        disabled={guestsCheckedIn >= maxGuests}
+                        onClick={() => setGuestsCheckedIn(guestsCheckedIn + 1)}
                     >
                         <Plus className="h-3 w-3" />
                     </Button>
                 </div>
-                <div className="text-[10px] text-muted-foreground mt-1">Max: {maxGuestAdults}</div>
+                <div className="text-[10px] text-muted-foreground mt-1">Max Guests: {maxGuests}</div>
             </TableCell>
 
-            {/* Guest Children */}
-            <TableCell className="text-center">
-                <div className="flex items-center justify-center gap-2">
-                    <Button
-                        variant="outline" size="icon" className="h-6 w-6"
-                        onClick={() => setGuestChildren(Math.max(0, guestChildren - 1))}
-                    >
-                        <Minus className="h-3 w-3" />
-                    </Button>
-                    <span className="w-4 font-mono font-bold">{guestChildren}</span>
-                    <Button
-                        variant="outline" size="icon" className="h-6 w-6"
-                        disabled={guestChildren >= maxGuestChildren}
-                        onClick={() => setGuestChildren(guestChildren + 1)}
-                    >
-                        <Plus className="h-3 w-3" />
-                    </Button>
-                </div>
-                <div className="text-[10px] text-muted-foreground mt-1">Max: {maxGuestChildren}</div>
-            </TableCell>
-
-            {/* Balance */}
             <TableCell className="text-center text-muted-foreground font-mono text-xs">
-                <div>A: {balanceAdults}</div>
-                <div>C: {balanceChildren}</div>
+                <div>Guests: {balanceGuests}</div>
             </TableCell>
 
             <TableCell className="text-right">

@@ -32,8 +32,7 @@ export async function searchParticipants(query: string) {
 
 interface CheckInData {
     memberPresent: boolean
-    guestAdults: number
-    guestChildren: number
+    guestCount: number
 }
 
 export async function performCheckIn(id: string, data: CheckInData) {
@@ -51,11 +50,10 @@ export async function performCheckIn(id: string, data: CheckInData) {
         }
 
         // Calculate Totals based on Logic:
-        // actualAdults = (MemberPresent ? 1 : 0) + GuestAdults
-        // actualChildren = GuestChildren
-
-        const actualAdults = (data.memberPresent ? 1 : 0) + data.guestAdults
-        const totalCount = actualAdults + data.guestChildren
+        // actualAdults = (MemberPresent ? 1 : 0) + GuestCount
+        // actualChildren = 0
+        const actualAdults = (data.memberPresent ? 1 : 0) + data.guestCount
+        const totalCount = actualAdults
         const isCheckedIn = totalCount > 0
 
         participant.checkIn = {
@@ -63,7 +61,7 @@ export async function performCheckIn(id: string, data: CheckInData) {
             memberPresent: data.memberPresent,
             timestamp: participant.checkIn?.timestamp || new Date(),
             actualAdults: actualAdults,
-            actualChildren: data.guestChildren,
+            actualChildren: 0, // Consolidating into actualAdults for simpler model
             checkedInBy: user.email // Updates last modifier
         }
 
@@ -80,7 +78,7 @@ export async function performCheckIn(id: string, data: CheckInData) {
 export async function getCheckInStats() {
     await dbConnect()
     try {
-        const participants = await Participant.find({ isRegistered: true }).lean()
+        const participants = await Participant.find({ isRegistered: true, approvalStatus: 'approved' }).lean()
 
         let registeredMembers = 0
         let registeredParticipants = 0
@@ -89,12 +87,8 @@ export async function getCheckInStats() {
 
         (participants as unknown as IParticipant[]).forEach((p) => {
             registeredMembers++
-            const regAdults = p.ageGroups?.adults || 0
-            const regChildren = p.ageGroups?.children || 0
-            // Registered Participants: Total People - 1 (The Member)
-            // This treats "Participants" as "Guests/Additional Members"
-            const totalReg = regAdults + regChildren
-            registeredParticipants += Math.max(0, totalReg - 1)
+            const totalRegGuests = p.guestCount ?? Math.max(0, (p.ageGroups?.adults || 0) + (p.ageGroups?.children || 0) - 1)
+            registeredParticipants += totalRegGuests
 
             if (p.checkIn?.isCheckedIn) {
                 if (p.checkIn.memberPresent) {
@@ -130,7 +124,7 @@ export async function getCheckInStats() {
 export async function getParticipantsByStatus(status: 'all' | 'checked-in' | 'pending', page: number = 1, limit: number = 20, query: string = "") {
     await dbConnect()
     try {
-        const dbQuery: Record<string, unknown> = { isRegistered: true }
+        const dbQuery: Record<string, unknown> = { isRegistered: true, approvalStatus: "approved" }
 
         if (status === 'checked-in') {
             dbQuery["checkIn.isCheckedIn"] = true
