@@ -35,8 +35,8 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
       icon: IconDashboard,
     },
     {
-      title: "Group Stats",
-      url: "/admin/groups",
+      title: "Location Stats",
+      url: "/admin/locations",
       icon: IconChartBar,
     },
     {

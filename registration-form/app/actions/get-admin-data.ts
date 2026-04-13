@@ -91,7 +91,7 @@ export async function getAdminData() {
     }
 }
 
-export async function getGroupStats(from?: string, to?: string) {
+export async function getLocationStats(from?: string, to?: string) {
     await dbConnect()
 
     try {
@@ -116,10 +116,9 @@ export async function getGroupStats(from?: string, to?: string) {
         pipeline.push(
             {
                 $group: {
-                    _id: "$groupNumber",
+                    _id: "$location",
                     membersCount: { $sum: 1 },
-                    rawAdultsCount: { $sum: "$ageGroups.adults" },
-                    childrenCount: { $sum: "$ageGroups.children" },
+                    totalGuest: { $sum: "$guestCount" },
                     // Check-in Metrics
                     checkedInMembers: {
                         $sum: {
@@ -130,30 +129,17 @@ export async function getGroupStats(from?: string, to?: string) {
                             ]
                         }
                     },
-                    checkedInGuestAdults: {
+                    checkedInParticipants: {
                         $sum: {
                             $cond: [
                                 "$checkIn.isCheckedIn",
-                                {
-                                    $max: [
-                                        0,
-                                        {
-                                            $subtract: [
-                                                { $ifNull: ["$checkIn.actualAdults", 0] },
-                                                { $cond: ["$checkIn.memberPresent", 1, 0] }
-                                            ]
-                                        }
+                                { 
+                                    $add: [
+                                        { $ifNull: ["$checkIn.actualAdults", 0] },
+                                        { $ifNull: ["$checkIn.actualChildren", 0] },
+                                        { $cond: ["$checkIn.memberPresent", -1, 0] } // Subtract 1 if member present to get guest count
                                     ]
                                 },
-                                0
-                            ]
-                        }
-                    },
-                    checkedInChildren: {
-                        $sum: {
-                            $cond: [
-                                "$checkIn.isCheckedIn",
-                                { $ifNull: ["$checkIn.actualChildren", 0] },
                                 0
                             ]
                         }
@@ -162,10 +148,7 @@ export async function getGroupStats(from?: string, to?: string) {
             },
             {
                 $addFields: {
-                    adultsCount: { $subtract: ["$rawAdultsCount", "$membersCount"] }, // Registered Guests (Adults)
-                    totalGuest: { $add: [{ $subtract: ["$rawAdultsCount", "$membersCount"] }, "$childrenCount"] },
-                    checkedInParticipants: { $add: ["$checkedInGuestAdults", "$checkedInChildren"] }, // Helper
-                    totalCheckedIn: { $add: ["$checkedInMembers", "$checkedInGuestAdults", "$checkedInChildren"] }
+                    totalCheckedIn: { $add: ["$checkedInMembers", "$checkedInParticipants"] }
                 }
             },
             { $sort: { _id: 1 } }
@@ -190,7 +173,7 @@ export async function getGroupStats(from?: string, to?: string) {
 
         return { success: true, stats: sortedStatsArr }
     } catch (error) {
-        console.error("Error fetching group stats:", error)
-        return { success: false, error: "Failed to fetch group stats" }
+        console.error("Error fetching location stats:", error)
+        return { success: false, error: "Failed to fetch location stats" }
     }
 }

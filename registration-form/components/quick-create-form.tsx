@@ -32,7 +32,7 @@ const phoneSchema = z.object({
 
 const personalDetailsSchema = z.object({
     name: z.string().min(2, "Name must be at least 2 characters"),
-    groupNumber: z.string().min(1, "Please select a group number"),
+    location: z.string().min(1, "Please enter your location"),
 })
 
 export function QuickCreateForm() {
@@ -43,9 +43,9 @@ export function QuickCreateForm() {
 
     // Registration Data State
     const [verifiedPhone, setVerifiedPhone] = useState("")
-    const [personalData, setPersonalData] = useState({ name: "", groupNumber: "" })
+    const [personalData, setPersonalData] = useState({ name: "", location: "" })
     const [eventData, setEventData] = useState({
-        ageGroups: { adults: 1, children: 0 },
+        guestCount: 0,
         foodPreference: { veg: 1, nonVeg: 0 },
         isMorningFood: false,
         ticketType: "General",
@@ -56,14 +56,13 @@ export function QuickCreateForm() {
     const phoneForm = useForm<z.infer<typeof phoneSchema>>({ resolver: zodResolver(phoneSchema), defaultValues: { phoneNumber: "+91" } })
     const personalForm = useForm<z.infer<typeof personalDetailsSchema>>({
         resolver: zodResolver(personalDetailsSchema),
-        defaultValues: { name: "", groupNumber: "" }
+        defaultValues: { name: "", location: "" }
     })
 
     // --- Derived State (Pricing) ---
     const totalGuests = useMemo(() => {
-        const { adults, children } = eventData.ageGroups
-        return (Number(adults) || 0) + (Number(children) || 0)
-    }, [eventData.ageGroups])
+        return 1 + eventData.guestCount
+    }, [eventData.guestCount])
 
     // Update Food Prefs when total guests changes
     useEffect(() => {
@@ -108,13 +107,11 @@ export function QuickCreateForm() {
     const onFinalSubmit = async () => {
         setIsSubmitting(true)
         try {
-            const { adults, children } = eventData.ageGroups
-            const guestCount = (Number(adults) || 0) + (Number(children) || 0)
-
             const payload = {
                 mobileNumber: verifiedPhone,
                 name: personalData.name,
-                guestCount,
+                location: personalData.location,
+                guestCount: eventData.guestCount,
                 foodPreference: eventData.foodPreference,
                 isMorningFood: eventData.isMorningFood,
                 ticketType: eventData.ticketType,
@@ -200,17 +197,17 @@ export function QuickCreateForm() {
                                 setVerifiedPhone(phoneForm.getValues("phoneNumber"))
                                 setPersonalData({
                                     name: existingParticipant?.name || "",
-                                    groupNumber: existingParticipant?.groupNumber || ""
+                                    location: existingParticipant?.location || ""
                                 })
                                 setEventData({
-                                    ageGroups: existingParticipant?.ageGroups || { adults: 1, children: 0 },
+                                    guestCount: Math.max(0, (existingParticipant?.ageGroups?.adults || 1) + (existingParticipant?.ageGroups?.children || 0) - 1),
                                     foodPreference: existingParticipant?.foodPreference || { veg: 1, nonVeg: 0 },
                                     isMorningFood: existingParticipant?.isMorningFood || false,
                                     ticketType: existingParticipant?.ticketType || "General"
                                 })
                                 personalForm.reset({
                                     name: existingParticipant?.name || "",
-                                    groupNumber: existingParticipant?.groupNumber || ""
+                                    location: existingParticipant?.location || ""
                                 })
                                 setStep(Step.PERSONAL_DETAILS)
                             }}
@@ -244,22 +241,10 @@ export function QuickCreateForm() {
                                 </FormItem>
                             )} />
 
-                            <FormField control={personalForm.control} name="groupNumber" render={({ field }) => (
+                            <FormField control={personalForm.control} name="location" render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Group Number</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                        <FormControl>
-                                            <SelectTrigger className="w-full">
-                                                <SelectValue placeholder="Select Group" />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            {[...Array(23)].map((_, i) => (
-                                                <SelectItem key={i} value={(i + 1).toString()}>{`Group ${i + 1}`}</SelectItem>
-                                            ))}
-                                            <SelectItem value="covai">Covai Group</SelectItem>
-                                        </SelectContent>
-                                    </Select>
+                                    <FormLabel>Location</FormLabel>
+                                    <FormControl><Input placeholder="Enter your location (e.g. Covai, Trichy)" {...field} /></FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )} />
@@ -274,12 +259,6 @@ export function QuickCreateForm() {
 
     // --- Step 4: Event Details ---
     if (step === Step.EVENT_DETAILS) {
-        const updateCount = (key: keyof typeof eventData.ageGroups, delta: number) => {
-            const current = eventData.ageGroups[key]
-            const next = Math.max(key === 'adults' ? 1 : 0, current + delta)
-            setEventData(prev => ({ ...prev, ageGroups: { ...prev.ageGroups, [key]: next } }))
-        }
-
         return (
             <Card className="w-full max-h-[calc(100vh-8rem)] overflow-y-auto mx-auto animate-in fade-in zoom-in-95 duration-300">
                 <CardHeader>
@@ -291,24 +270,30 @@ export function QuickCreateForm() {
                     <div className="space-y-4">
                         <div className="flex items-center gap-2">
                             <Users className="h-5 w-5 text-primary" />
-                            <h3 className="font-semibold">Guest Counts</h3>
+                            <h3 className="font-semibold">Guest Count</h3>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            {[
-                                { key: 'adults', label: 'Adults (15+)' },
-                                { key: 'children', label: 'Children (5-15)' },
-                            ].map((item) => (
-                                <div key={item.key} className="flex items-center justify-between p-3 border rounded-lg bg-card/50">
-                                    <div>
-                                        <div className="font-medium">{item.label}</div>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                        <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => updateCount(item.key as 'adults' | 'children', -1)}><Minus className="h-3 w-3" /></Button>
-                                        <span className="w-4 text-center">{eventData.ageGroups[item.key as keyof typeof eventData.ageGroups]}</span>
-                                        <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => updateCount(item.key as 'adults' | 'children', 1)}><Plus className="h-3 w-3" /></Button>
-                                    </div>
-                                </div>
-                            ))}
+                        <div className="flex items-center gap-4">
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                className="h-10 w-10"
+                                onClick={() => setEventData(prev => ({ ...prev, guestCount: Math.max(0, prev.guestCount - 1) }))}
+                                disabled={eventData.guestCount <= 0}
+                            >
+                                <Minus className="h-4 w-4" />
+                            </Button>
+                            <span className="text-xl font-semibold w-8 text-center">{eventData.guestCount}</span>
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                className="h-10 w-10"
+                                onClick={() => setEventData(prev => ({ ...prev, guestCount: prev.guestCount + 1 }))}
+                            >
+                                <Plus className="h-4 w-4" />
+                            </Button>
+                            <span className="text-sm text-muted-foreground ml-2">
+                                Total: {totalGuests} person{totalGuests !== 1 ? 's' : ''} (Including you)
+                            </span>
                         </div>
                     </div>
 
@@ -404,7 +389,7 @@ export function QuickCreateForm() {
                         setStep(Step.PHONE_INPUT)
                         phoneForm.reset()
                         personalForm.reset()
-                        setPersonalData({ name: "", groupNumber: "" })
+                        setPersonalData({ name: "", location: "" })
                         setEventData({ ageGroups: { adults: 1, children: 0 }, foodPreference: { veg: 1, nonVeg: 0 }, isMorningFood: false, ticketType: "General" })
                         setVerifiedPhone("")
                     }}>Add Another</Button>

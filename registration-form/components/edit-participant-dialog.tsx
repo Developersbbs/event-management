@@ -29,7 +29,7 @@ import { IParticipant } from "@/lib/types"
 
 const personalDetailsSchema = z.object({
     name: z.string().min(2, "Name must be at least 2 characters"),
-    groupNumber: z.string().min(1, "Please select a group number"),
+    location: z.string().min(1, "Please enter your location"),
     mobileNumber: z.string().regex(/^\+?[1-9]\d{1,14}$/, "Please enter a valid phone number"),
 })
 
@@ -46,7 +46,7 @@ export function EditParticipantDialog({ participant, open, onOpenChange, onSucce
 
     // Event Data State
     const [eventData, setEventData] = useState({
-        ageGroups: participant.ageGroups || { adults: 1, children: 0 },
+        guestCount: participant.guestCount || 0,
         foodPreference: participant.foodPreference || { veg: 1, nonVeg: 0 },
         isMorningFood: participant.isMorningFood || false,
     })
@@ -55,7 +55,7 @@ export function EditParticipantDialog({ participant, open, onOpenChange, onSucce
         resolver: zodResolver(personalDetailsSchema),
         defaultValues: {
             name: participant.name,
-            groupNumber: participant.groupNumber,
+            location: participant.location,
             mobileNumber: participant.mobileNumber,
         }
     })
@@ -64,13 +64,13 @@ export function EditParticipantDialog({ participant, open, onOpenChange, onSucce
     useEffect(() => {
         if (open && participant) {
             setEventData({
-                ageGroups: participant.ageGroups || { adults: 1, children: 0 },
+                guestCount: participant.guestCount || 0,
                 foodPreference: participant.foodPreference || { veg: 1, nonVeg: 0 },
                 isMorningFood: participant.isMorningFood || false,
             })
             form.reset({
                 name: participant.name,
-                groupNumber: participant.groupNumber,
+                location: participant.location,
                 mobileNumber: participant.mobileNumber,
             })
             setDbError(null)
@@ -79,9 +79,8 @@ export function EditParticipantDialog({ participant, open, onOpenChange, onSucce
 
     // --- Derived State (Pricing) ---
     const totalGuests = useMemo(() => {
-        const { adults, children } = eventData.ageGroups
-        return (Number(adults) || 0) + (Number(children) || 0)
-    }, [eventData.ageGroups])
+        return 1 + eventData.guestCount
+    }, [eventData.guestCount])
 
     // Update Food Prefs when total guests changes
     useEffect(() => {
@@ -97,11 +96,6 @@ export function EditParticipantDialog({ participant, open, onOpenChange, onSucce
 
     // --- Handlers ---
 
-    const updateCount = (key: keyof typeof eventData.ageGroups, delta: number) => {
-        const current = eventData.ageGroups[key]
-        const next = Math.max(key === 'adults' ? 1 : 0, current + delta)
-        setEventData(prev => ({ ...prev, ageGroups: { ...prev.ageGroups, [key]: next } }))
-    }
 
     const onSubmit = async (data: z.infer<typeof personalDetailsSchema>) => {
         setIsSubmitting(true)
@@ -109,7 +103,7 @@ export function EditParticipantDialog({ participant, open, onOpenChange, onSucce
         try {
             const payload = {
                 ...data,
-                ageGroups: eventData.ageGroups,
+                guestCount: eventData.guestCount,
                 foodPreference: eventData.foodPreference,
                 isMorningFood: eventData.isMorningFood,
             }
@@ -160,22 +154,10 @@ export function EditParticipantDialog({ participant, open, onOpenChange, onSucce
                                         <FormMessage />
                                     </FormItem>
                                 )} />
-                                <FormField control={form.control} name="groupNumber" render={({ field }) => (
+                                <FormField control={form.control} name="location" render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Group Number</FormLabel>
-                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                            <FormControl>
-                                                <SelectTrigger className="w-full">
-                                                    <SelectValue placeholder="Select Group" />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                {[...Array(23)].map((_, i) => (
-                                                    <SelectItem key={i} value={(i + 1).toString()}>{`Group ${i + 1}`}</SelectItem>
-                                                ))}
-                                                <SelectItem value="covai">Covai Group</SelectItem>
-                                            </SelectContent>
-                                        </Select>
+                                        <FormLabel>Location</FormLabel>
+                                        <FormControl><Input placeholder="Enter your location (e.g. Covai, Trichy)" {...field} /></FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )} />
@@ -187,29 +169,32 @@ export function EditParticipantDialog({ participant, open, onOpenChange, onSucce
                             <div className="space-y-4">
                                 <div className="flex items-center gap-2">
                                     <Users className="h-4 w-4 text-primary" />
-                                    <h3 className="text-sm font-medium text-muted-foreground">Guest Counts</h3>
+                                    <h3 className="text-sm font-medium text-muted-foreground">Guest Count</h3>
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    {/* Adults need special handling to include/exclude Logic? 
-                                        In Database, Adults count INCLUDES member.
-                                        So here we edit the RAW DB VALUE. 
-                                        UI should probably reflect that.
-                                        "Adults (15+)" usually implies total adults.
-                                        We will keep it consistent with Register Form -> Raw Value.
-                                     */}
-                                    {[
-                                        { key: 'adults', label: 'Adults' },
-                                        { key: 'children', label: 'Children' },
-                                    ].map((item) => (
-                                        <div key={item.key} className="flex items-center justify-between p-2 border rounded-lg bg-muted/20">
-                                            <span className="text-sm font-medium">{item.label}</span>
-                                            <div className="flex items-center gap-2">
-                                                <Button type="button" variant="outline" size="icon" className="h-6 w-6" onClick={() => updateCount(item.key as 'adults' | 'children', -1)}><Minus className="h-3 w-3" /></Button>
-                                                <span className="w-4 text-center text-sm">{eventData.ageGroups[item.key as keyof typeof eventData.ageGroups]}</span>
-                                                <Button type="button" variant="outline" size="icon" className="h-6 w-6" onClick={() => updateCount(item.key as 'adults' | 'children', 1)}><Plus className="h-3 w-3" /></Button>
-                                            </div>
-                                        </div>
-                                    ))}
+                                <div className="flex items-center gap-4">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="icon"
+                                        className="h-8 w-8"
+                                        onClick={() => setEventData(prev => ({ ...prev, guestCount: Math.max(0, prev.guestCount - 1) }))}
+                                        disabled={eventData.guestCount <= 0}
+                                    >
+                                        <Minus className="h-4 w-4" />
+                                    </Button>
+                                    <span className="text-xl font-semibold w-8 text-center">{eventData.guestCount}</span>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="icon"
+                                        className="h-8 w-8"
+                                        onClick={() => setEventData(prev => ({ ...prev, guestCount: prev.guestCount + 1 }))}
+                                    >
+                                        <Plus className="h-4 w-4" />
+                                    </Button>
+                                    <span className="text-xs text-muted-foreground">
+                                        Total Participation: {totalGuests}
+                                    </span>
                                 </div>
                             </div>
 

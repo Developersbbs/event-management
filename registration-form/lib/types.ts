@@ -40,7 +40,6 @@ export interface IParticipant {
     foodPreference?: IFoodPreference;
     isMorningFood: boolean;
     isRegistered: boolean;
-    groupNumber?: string;
     createdAt: string | Date;
     updatedAt: string | Date;
     checkIn?: ICheckIn;

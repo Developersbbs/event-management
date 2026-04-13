@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { Download } from "lucide-react"
 
-interface GroupStatsExportProps {
+interface LocationStatsExportProps {
     data: Array<{
         _id: string
         membersCount: number
@@ -17,11 +17,11 @@ interface GroupStatsExportProps {
     }>
 }
 
-export function GroupStatsExport({ data }: GroupStatsExportProps) {
+export function LocationStatsExport({ data }: LocationStatsExportProps) {
     const handleExport = () => {
         // Define headers
         const headers = [
-            "Group Number",
+            "Location",
             "Members (Reg)",
             "Adults (Reg)",
             "Children (Reg)",
@@ -34,7 +34,7 @@ export function GroupStatsExport({ data }: GroupStatsExportProps) {
 
         // Map data to CSV rows
         const rows = data.map(item => [
-            item._id,
+            item._id || "Unknown",
             item.membersCount,
             item.adultsCount,
             item.childrenCount,
@@ -56,7 +56,8 @@ export function GroupStatsExport({ data }: GroupStatsExportProps) {
         const url = URL.createObjectURL(blob)
         const link = document.createElement("a")
         link.setAttribute("href", url)
-        link.setAttribute("download", `group_stats_${new Date().toISOString().split('T')[0]}.csv`)
+        link.setAttribute("download", `location_stats_${new Date().toISOString().split('T')[0]}.csv`)
+
         link.style.visibility = "hidden"
         document.body.appendChild(link)
         link.click()

@@ -15,6 +15,7 @@ interface RegisterParticipantData {
     foodPreference?: { veg: number; nonVeg: number }
     isMorningFood?: boolean
     guestCount?: number
+    ageGroups?: { adults: number; children: number }
     ticketType: string
     isMember?: boolean
 }
@@ -34,9 +35,13 @@ export async function registerParticipant(data: RegisterParticipantData) {
             foodPreference,
             isMorningFood = false,
             guestCount = 0,
+            ageGroups,
             ticketType,
             isMember = false
         } = data
+
+        const finalAgeGroups = ageGroups || { adults: 1 + (guestCount || 0), children: 0 }
+        const totalPeople = (finalAgeGroups.adults || 0) + (finalAgeGroups.children || 0)
 
         // COMPREHENSIVE VALIDATION
         if (!mobileNumber || !name || !ticketType) {
@@ -66,11 +71,12 @@ export async function registerParticipant(data: RegisterParticipantData) {
             }
         }
 
-        // Validate guest count
-        if (guestCount < 0 || !Number.isInteger(guestCount)) {
+        // Validate guest counts
+        if ((finalAgeGroups.adults || 0) < 0 || (finalAgeGroups.children || 0) < 0 || 
+            !Number.isInteger(finalAgeGroups.adults) || !Number.isInteger(finalAgeGroups.children)) {
             return {
                 success: false,
-                error: "Invalid guest count"
+                error: "Invalid guest counts"
             }
         }
 
@@ -86,7 +92,6 @@ export async function registerParticipant(data: RegisterParticipantData) {
         if (foodPreference) {
             const veg = foodPreference.veg || 0
             const nonVeg = foodPreference.nonVeg || 0
-            const totalPeople = guestCount + 1
             
             if (veg < 0 || nonVeg < 0) {
                 return {
@@ -130,8 +135,6 @@ export async function registerParticipant(data: RegisterParticipantData) {
                 error: `Invalid ticket type: ${ticketType}. Please select a valid ticket.`
             }
         }
-
-        const totalPeople = guestCount + 1
 
         // Check event capacity
         if (activeEvent.registeredCount + totalPeople > activeEvent.maxCapacity) {
@@ -189,7 +192,8 @@ export async function registerParticipant(data: RegisterParticipantData) {
             isRegistered: true,
             eventId: activeEvent._id,
             eventDate: activeEvent.startDate,
-            guestCount,
+            ageGroups: finalAgeGroups,
+            guestCount: Math.max(0, totalPeople - 1),
             ticketType,
             ticketPrice: pricePerPerson,
             totalAmount,

@@ -229,7 +229,7 @@ function CheckInRow({ participant, onRefresh }: { participant: IParticipant, onR
             <TableCell>
                 <div className="font-semibold">{participant.name}</div>
                 <div className="text-xs text-muted-foreground">{participant.mobileNumber}</div>
-                <Badge variant="outline" className="mt-1">Group {participant.groupNumber}</Badge>
+                <Badge variant="outline" className="mt-1">{participant.location || "Unassigned"}</Badge>
             </TableCell>
             <TableCell className="text-center">
                 <div className="text-sm">

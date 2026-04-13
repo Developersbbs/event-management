@@ -12,7 +12,8 @@ export async function updateParticipant(id: string, data: Partial<IParticipant>)
         const {
             mobileNumber,
             name,
-            groupNumber,
+            location,
+            guestCount,
             ageGroups,
             foodPreference,
             isMorningFood,
@@ -26,7 +27,7 @@ export async function updateParticipant(id: string, data: Partial<IParticipant>)
 
         // Check if mobile number is being changed and if it conflicts
         if (mobileNumber && mobileNumber !== existingParticipant.mobileNumber) {
-            const conflict = await Participant.findOne({ mobileNumber })
+            const conflict = await Participant.findOne({ mobileNumber, _id: { $ne: id } })
             if (conflict) {
                 return { success: false, error: "Mobile number already registered to another participant" }
             }
@@ -35,8 +36,16 @@ export async function updateParticipant(id: string, data: Partial<IParticipant>)
         // Update fields
         if (mobileNumber) existingParticipant.mobileNumber = mobileNumber
         if (name) existingParticipant.name = name
-        if (groupNumber) existingParticipant.groupNumber = groupNumber
-        if (ageGroups) existingParticipant.ageGroups = ageGroups
+        if (location) existingParticipant.location = location
+        
+        if (guestCount !== undefined) {
+            existingParticipant.guestCount = guestCount
+            existingParticipant.ageGroups = { adults: guestCount + 1, children: 0 }
+        } else if (ageGroups) {
+            existingParticipant.ageGroups = ageGroups
+            existingParticipant.guestCount = Math.max(0, (ageGroups.adults || 1) + (ageGroups.children || 0) - 1)
+        }
+
         if (foodPreference) existingParticipant.foodPreference = foodPreference
         if (isMorningFood !== undefined) existingParticipant.isMorningFood = isMorningFood
         existingParticipant.updatedAt = new Date()
@@ -44,7 +53,7 @@ export async function updateParticipant(id: string, data: Partial<IParticipant>)
         await existingParticipant.save()
 
         revalidatePath("/admin")
-        revalidatePath("/admin/groups")
+        revalidatePath("/admin/locations")
 
         return { success: true }
     } catch (error: unknown) {

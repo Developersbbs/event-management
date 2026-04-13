@@ -81,7 +81,7 @@ export function RegisterForm() {
     foodPreference: { veg: 0, nonVeg: 0 },
     isMorningFood: false,
   })
-  const [existingParticipant, setExistingParticipant] = useState<{ mobileNumber: string; name: string; isRegistered: boolean; email?: string; businessName?: string; businessCategory?: string; location?: string; guestCount?: number; ticketType?: string; paymentMethod?: string; foodPreference?: { veg: number; nonVeg: number }; isMorningFood?: boolean } | null>(null)
+  const [existingParticipant, setExistingParticipant] = useState<{ mobileNumber: string; name: string; isRegistered: boolean; email?: string; businessName?: string; businessCategory?: string; location?: string; ageGroups?: { adults: number; children: number }; guestCount?: number; ticketType?: string; paymentMethod?: string; foodPreference?: { veg: number; nonVeg: number }; isMorningFood?: boolean } | null>(null)
 
   // Forms
   const phoneForm = useForm<z.infer<typeof phoneSchema>>({ resolver: zodResolver(phoneSchema), defaultValues: { phoneNumber: "+91" } })
@@ -99,7 +99,7 @@ export function RegisterForm() {
 
   // --- Derived State (Pricing) ---
   const totalGuests = useMemo(() => {
-    return eventData.guestCount + 1 // +1 for the registrant
+    return 1 + eventData.guestCount // +1 for the registrant
   }, [eventData.guestCount])
 
   const pricePerPerson = useMemo(() => {
@@ -430,10 +430,6 @@ export function RegisterForm() {
 
   // --- Step 4: Event Details (Pricing, Guests, Food) ---
   if (step === Step.EVENT_DETAILS) {
-    const updateGuestCount = (delta: number) => {
-      const next = Math.max(0, eventData.guestCount + delta)
-      setEventData(prev => ({ ...prev, guestCount: next }))
-    }
 
     return (
       <Card className="w-full max-h-[calc(100vh-8rem)] overflow-y-auto mx-auto animate-in fade-in zoom-in-95 duration-300">
@@ -465,7 +461,7 @@ export function RegisterForm() {
                 variant="outline" 
                 size="icon" 
                 className="h-10 w-10" 
-                onClick={() => updateGuestCount(-1)}
+                onClick={() => setEventData(prev => ({ ...prev, guestCount: Math.max(0, prev.guestCount - 1) }))}
                 disabled={eventData.guestCount <= 0}
               >
                 <Minus className="h-4 w-4" />
@@ -475,12 +471,12 @@ export function RegisterForm() {
                 variant="outline" 
                 size="icon" 
                 className="h-10 w-10" 
-                onClick={() => updateGuestCount(1)}
+                onClick={() => setEventData(prev => ({ ...prev, guestCount: prev.guestCount + 1 }))}
               >
                 <Plus className="h-4 w-4" />
               </Button>
               <span className="text-sm text-muted-foreground ml-2">
-                Total: {totalGuests} person{totalGuests !== 1 ? 's' : ''}
+                Total: {totalGuests} person{totalGuests !== 1 ? 's' : ''} (Including you)
               </span>
             </div>
           </div>

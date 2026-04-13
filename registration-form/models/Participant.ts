@@ -141,11 +141,6 @@ const ParticipantSchema = new mongoose.Schema({
         children: { type: Number, default: 0 },
     },
 
-    groupNumber: {
-        type: String, // Storing as string to handle "Covai Group" etc.
-        required: false,
-    },
-
     foodPreference: {
         veg: { type: Number, default: 0 },
         nonVeg: { type: Number, default: 0 },

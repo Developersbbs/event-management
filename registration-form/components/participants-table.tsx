@@ -69,31 +69,26 @@ export function ParticipantsTable<TData, TValue>({
     // Custom Filters State
     const [dateRange, setDateRange] = React.useState<DateRange | undefined>()
     const [showMorningFoodOnly, setShowMorningFoodOnly] = React.useState(false)
-    const [groupFilter, setGroupFilter] = React.useState<string>("all")
+    const [locationFilter, setLocationFilter] = React.useState<string>("all")
 
-    // Calculate Group Counts
-    const groupOptions = React.useMemo(() => {
-        const groups: Record<string, number> = {};
+    // Calculate Location Counts
+    const locationOptions = React.useMemo(() => {
+        const locations: Record<string, number> = {};
         (data as unknown as IParticipant[]).forEach((item: IParticipant) => {
-            const g = item.groupNumber || "Unassigned"
-            groups[g] = (groups[g] || 0) + 1
+            const loc = item.location || "Unassigned"
+            locations[loc] = (locations[loc] || 0) + 1
         })
-        return Object.entries(groups).sort((a, b) => {
-            const numA = parseInt(a[0]);
-            const numB = parseInt(b[0]);
-            if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
-            return a[0].localeCompare(b[0])
-        })
+        return Object.entries(locations).sort((a, b) => a[0].localeCompare(b[0]))
     }, [data])
 
     // Filter Logic
     const filteredData = React.useMemo(() => {
         let processedData = data;
 
-        // Group Filter
-        if (groupFilter !== "all") {
+        // Location Filter
+        if (locationFilter !== "all") {
             processedData = processedData.filter((item) =>
-                ((item as unknown as IParticipant).groupNumber || "Unassigned").toString() === groupFilter
+                ((item as unknown as IParticipant).location || "Unassigned").toString() === locationFilter
             )
         }
 
@@ -116,7 +111,7 @@ export function ParticipantsTable<TData, TValue>({
         }
 
         return processedData
-    }, [data, dateRange, showMorningFoodOnly, groupFilter])
+    }, [data, dateRange, showMorningFoodOnly, locationFilter])
 
     const tableColumns = React.useMemo(() => {
         if (userRole !== 'super-admin') return columns;
@@ -165,7 +160,7 @@ export function ParticipantsTable<TData, TValue>({
     // Export to CSV function
     const downloadCSV = () => {
         const headers = [
-            "Name", "Mobile", "Group",
+            "Name", "Mobile", "Location",
             "Reg Adults", "Reg Children",
             "Veg", "NonVeg", "MorningFood",
             "RegisteredAt",
@@ -195,7 +190,7 @@ export function ParticipantsTable<TData, TValue>({
                 return [
                     `"${row.name || ''}"`,
                     `"${row.mobileNumber}"`,
-                    `"${row.groupNumber || ''}"`,
+                    `"${row.location || ''}"`,
                     regAdults > 0 ? regAdults - 1 : 0,
                     regChildren,
                     vegCount,
@@ -253,7 +248,7 @@ export function ParticipantsTable<TData, TValue>({
             doc.setFont("helvetica") // Ensure standard font for headers
             const title = "Pongal Vizha 2025 - Participants Report"
             const generatedDate = `Generated: ${new Date().toLocaleString()}`
-            const filterInfo = groupFilter !== 'all' ? `Filter: Group ${groupFilter}` : "Filter: All Groups"
+            const filterInfo = locationFilter !== 'all' ? `Filter: Location ${locationFilter}` : "Filter: All Locations"
 
             // Header
             doc.setFontSize(16)
@@ -268,7 +263,7 @@ export function ParticipantsTable<TData, TValue>({
             const tableBody = (filteredData as unknown as IParticipant[]).map((row) => [
                 row.name || "",
                 row.mobileNumber || "",
-                row.groupNumber || "-",
+                row.location || "-",
                 (row.ageGroups?.adults ?? 0) > 0 ? (row.ageGroups?.adults ?? 0) - 1 : 0,
                 row.ageGroups?.children || 0,
                 row.foodPreference?.veg || 0,
@@ -278,7 +273,7 @@ export function ParticipantsTable<TData, TValue>({
             ])
 
             autoTable(doc, {
-                head: [['Name', 'Mobile', 'Grp', 'Adults', 'Children', 'Veg', 'NonVeg', 'Morn', 'Reg Date']],
+                head: [['Name', 'Mobile', 'Loc', 'Adults', 'Children', 'Veg', 'NonVeg', 'Morn', 'Reg Date']],
                 body: tableBody,
                 startY: 40,
                 styles: {
@@ -318,17 +313,17 @@ export function ParticipantsTable<TData, TValue>({
                         />
                     </div>
 
-                    {/* Group Filter */}
+                    {/* Location Filter */}
                     <div className="w-[180px]">
-                        <Select value={groupFilter} onValueChange={setGroupFilter}>
+                        <Select value={locationFilter} onValueChange={setLocationFilter}>
                             <SelectTrigger>
-                                <SelectValue placeholder="Filter by Group" />
+                                <SelectValue placeholder="Filter by Location" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="all">All Groups ({data.length})</SelectItem>
-                                {groupOptions.map(([group, count]) => (
-                                    <SelectItem key={group} value={group}>
-                                        Group {group} ({count})
+                                <SelectItem value="all">All Locations ({data.length})</SelectItem>
+                                {locationOptions.map(([loc, count]) => (
+                                    <SelectItem key={loc} value={loc}>
+                                        {loc} ({count})
                                     </SelectItem>
                                 ))}
                             </SelectContent>
