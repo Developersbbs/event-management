@@ -457,7 +457,7 @@ export function RegisterForm() {
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
-                    <PopoverContent className="w-full p-0">
+                    <PopoverContent className="w-full p-0 max-h-[350px] overflow-y-auto" align="start">
                       <Command>
                         <CommandInput placeholder="Search district..." />
                         <CommandEmpty>No district found.</CommandEmpty>
@@ -676,7 +676,7 @@ export function RegisterForm() {
                             <Check className="ml-2 h-4 w-4 opacity-50" />
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-full p-0">
+                        <PopoverContent className="w-full p-0 max-h-[350px] overflow-y-auto" align="start">
                           <Command>
                             <CommandInput placeholder="Search district..." />
                             <CommandEmpty>No district found.</CommandEmpty>
