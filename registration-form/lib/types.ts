@@ -21,6 +21,18 @@ export interface ICheckIn {
     checkInTime?: string; // For serialized dates
 }
 
+export interface ISecondaryMember {
+    _id?: string;
+    name: string;
+    mobileNumber?: string;
+    email?: string;
+    businessName?: string;
+    businessCategory?: string;
+    location?: string;
+    isCheckedIn: boolean;
+    checkedInAt?: Date | string;
+}
+
 export interface IParticipant {
     _id: string;
     mobileNumber: string;
@@ -46,6 +58,7 @@ export interface IParticipant {
     createdAt: string | Date;
     updatedAt: string | Date;
     checkIn?: ICheckIn;
+    secondaryMembers?: ISecondaryMember[];
 }
 
 export interface IEvent {

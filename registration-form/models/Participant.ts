@@ -166,7 +166,20 @@ const ParticipantSchema = new mongoose.Schema({
         // actualChildren: Number,
         actualGuests: Number,
         checkedInBy: String,
-    }
+    },
+
+    secondaryMembers: [
+        {
+            name: { type: String, required: true },
+            mobileNumber: { type: String },
+            email: { type: String },
+            businessName: String,
+            businessCategory: String,
+            location: String,
+            isCheckedIn: { type: Boolean, default: false },
+            checkedInAt: { type: Date }
+        }
+    ]
 
 }, { timestamps: true })
 

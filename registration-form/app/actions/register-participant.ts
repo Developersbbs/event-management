@@ -4,6 +4,15 @@ import dbConnect from "@/lib/db"
 import Participant from "@/models/Participant"
 import Event from "@/models/Event"
 
+interface SecondaryMemberInput {
+    name: string
+    mobileNumber?: string
+    email?: string
+    businessName?: string
+    businessCategory?: string
+    location?: string
+}
+
 interface RegisterParticipantData {
     mobileNumber: string
     name: string
@@ -20,6 +29,7 @@ interface RegisterParticipantData {
     ageGuest?: number
     ticketType: string
     isMember?: boolean
+    secondaryMembers?: SecondaryMemberInput[]
 }
 
 export async function registerParticipant(data: RegisterParticipantData) {
@@ -39,7 +49,8 @@ export async function registerParticipant(data: RegisterParticipantData) {
             guestCount = 0,
             ageGuest = 0,
             ticketType,
-            isMember = false
+            isMember = false,
+            secondaryMembers = []
         } = data
 
         const totalPeople = 1 + (guestCount || 0)
@@ -178,6 +189,17 @@ export async function registerParticipant(data: RegisterParticipantData) {
             approvalStatus = "approved"
         }
 
+        // Build secondary members array with defaults
+        const formattedSecondaryMembers = secondaryMembers.map(member => ({
+            name: member.name.trim(),
+            mobileNumber: member.mobileNumber?.trim(),
+            email: member.email?.trim(),
+            businessName: member.businessName?.trim(),
+            businessCategory: member.businessCategory?.trim(),
+            location: member.location?.trim(),
+            isCheckedIn: false
+        }))
+
         // Create participant with validated data
         const participant = await Participant.create({
             mobileNumber: mobileNumber.trim(),
@@ -199,7 +221,8 @@ export async function registerParticipant(data: RegisterParticipantData) {
             ticketType,
             ticketPrice: pricePerPerson,
             totalAmount,
-            isMember
+            isMember,
+            secondaryMembers: formattedSecondaryMembers
         })
 
         // Update event counts atomically

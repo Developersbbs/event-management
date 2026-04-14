@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
+import { cn } from "@/lib/utils"
 import { usePhoneAuth } from "@/hooks/use-phone-auth"
 import { checkRegistration } from "@/app/actions/check-registration"
 import { registerParticipant } from "@/app/actions/register-participant"
@@ -15,8 +16,11 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from "@/components/ui/input-otp"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Check } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Loader2, CheckCircle2, AlertCircle, Plus, Minus, Phone, Users, Utensils, Receipt, Info } from "lucide-react"
+import { Loader2, CheckCircle2, AlertCircle, Plus, Minus, Phone, Users, Utensils, Receipt, Info, UserPlus, Trash2 } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Separator } from "@/components/ui/separator"
 
@@ -82,6 +86,10 @@ export function RegisterForm() {
     ageGuest: 0,
     isMorningFood: false,
   })
+  const [secondaryMembers, setSecondaryMembers] = useState<{ name: string; mobileNumber: string; email: string; businessName: string; businessCategory: string; location: string; showCustomLocation?: boolean; customLocation?: string }[]>([])
+  const [primaryLocationOpen, setPrimaryLocationOpen] = useState(false)
+  const [primaryCustomLocation, setPrimaryCustomLocation] = useState("")
+  const [showPrimaryCustomInput, setShowPrimaryCustomInput] = useState(false)
   const [existingParticipant, setExistingParticipant] = useState<{ 
     mobileNumber: string; 
     name: string; 
@@ -98,6 +106,18 @@ export function RegisterForm() {
     isMorningFood?: boolean 
   } | null>(null)
 
+  // Handle primary location selection
+  const handlePrimaryLocationSelect = (value: string) => {
+    if (value === "other") {
+      setShowPrimaryCustomInput(true)
+      personalForm.setValue("location", "")
+    } else {
+      setShowPrimaryCustomInput(false)
+      personalForm.setValue("location", value)
+    }
+    setPrimaryLocationOpen(false)
+  }
+
   // Forms
   const phoneForm = useForm<z.infer<typeof phoneSchema>>({ resolver: zodResolver(phoneSchema), defaultValues: { phoneNumber: "+91" } })
   const otpForm = useForm<z.infer<typeof otpSchema>>({ resolver: zodResolver(otpSchema), defaultValues: { otp: "" } })
@@ -113,9 +133,11 @@ export function RegisterForm() {
   })
 
   // --- Derived State (Pricing) ---
+  // Calculate total guests based on secondary members length to ensure accurate pricing
   const totalGuests = useMemo(() => {
-    return 1 + eventData.guestCount // +1 for the registrant
-  }, [eventData.guestCount])
+    // 1 (primary registrant) + number of secondary members
+    return 1 + secondaryMembers.length
+  }, [secondaryMembers.length])
 
   const pricePerPerson = useMemo(() => {
     if (!activeEvent || !eventData.ticketType) return 0
@@ -214,12 +236,13 @@ export function RegisterForm() {
         businessName: personalData.businessName,
         businessCategory: personalData.businessCategory,
         location: personalData.location,
-        guestCount: eventData.guestCount,
+        guestCount: secondaryMembers.length,
         ticketType: eventData.ticketType,
         paymentMethod: eventData.paymentMethod,
         foodGuest: eventData.guestCount + 1, // Total people for food
         ageGuest: eventData.guestCount,      // Just guests for age groups
         isMorningFood: eventData.isMorningFood,
+        secondaryMembers: secondaryMembers.filter(m => m.name.trim() !== '')
       }
 
       const result = await registerParticipant(payload)
@@ -418,20 +441,69 @@ export function RegisterForm() {
               <FormField control={personalForm.control} name="location" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Location</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select district" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {TAMIL_NADU_DISTRICTS.map((district) => (
-                        <SelectItem key={district} value={district}>
-                          {district}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Popover open={primaryLocationOpen} onOpenChange={setPrimaryLocationOpen}>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          className={cn(
+                            "w-full justify-between",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {showPrimaryCustomInput ? primaryCustomLocation || "Enter custom location" : field.value || "Select district"}
+                          <Check className="ml-2 h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0">
+                      <Command>
+                        <CommandInput placeholder="Search district..." />
+                        <CommandEmpty>No district found.</CommandEmpty>
+                        <CommandGroup>
+                          {TAMIL_NADU_DISTRICTS.map((district) => (
+                            <CommandItem
+                              key={district}
+                              value={district}
+                              onSelect={() => handlePrimaryLocationSelect(district)}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  field.value === district ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              {district}
+                            </CommandItem>
+                          ))}
+                          <CommandItem
+                            value="other"
+                            onSelect={() => handlePrimaryLocationSelect("other")}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                showPrimaryCustomInput ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            Other (enter manually)
+                          </CommandItem>
+                        </CommandGroup>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  {showPrimaryCustomInput && (
+                    <Input
+                      placeholder="Enter your location"
+                      value={primaryCustomLocation}
+                      onChange={(e) => {
+                        setPrimaryCustomLocation(e.target.value)
+                        personalForm.setValue("location", e.target.value)
+                      }}
+                      className="mt-2"
+                    />
+                  )}
                   <FormMessage />
                 </FormItem>
               )} />
@@ -502,6 +574,179 @@ export function RegisterForm() {
           </div>
 
           <Separator />
+
+          {/* Secondary Members */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <UserPlus className="h-5 w-5 text-primary" />
+                <h3 className="font-semibold">Additional Members</h3>
+              </div>
+              <span className="text-xs text-muted-foreground">
+                {secondaryMembers.length} members added
+              </span>
+            </div>
+              
+              {secondaryMembers.map((member, index) => (
+                <div key={index} className="border rounded-lg p-4 space-y-3 bg-muted/30">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-muted-foreground">Member {index + 1}</span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50"
+                      onClick={() => setSecondaryMembers(prev => prev.filter((_, i) => i !== index))}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label className="text-xs">Name *</Label>
+                      <Input
+                        placeholder="Full name"
+                        value={member.name}
+                        onChange={(e) => setSecondaryMembers(prev => prev.map((m, i) => i === index ? { ...m, name: e.target.value } : m))}
+                        className="h-9"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs">Mobile</Label>
+                      <Input
+                        placeholder="+91..."
+                        value={member.mobileNumber}
+                        onChange={(e) => setSecondaryMembers(prev => prev.map((m, i) => i === index ? { ...m, mobileNumber: e.target.value } : m))}
+                        className="h-9"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs">Email</Label>
+                      <Input
+                        type="email"
+                        placeholder="email@example.com"
+                        value={member.email}
+                        onChange={(e) => setSecondaryMembers(prev => prev.map((m, i) => i === index ? { ...m, email: e.target.value } : m))}
+                        className="h-9"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs">Business Name</Label>
+                      <Input
+                        placeholder="Business name"
+                        value={member.businessName}
+                        onChange={(e) => setSecondaryMembers(prev => prev.map((m, i) => i === index ? { ...m, businessName: e.target.value } : m))}
+                        className="h-9"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs">Business Category</Label>
+                      <Input
+                        placeholder="Category"
+                        value={member.businessCategory}
+                        onChange={(e) => setSecondaryMembers(prev => prev.map((m, i) => i === index ? { ...m, businessCategory: e.target.value } : m))}
+                        className="h-9"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs">Location</Label>
+                      <Popover
+                        open={member.showCustomLocation ? false : undefined}
+                        onOpenChange={(open) => {
+                          if (!member.showCustomLocation) {
+                            setSecondaryMembers(prev => prev.map((m, i) => i === index ? { ...m, showCustomLocation: false } : m))
+                          }
+                        }}
+                      >
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            className={cn(
+                              "w-full justify-between h-9",
+                              !member.location && "text-muted-foreground"
+                            )}
+                            onClick={() => {
+                              if (member.showCustomLocation) {
+                                setSecondaryMembers(prev => prev.map((m, i) => i === index ? { ...m, showCustomLocation: false } : m))
+                              }
+                            }}
+                          >
+                            {member.showCustomLocation ? member.customLocation || "Enter custom location" : member.location || "Select district"}
+                            <Check className="ml-2 h-4 w-4 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-full p-0">
+                          <Command>
+                            <CommandInput placeholder="Search district..." />
+                            <CommandEmpty>No district found.</CommandEmpty>
+                            <CommandGroup>
+                              {TAMIL_NADU_DISTRICTS.map((district) => (
+                                <CommandItem
+                                  key={district}
+                                  value={district}
+                                  onSelect={() => {
+                                    setSecondaryMembers(prev => prev.map((m, i) => i === index ? { ...m, location: district, showCustomLocation: false } : m))
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      member.location === district ? "opacity-100" : "opacity-0"
+                                    )}
+                                  />
+                                  {district}
+                                </CommandItem>
+                              ))}
+                              <CommandItem
+                                value="other"
+                                onSelect={() => {
+                                  setSecondaryMembers(prev => prev.map((m, i) => i === index ? { ...m, showCustomLocation: true, location: '' } : m))
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    member.showCustomLocation ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                                Other (enter manually)
+                              </CommandItem>
+                            </CommandGroup>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                      {member.showCustomLocation && (
+                        <Input
+                          placeholder="Enter location"
+                          value={member.customLocation || ''}
+                          onChange={(e) => {
+                            setSecondaryMembers(prev => prev.map((m, i) => i === index ? { ...m, customLocation: e.target.value, location: e.target.value } : m))
+                          }}
+                          className="mt-2 h-9"
+                        />
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+              
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={() => {
+                setSecondaryMembers(prev => [...prev, { name: '', mobileNumber: '', email: '', businessName: '', businessCategory: '', location: '', showCustomLocation: false, customLocation: '' }])
+                // Auto-increase guest count when adding a member
+                setEventData(prev => ({ ...prev, guestCount: prev.guestCount + 1 }))
+              }}
+            >
+              <UserPlus className="h-4 w-4 mr-2" />
+              Add Member
+            </Button>
+          </div>
+
+          {eventData.guestCount > 0 && <Separator />}
 
           {/* Ticket Type */}
           <div className="space-y-3">
