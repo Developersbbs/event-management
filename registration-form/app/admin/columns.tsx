@@ -200,28 +200,29 @@ export const columns: ColumnDef<Participant>[] = [
             )
         },
     },
-    {
-        accessorKey: "foodPreference",
-        header: "Food",
-        cell: ({ row }) => {
-            const { veg, nonVeg } = row.original.foodPreference || { veg: 0, nonVeg: 0 }
-            return (
-                <div className="flex gap-2">
-                    {nonVeg > 0 && <Badge variant="destructive" className="flex gap-1"><Soup className="w-3 h-3" /> {nonVeg}</Badge>}
-                    {veg > 0 && <Badge variant="secondary" className="flex gap-1 text-green-700 bg-green-100"><Salad className="w-3 h-3" /> {veg}</Badge>}
-                </div>
-            )
-        },
-    },
-    {
-        accessorKey: "isMorningFood",
-        header: "Morning Food",
-        cell: ({ row }) => {
-            return row.original.isMorningFood ?
-                <Badge variant="outline" className="border-orange-200 text-orange-700 bg-orange-50"><Coffee className="w-3 h-3 mr-1" /> Yes</Badge> :
-                <span className="text-muted-foreground text-sm">-</span>
-        },
-    },
+    // FOOD PREFERENCE - Commented out
+    // {
+    //     accessorKey: "foodPreference",
+    //     header: "Food",
+    //     cell: ({ row }) => {
+    //         const { veg, nonVeg } = row.original.foodPreference || { veg: 0, nonVeg: 0 }
+    //         return (
+    //             <div className="flex gap-2">
+    //                 {nonVeg > 0 && <Badge variant="destructive" className="flex gap-1"><Soup className="w-3 h-3" /> {nonVeg}</Badge>}
+    //                 {veg > 0 && <Badge variant="secondary" className="flex gap-1 text-green-700 bg-green-100"><Salad className="w-3 h-3" /> {veg}</Badge>}
+    //             </div>
+    //         )
+    //     },
+    // },
+    // {
+    //     accessorKey: "isMorningFood",
+    //     header: "Morning Food",
+    //     cell: ({ row }) => {
+    //         return row.original.isMorningFood ?
+    //             <Badge variant="outline" className="border-orange-200 text-orange-700 bg-orange-50"><Coffee className="w-3 h-3 mr-1" /> Yes</Badge> :
+    //             <span className="text-muted-foreground text-sm">-</span>
+    //     },
+    // },
     {
         accessorKey: "createdAt",
         header: "Registered At",

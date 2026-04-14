@@ -32,8 +32,9 @@ export async function registerParticipant(data: RegisterParticipantData) {
             businessCategory,
             location,
             paymentMethod = "cash",
-            foodPreference,
-            isMorningFood = false,
+            // FOOD PREFERENCE - Commented out
+            // foodPreference,
+            // isMorningFood = false,
             guestCount = 0,
             ageGroups,
             ticketType,
@@ -88,25 +89,25 @@ export async function registerParticipant(data: RegisterParticipantData) {
             }
         }
 
-        // Validate food preference
-        if (foodPreference) {
-            const veg = foodPreference.veg || 0
-            const nonVeg = foodPreference.nonVeg || 0
-            
-            if (veg < 0 || nonVeg < 0) {
-                return {
-                    success: false,
-                    error: "Food preference counts cannot be negative"
-                }
-            }
+        // FOOD PREFERENCE - Commented out
+        // if (foodPreference) {
+        //     const veg = foodPreference.veg || 0
+        //     const nonVeg = foodPreference.nonVeg || 0
+        //     
+        //     if (veg < 0 || nonVeg < 0) {
+        //         return {
+        //             success: false,
+        //             error: "Food preference counts cannot be negative"
+        //         }
+        //     }
 
-            if (veg + nonVeg > totalPeople) {
-                return {
-                    success: false,
-                    error: "Total food preference count exceeds total people"
-                }
-            }
-        }
+        //     if (veg + nonVeg > totalPeople) {
+        //         return {
+        //             success: false,
+        //             error: "Total food preference count exceeds total people"
+        //         }
+        //     }
+        // }
 
         const now = new Date()
 
@@ -154,11 +155,11 @@ export async function registerParticipant(data: RegisterParticipantData) {
             }
         }
 
-        // Ensure foodPreference is properly structured
-        const normalizedFoodPreference = {
-            veg: Math.max(0, foodPreference?.veg || 0),
-            nonVeg: Math.max(0, foodPreference?.nonVeg || 0)
-        }
+        // FOOD PREFERENCE - Commented out
+        // const normalizedFoodPreference = {
+        //     veg: Math.max(0, foodPreference?.veg || 0),
+        //     nonVeg: Math.max(0, foodPreference?.nonVeg || 0)
+        // }
 
         // Apply member discount
         if (isMember) {
@@ -187,8 +188,9 @@ export async function registerParticipant(data: RegisterParticipantData) {
             paymentMethod,
             paymentStatus,
             approvalStatus,
-            foodPreference: normalizedFoodPreference,
-            isMorningFood,
+            // FOOD PREFERENCE - Commented out
+            // foodPreference: normalizedFoodPreference,
+            // isMorningFood,
             isRegistered: true,
             eventId: activeEvent._id,
             eventDate: activeEvent.startDate,

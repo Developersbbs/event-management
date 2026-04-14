@@ -34,24 +34,27 @@ export async function getAdminData() {
             rejectedRegistrations: 0,
             cashPayments: 0,
             onlinePayments: 0,
-            vegCount: 0,
-            nonVegCount: 0,
-            morningFoodCount: 0,
+            // FOOD PREFERENCE - Commented out
+            // vegCount: 0,
+            // nonVegCount: 0,
+            // morningFoodCount: 0,
         };
 
         (participants as unknown as IParticipant[]).forEach((p: IParticipant) => {
             // Handle new schema fields for participants
             const guestCount = p.guestCount || 0
             const totalAmount = p.totalAmount || 0
-            const veg = p.foodPreference?.veg || 0
-            const nonVeg = p.foodPreference?.nonVeg || 0
             const paymentMethod = p.paymentMethod || "cash"
             const approvalStatus = p.approvalStatus || "pending"
+            // FOOD PREFERENCE - Commented out
+            // const veg = p.foodPreference?.veg || 0
+            // const nonVeg = p.foodPreference?.nonVeg || 0
 
             stats.totalGuests += guestCount
             stats.totalAmount += totalAmount
-            stats.vegCount += veg
-            stats.nonVegCount += nonVeg
+            // FOOD PREFERENCE - Commented out
+            // stats.vegCount += veg
+            // stats.nonVegCount += nonVeg
             
             if (paymentMethod === "cash") {
                 stats.cashPayments += 1
@@ -67,9 +70,10 @@ export async function getAdminData() {
                 stats.rejectedRegistrations += 1
             }
 
-            if (p.isMorningFood) {
-                stats.morningFoodCount += (guestCount + 1) // +1 for registrant
-            }
+            // FOOD PREFERENCE - Commented out
+            // if (p.isMorningFood) {
+            //     stats.morningFoodCount += (guestCount + 1) // +1 for registrant
+            // }
         })
 
         // Serializing MongoDB IDs and dates for client components

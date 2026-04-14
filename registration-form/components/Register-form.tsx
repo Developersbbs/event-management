@@ -182,12 +182,12 @@ export function RegisterForm() {
       return
     }
 
-    // Validate food preferences
-    const totalFoodCount = (eventData.foodPreference.veg || 0) + (eventData.foodPreference.nonVeg || 0)
-    if (totalFoodCount > totalGuests) {
-      setDbError(`Total food count (${totalFoodCount}) cannot exceed total guests (${totalGuests})`)
-      return
-    }
+    // FOOD PREFERENCE - Commented out
+    // const totalFoodCount = (eventData.foodPreference.veg || 0) + (eventData.foodPreference.nonVeg || 0)
+    // if (totalFoodCount > totalGuests) {
+    //   setDbError(`Total food count (${totalFoodCount}) cannot exceed total guests (${totalGuests})`)
+    //   return
+    // }
 
     setIsSubmitting(true)
     setDbError(null)
@@ -202,8 +202,9 @@ export function RegisterForm() {
         guestCount: eventData.guestCount,
         ticketType: eventData.ticketType,
         paymentMethod: eventData.paymentMethod,
-        foodPreference: eventData.foodPreference,
-        isMorningFood: eventData.isMorningFood,
+        // FOOD PREFERENCE - Commented out
+        // foodPreference: eventData.foodPreference,
+        // isMorningFood: eventData.isMorningFood,
       }
 
       const result = await registerParticipant(payload)
@@ -420,7 +421,10 @@ export function RegisterForm() {
               )} />
 
 
-              <Button type="submit" className="w-full">Next: Event Details</Button>
+              <div className="flex gap-3">
+                <Button type="button" variant="outline" className="flex-1" onClick={() => setStep(Step.OTP_VERIFICATION)}>Back</Button>
+                <Button type="submit" className="flex-1">Next: Event Details</Button>
+              </div>
             </form>
           </Form>
         </CardContent>
@@ -569,9 +573,9 @@ export function RegisterForm() {
             )}
           </div>
 
-          <Separator />
+          {/* FOOD PREFERENCE - Commented out */}
+          {/* <Separator />
 
-          {/* Food Preference (Optional) */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -625,7 +629,7 @@ export function RegisterForm() {
                 <p className="text-xs text-muted-foreground">Select if you plan to attend the morning breakfast.</p>
               </div>
             </div>
-          </div>
+          </div> */}
 
           {dbError && <Alert variant="destructive"><AlertCircle className="h-4 w-4" /><AlertTitle>Error</AlertTitle><AlertDescription>{dbError}</AlertDescription></Alert>}
 
@@ -661,7 +665,8 @@ export function RegisterForm() {
             <div className="flex justify-between"><span>Total Guests:</span><span className="font-medium">{totalGuests}</span></div>
             <div className="flex justify-between"><span>Ticket Type:</span><span className="font-medium">{eventData.ticketType}</span></div>
             <div className="flex justify-between"><span>Total Amount:</span><span className="font-bold text-primary">₹{totalAmount}</span></div>
-            <div className="flex justify-between"><span>Morning Food:</span><span className="font-medium">{eventData.isMorningFood ? "Yes" : "No"}</span></div>
+            {/* FOOD PREFERENCE - Commented out */}
+            {/* <div className="flex justify-between"><span>Morning Food:</span><span className="font-medium">{eventData.isMorningFood ? "Yes" : "No"}</span></div> */}
           </div>
           <Button className="w-full" onClick={() => window.location.reload()}>Register Another</Button>
         </CardContent>

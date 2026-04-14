@@ -22,16 +22,21 @@ export async function getActiveEvent() {
             }
         }
 
-        // Serialize the event data for client consumption
+        // Serialize the event data for client consumption.
+        // JSON.parse(JSON.stringify(...)) converts all ObjectId / Date instances
+        // (which have toJSON methods) into plain strings/values that Next.js RSC
+        // can safely pass to Client Components.
+        const serialized = JSON.parse(JSON.stringify(activeEvent))
+
         return {
             success: true,
             event: {
-                ...activeEvent,
-                _id: activeEvent._id.toString(),
+                ...serialized,
+                // Keep dates as explicit ISO strings for consistent client usage
                 startDate: activeEvent.startDate.toISOString(),
                 endDate: activeEvent.endDate.toISOString(),
-                createdAt: activeEvent.createdAt?.toISOString(),
-                updatedAt: activeEvent.updatedAt?.toISOString(),
+                createdAt: activeEvent.createdAt?.toISOString() ?? null,
+                updatedAt: activeEvent.updatedAt?.toISOString() ?? null,
             }
         }
     } catch (error: unknown) {

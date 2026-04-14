@@ -46,8 +46,9 @@ export function QuickCreateForm() {
     const [personalData, setPersonalData] = useState({ name: "", location: "" })
     const [eventData, setEventData] = useState({
         guestCount: 0,
-        foodPreference: { veg: 1, nonVeg: 0 },
-        isMorningFood: false,
+        // FOOD PREFERENCE - Commented out
+        // foodPreference: { veg: 1, nonVeg: 0 },
+        // isMorningFood: false,
         ticketType: "General",
     })
     const [existingParticipant, setExistingParticipant] = useState<IParticipant | null>(null)
@@ -64,16 +65,17 @@ export function QuickCreateForm() {
         return 1 + eventData.guestCount
     }, [eventData.guestCount])
 
+    // FOOD PREFERENCE - Commented out
     // Update Food Prefs when total guests changes
-    useEffect(() => {
-        setEventData(prev => ({
-            ...prev,
-            foodPreference: {
-                veg: Math.max(0, totalGuests - (prev.foodPreference.nonVeg || 0)),
-                nonVeg: prev.foodPreference.nonVeg || 0
-            }
-        }))
-    }, [totalGuests])
+    // useEffect(() => {
+    //     setEventData(prev => ({
+    //         ...prev,
+    //         foodPreference: {
+    //             veg: Math.max(0, totalGuests - (prev.foodPreference.nonVeg || 0)),
+    //             nonVeg: prev.foodPreference.nonVeg || 0
+    //         }
+    //     }))
+    // }, [totalGuests])
 
     // --- Handlers ---
 
@@ -112,8 +114,9 @@ export function QuickCreateForm() {
                 name: personalData.name,
                 location: personalData.location,
                 guestCount: eventData.guestCount,
-                foodPreference: eventData.foodPreference,
-                isMorningFood: eventData.isMorningFood,
+                // FOOD PREFERENCE - Commented out
+                // foodPreference: eventData.foodPreference,
+                // isMorningFood: eventData.isMorningFood,
                 ticketType: eventData.ticketType,
             }
 
@@ -297,7 +300,8 @@ export function QuickCreateForm() {
                         </div>
                     </div>
 
-                    <Separator />
+                    {/* FOOD PREFERENCE - Commented out */}
+                    {/* <Separator />
 
                     <div className="space-y-4">
                         <div className="flex items-center gap-2">
@@ -345,7 +349,7 @@ export function QuickCreateForm() {
                                 <Label htmlFor="morning-food" className="font-medium cursor-pointer">Morning Food Required</Label>
                             </div>
                         </div>
-                    </div>
+                    </div> */}
 
                     <Alert className="border-yellow-200 bg-yellow-50 dark:border-yellow-900/50 dark:bg-yellow-900/20">
                         <Info className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
@@ -390,7 +394,7 @@ export function QuickCreateForm() {
                         phoneForm.reset()
                         personalForm.reset()
                         setPersonalData({ name: "", location: "" })
-                        setEventData({ ageGroups: { adults: 1, children: 0 }, foodPreference: { veg: 1, nonVeg: 0 }, isMorningFood: false, ticketType: "General" })
+                        setEventData({ guestCount: 0, /* FOOD PREFERENCE - Commented out: ageGroups: { adults: 1, children: 0 }, foodPreference: { veg: 1, nonVeg: 0 }, isMorningFood: false, */ ticketType: "General" })
                         setVerifiedPhone("")
                     }}>Add Another</Button>
                 </CardContent>
