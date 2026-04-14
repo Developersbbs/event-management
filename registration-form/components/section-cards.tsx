@@ -17,8 +17,7 @@ interface SectionCardsProps {
     rejectedRegistrations: number
     cashPayments: number
     onlinePayments: number
-    vegCount: number
-    nonVegCount: number
+    foodGuestCount: number
     morningFoodCount: number
   }
 }
@@ -82,28 +81,14 @@ export function SectionCards({ stats }: SectionCardsProps) {
 
       <Card className="@container/card">
         <CardHeader>
-          <CardDescription>Non-Veg Meals</CardDescription>
+          <CardDescription>Food Guests</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            {stats.nonVegCount}
+            {stats.foodGuestCount}
           </CardTitle>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            <IconSoup className="size-4 text-red-500" /> Non-Veg
-          </div>
-        </CardFooter>
-      </Card>
-
-      <Card className="@container/card">
-        <CardHeader>
-          <CardDescription>Veg Meals</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            {stats.vegCount}
-          </CardTitle>
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
-            <IconSalad className="size-4 text-green-500" /> Pure Veg
+            <IconSoup className="size-4 text-primary" /> Total Food Opted
           </div>
         </CardFooter>
       </Card>

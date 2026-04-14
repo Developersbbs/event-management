@@ -8,11 +8,8 @@ import { IParticipant } from "@/lib/types"
 interface GroupStat {
     _id: string
     membersCount: number
-    membersCount: number
     totalGuest: number
     checkedInMembers: number
-    checkedInParticipants: number
-    totalCheckedIn: number
     checkedInParticipants: number
     totalCheckedIn: number
 }

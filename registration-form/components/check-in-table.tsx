@@ -176,17 +176,14 @@ function CheckInRow({ participant, onRefresh }: { participant: IParticipant, onR
     const isCheckedIn = participant.checkIn?.isCheckedIn
 
     // Registered Values
-    const regAdults = participant.ageGroups?.adults || 1
-    const regChildren = participant.ageGroups?.children || 0
+    const regGuests = participant.ageGroups?.guest || 0
 
     const dbMemberPresent = participant.checkIn?.memberPresent ?? true
-    const dbActualAdults = participant.checkIn?.actualAdults ?? 0
-    const dbActualChildren = participant.checkIn?.actualChildren ?? 0
+    const dbActualGuests = participant.checkIn?.actualGuests ?? 0
 
     const getInitialGuests = () => {
         if (!isCheckedIn) return 0
-        const totalActual = dbActualAdults + dbActualChildren
-        return Math.max(0, totalActual - (dbMemberPresent ? 1 : 0))
+        return Math.max(0, dbActualGuests - (dbMemberPresent ? 1 : 0))
     }
 
     const [memberPresent, setMemberPresent] = React.useState(
@@ -197,12 +194,12 @@ function CheckInRow({ participant, onRefresh }: { participant: IParticipant, onR
     const [saving, setSaving] = React.useState(false)
 
     // Constraints - Registrant + Guests = Total Registered People
-    const regGuestsCount = participant.guestCount ?? Math.max(0, (regAdults + regChildren) - 1)
+    const regGuestsCount = participant.guestCount ?? regGuests
     const maxGuests = regGuestsCount
 
     const currentActualTotal = (memberPresent ? 1 : 0) + guestsCheckedIn
     const balanceGuests = regGuestsCount - guestsCheckedIn
-    const isFullCheckIn = balanceGuests === 0 && (memberPresent || regAdults === 0)
+    const isFullCheckIn = balanceGuests === 0 && memberPresent
 
     const handleSave = async () => {
         setSaving(true)
@@ -230,7 +227,7 @@ function CheckInRow({ participant, onRefresh }: { participant: IParticipant, onR
                 <div className="text-sm font-medium">
                     Guests: {regGuestsCount}
                 </div>
-                <div className="text-[10px] text-muted-foreground">Total: {regAdults + regChildren}</div>
+                <div className="text-[10px] text-muted-foreground">Total: {regGuestsCount + 1}</div>
             </TableCell>
 
             {/* Member Checkbox */}

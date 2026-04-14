@@ -50,18 +50,15 @@ export async function performCheckIn(id: string, data: CheckInData) {
         }
 
         // Calculate Totals based on Logic:
-        // actualAdults = (MemberPresent ? 1 : 0) + GuestCount
-        // actualChildren = 0
-        const actualAdults = (data.memberPresent ? 1 : 0) + data.guestCount
-        const totalCount = actualAdults
-        const isCheckedIn = totalCount > 0
+        // actualGuests = (MemberPresent ? 1 : 0) + GuestCount
+        const actualGuests = (data.memberPresent ? 1 : 0) + data.guestCount
+        const isCheckedIn = actualGuests > 0
 
         participant.checkIn = {
             isCheckedIn: isCheckedIn,
             memberPresent: data.memberPresent,
             timestamp: participant.checkIn?.timestamp || new Date(),
-            actualAdults: actualAdults,
-            actualChildren: 0, // Consolidating into actualAdults for simpler model
+            actualGuests: actualGuests,
             checkedInBy: user.email // Updates last modifier
         }
 
@@ -87,16 +84,14 @@ export async function getCheckInStats() {
 
         (participants as unknown as IParticipant[]).forEach((p) => {
             registeredMembers++
-            const totalRegGuests = p.guestCount ?? Math.max(0, (p.ageGroups?.adults || 0) + (p.ageGroups?.children || 0) - 1)
+            const totalRegGuests = p.guestCount ?? p.ageGroups?.guest ?? 0
             registeredParticipants += totalRegGuests
 
             if (p.checkIn?.isCheckedIn) {
                 if (p.checkIn.memberPresent) {
                     checkedInMembers++
                 }
-                const actualAdults = p.checkIn?.actualAdults || 0
-                const actualChildren = p.checkIn?.actualChildren || 0
-                const totalActual = actualAdults + actualChildren
+                const totalActual = p.checkIn?.actualGuests || 0
 
                 // Checked-in Participants: Total Actual - (Member Present ? 1 : 0)
                 const memberCount = p.checkIn.memberPresent ? 1 : 0
