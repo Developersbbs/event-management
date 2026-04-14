@@ -45,6 +45,7 @@ export interface IParticipant {
     ticketPrice?: number;
     totalAmount?: number;
     guestCount?: number;
+    memberCount?: number;
     isMember?: boolean;
     paymentMethod?: "cash" | "online";
     paymentStatus?: "pending" | "completed" | "failed";

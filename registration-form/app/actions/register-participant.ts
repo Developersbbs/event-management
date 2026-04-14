@@ -190,15 +190,21 @@ export async function registerParticipant(data: RegisterParticipantData) {
         }
 
         // Build secondary members array with defaults
-        const formattedSecondaryMembers = secondaryMembers.map(member => ({
-            name: member.name.trim(),
-            mobileNumber: member.mobileNumber?.trim(),
-            email: member.email?.trim(),
-            businessName: member.businessName?.trim(),
-            businessCategory: member.businessCategory?.trim(),
-            location: member.location?.trim(),
-            isCheckedIn: false
-        }))
+        const formattedSecondaryMembers = secondaryMembers
+            .filter(member => member.name && member.name.trim() !== '') // Only include members with names
+            .map(member => ({
+                name: member.name.trim(),
+                mobileNumber: member.mobileNumber?.trim(),
+                email: member.email?.trim(),
+                businessName: member.businessName?.trim(),
+                businessCategory: member.businessCategory?.trim(),
+                location: member.location?.trim(),
+                isCheckedIn: false
+            }))
+
+        const actualMemberCount = formattedSecondaryMembers.length
+        const actualTotalPeople = 1 + actualMemberCount
+        const finalTotalAmount = actualTotalPeople * pricePerPerson
 
         // Create participant with validated data
         const participant = await Participant.create({
@@ -217,21 +223,22 @@ export async function registerParticipant(data: RegisterParticipantData) {
             eventId: activeEvent._id,
             eventDate: activeEvent.startDate,
             ageGroups: finalAgeGroups,
-            guestCount: totalPeople - 1,
+            guestCount: actualMemberCount,
+            memberCount: actualMemberCount,
             ticketType,
             ticketPrice: pricePerPerson,
-            totalAmount,
+            totalAmount: finalTotalAmount,
             isMember,
             secondaryMembers: formattedSecondaryMembers
         })
 
         // Update event counts atomically
-        selectedTicket.soldCount += totalPeople
+        selectedTicket.soldCount += actualTotalPeople
         await activeEvent.save()
 
         await Event.findByIdAndUpdate(
             activeEvent._id,
-            { $inc: { registeredCount: totalPeople } }
+            { $inc: { registeredCount: actualTotalPeople } }
         )
 
         return {

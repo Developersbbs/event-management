@@ -96,6 +96,10 @@ const ParticipantSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    memberCount: {
+        type: Number,
+        default: 0
+    },
     ticketPrice: {
         type: Number,
     },

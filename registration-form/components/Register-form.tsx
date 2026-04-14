@@ -229,6 +229,11 @@ export function RegisterForm() {
     setIsSubmitting(true)
     setDbError(null)
     try {
+      const filteredSecondaryMembers = secondaryMembers.filter(m => m.name.trim() !== '')
+      console.log("DEBUG - Secondary Members before API call:", secondaryMembers)
+      console.log("DEBUG - Filtered Secondary Members (will be sent):", filteredSecondaryMembers)
+      console.log("DEBUG - Member count:", filteredSecondaryMembers.length)
+      
       const payload = {
         mobileNumber: verifiedPhone,
         name: personalData.name,
@@ -242,7 +247,7 @@ export function RegisterForm() {
         foodGuest: eventData.guestCount + 1, // Total people for food
         ageGuest: eventData.guestCount,      // Just guests for age groups
         isMorningFood: eventData.isMorningFood,
-        secondaryMembers: secondaryMembers.filter(m => m.name.trim() !== '')
+        secondaryMembers: filteredSecondaryMembers
       }
 
       const result = await registerParticipant(payload)
