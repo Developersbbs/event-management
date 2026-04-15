@@ -8,8 +8,10 @@ export async function GET() {
         await dbConnect()
         const participants = await Participant.find({ isRegistered: true, approvalStatus: 'approved' }).lean()
 
-        let data: any[] = []
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const data: any[] = []
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         participants.forEach((p: any) => {
             // primary
             data.push({
@@ -25,6 +27,7 @@ export async function GET() {
             })
 
             // secondary
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             p.secondaryMembers?.forEach((m: any) => {
                 data.push({
                     Name: m.name,
@@ -49,7 +52,7 @@ export async function GET() {
             bookType: "xlsx"
         })
 
-        return new Response(buffer as Buffer, {
+        return new Response(new Uint8Array(buffer as ArrayBuffer), {
             headers: {
                 "Content-Disposition": "attachment; filename=participants.xlsx",
                 "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"

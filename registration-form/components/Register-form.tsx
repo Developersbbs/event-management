@@ -14,15 +14,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from "@/components/ui/input-otp"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command"
+import { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator } from "@/components/ui/input-otp"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Check } from "lucide-react"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Loader2, CheckCircle2, AlertCircle, Plus, Minus, Phone, Users, Utensils, Receipt, Info, UserPlus, Trash2, X, Edit } from "lucide-react"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
+import { Loader2, CheckCircle2, Phone, Receipt, Info, X, Trash2, UserPlus, AlertCircle, Edit, Check } from "lucide-react"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 enum Step {
   PHONE_INPUT = 0,
@@ -680,7 +678,7 @@ export function RegisterForm() {
                       <Label className="text-xs">Location</Label>
                       <Popover
                         open={currentMember.showCustomLocation ? false : undefined}
-                        onOpenChange={(open) => {
+                        onOpenChange={() => {
                           if (!currentMember.showCustomLocation) {
                             setCurrentMember(prev => ({ ...prev, showCustomLocation: false }))
                           }

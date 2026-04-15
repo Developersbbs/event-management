@@ -4,13 +4,11 @@ import * as React from "react"
 import {
   IconChartBar,
   IconDashboard,
-  IconInnerShadowTop,
-  IconListDetails,
   IconUsers,
   IconCalendarEvent,
   IconWorld,
   IconDatabase,
-  IconPlus,
+  IconListDetails,
 } from "@tabler/icons-react"
 
 import { NavMain } from "@/components/nav-main"

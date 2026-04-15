@@ -3,7 +3,7 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { ArrowUpDown, Soup, Salad, Coffee, CheckCircle, XCircle } from "lucide-react"
+import { ArrowUpDown, CheckCircle, XCircle } from "lucide-react"
 import { IParticipant } from "@/lib/types"
 
 // Types matching what getAdminData returns

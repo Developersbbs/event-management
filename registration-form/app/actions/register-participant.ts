@@ -53,7 +53,6 @@ export async function registerParticipant(data: RegisterParticipantData) {
             paymentMethod = "cash",
             foodGuest = 0,
             isMorningFood = false,
-            guestCount = 0,
             ageGuest = 0,
             ticketType,
             isMember = false,
@@ -227,7 +226,6 @@ export async function registerParticipant(data: RegisterParticipantData) {
 
         const actualMemberCount = formattedSecondaryMembers.length
         const actualTotalPeople = 1 + actualMemberCount
-        const finalTotalAmount = actualTotalPeople * pricePerPerson
         
         // Force recalculation in backend (never trust frontend)
         const backendTotalMembers = 1 + actualMemberCount

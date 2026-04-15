@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useMemo } from "react"
-import { Download, Users, CheckCircle2, Loader2 } from "lucide-react"
+import { Download, CheckCircle2, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -157,6 +157,7 @@ export default function DashboardPage() {
             <div className="rounded-md border bg-card">
                 <div className="flex items-center justify-between p-4 gap-4">
                     <Tabs value={filter} onValueChange={(v) => {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         setFilter(v as any)
                         setPage(1)
                     }}>
@@ -167,6 +168,7 @@ export default function DashboardPage() {
                         </TabsList>
                     </Tabs>
                     <Tabs value={type} onValueChange={(v) => {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         setType(v as any)
                         setPage(1)
                     }}>

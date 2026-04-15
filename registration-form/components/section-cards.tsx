@@ -1,4 +1,4 @@
-import { IconUsers, IconSoup, IconSalad, IconCoffee, IconCurrencyRupee, IconClock, IconCheck, IconX } from "@tabler/icons-react"
+import { IconUsers, IconCurrencyRupee, IconClock, IconCheck, IconX } from "@tabler/icons-react"
 import {
   Card,
   CardDescription,

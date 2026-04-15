@@ -19,10 +19,9 @@ export default async function Page() {
     rejectedRegistrations: 0,
     cashPayments: 0,
     onlinePayments: 0,
-    // FOOD PREFERENCE - Commented out
-    // vegCount: 0,
-    // nonVegCount: 0,
-    // morningFoodCount: 0,
+    foodGuestCount: 0,
+    morningFoodCount: 0,
+    totalMembers: 0,
   }
 
   return (

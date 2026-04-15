@@ -12,7 +12,8 @@ export async function GET(request: Request) {
         const limit = parseInt(searchParams.get('limit') || '20')
         const search = searchParams.get('search') || ''
 
-        let query: any = { isRegistered: true, approvalStatus: 'approved' }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const query: any = { isRegistered: true, approvalStatus: 'approved' }
         
         if (filter === 'checked-in') {
             query["checkIn.isCheckedIn"] = true
@@ -37,8 +38,10 @@ export async function GET(request: Request) {
             secondaryMembers: 1
         }).lean()
 
-        let records: any[] = []
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const records: any[] = []
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         participants.forEach((p: any) => {
             // primary
             if (type === 'all' || type === 'primary') {
@@ -57,6 +60,7 @@ export async function GET(request: Request) {
 
             // secondary
             if (type === 'all' || type === 'secondary') {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 p.secondaryMembers?.forEach((m: any) => {
                     records.push({
                         type: "Secondary",
@@ -77,7 +81,11 @@ export async function GET(request: Request) {
         const total = records.length
         const startIndex = (page - 1) * limit
         const endIndex = startIndex + limit
-        const paginatedRecords = records.slice(startIndex, endIndex)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const filteredRecords = records.filter((r: any) => {
+            return r.type === 'Primary' || r.type === 'Secondary'
+        })
+        const paginatedRecords = filteredRecords.slice(startIndex, endIndex)
 
         return NextResponse.json({
             records: paginatedRecords,

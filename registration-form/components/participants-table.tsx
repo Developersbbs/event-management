@@ -13,9 +13,7 @@ import {
     getSortedRowModel,
     useReactTable,
 } from "@tanstack/react-table"
-import { ChevronDown, Download, Search, Pencil, FileText } from "lucide-react"
-import jsPDF from "jspdf"
-import autoTable from "jspdf-autotable"
+import { ChevronDown, Download, Search, Pencil } from "lucide-react"
 import { EditParticipantDialog } from "@/components/edit-participant-dialog"
 import { DateRange } from "react-day-picker"
 import { isWithinInterval, parseISO, startOfDay, endOfDay } from "date-fns"
@@ -44,8 +42,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { Switch } from "@/components/ui/switch"
-import { Label } from "@/components/ui/label"
 import { DatePickerWithRange } from "@/components/date-range-picker"
 
 interface DataTableProps<TData, TValue> {
@@ -68,7 +64,7 @@ export function ParticipantsTable<TData, TValue>({
 
     // Custom Filters State
     const [dateRange, setDateRange] = React.useState<DateRange | undefined>()
-    const [showMorningFoodOnly, setShowMorningFoodOnly] = React.useState(false)
+    const [showMorningFoodOnly] = React.useState(false)
     const [locationFilter, setLocationFilter] = React.useState<string>("all")
 
     // Calculate Location Counts
@@ -204,32 +200,17 @@ export function ParticipantsTable<TData, TValue>({
         document.body.removeChild(link);
     }
 
+    /*
     const downloadPDF = async () => {
         try {
             const doc = new jsPDF()
 
+            // Load font for Tamil characters
             let fontLoaded = false
             try {
-                const fontRes = await fetch("/fonts/NotoSansTamil-Regular.ttf")
-                if (fontRes.ok) {
-                    const fontBlob = await fontRes.blob()
-                    const reader = new FileReader()
-                    const base64String = await new Promise<string>((resolve, reject) => {
-                        reader.onloadend = () => {
-                            if (typeof reader.result === 'string') {
-                                resolve(reader.result.split(',')[1])
-                            } else {
-                                reject(new Error("Failed to read font"))
-                            }
-                        }
-                        reader.onerror = reject
-                        reader.readAsDataURL(fontBlob)
-                    })
-
-                    doc.addFileToVFS("NotoSansTamil.ttf", base64String)
-                    doc.addFont("NotoSansTamil.ttf", "NotoSansTamil", "normal")
-                    fontLoaded = true
-                }
+                doc.addFileToVFS("NotoSansTamil-Regular.ttf", "")
+                doc.addFont("NotoSansTamil-Regular.ttf", "NotoSansTamil", "normal")
+                fontLoaded = true
             } catch (fontError) {
                 console.error("Font load error:", fontError)
             }
@@ -285,6 +266,7 @@ export function ParticipantsTable<TData, TValue>({
             alert("Failed to export PDF")
         }
     }
+    */
 
     return (
         <div className="w-full space-y-4">

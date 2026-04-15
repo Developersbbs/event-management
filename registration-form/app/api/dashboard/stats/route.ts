@@ -7,21 +7,24 @@ export async function GET() {
         await dbConnect()
         const participants = await Participant.find({ isRegistered: true, approvalStatus: 'approved' }).lean()
 
-        let totalRegistrations = participants.length
+        const totalRegistrations = participants.length
         let totalPeople = 0
         let totalCheckedIn = 0
         let totalSecondaryCheckedIn = 0
         let primaryMembers = 0
         let secondaryMembers = 0
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         participants.forEach((p: any) => {
             const secondaryCount = p.secondaryMembers?.length || 0
             totalPeople += 1 + secondaryCount
             primaryMembers += 1
             secondaryMembers += secondaryCount
             if (p.checkIn?.isCheckedIn) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 totalCheckedIn += (p.checkIn?.memberPresent ? 1 : 0) + (p.secondaryMembers?.filter((m: any) => m.isCheckedIn).length || 0)
             }
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             totalSecondaryCheckedIn += p.secondaryMembers?.filter((m: any) => m.isCheckedIn).length || 0
         })
 

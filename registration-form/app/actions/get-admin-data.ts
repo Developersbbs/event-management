@@ -8,8 +8,12 @@ import { IParticipant } from "@/lib/types"
 interface GroupStat {
     _id: string
     membersCount: number
+    adultsCount: number
+    childrenCount: number
     totalGuest: number
     checkedInMembers: number
+    checkedInGuestAdults: number
+    checkedInChildren: number
     checkedInParticipants: number
     totalCheckedIn: number
 }
@@ -123,6 +127,8 @@ export async function getLocationStats(from?: string, to?: string) {
                 $group: {
                     _id: "$location",
                     membersCount: { $sum: 1 },
+                    adultsCount: { $sum: 0 },
+                    childrenCount: { $sum: 0 },
                     totalGuest: { $sum: { $size: "$secondaryMembers" } },
                     // Check-in Metrics
                     checkedInMembers: {
@@ -134,6 +140,8 @@ export async function getLocationStats(from?: string, to?: string) {
                             ]
                         }
                     },
+                    checkedInGuestAdults: { $sum: 0 },
+                    checkedInChildren: { $sum: 0 },
                     checkedInParticipants: {
                         $sum: {
                             $cond: [

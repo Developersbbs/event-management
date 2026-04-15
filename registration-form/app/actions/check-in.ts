@@ -68,6 +68,7 @@ export async function performSecondaryMemberCheckIn(data: SecondaryMemberCheckIn
 
         // Find the secondary member by mobile number
         const memberIndex = participant.secondaryMembers.findIndex(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (m: any) => m.mobileNumber === data.memberMobileNumber
         )
 
@@ -84,6 +85,7 @@ export async function performSecondaryMemberCheckIn(data: SecondaryMemberCheckIn
 
         // Negative Test Case 6: Prevent over check-in
         const primaryCheckedIn = participant.checkIn?.memberPresent || false
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const secondaryCheckedIn = participant.secondaryMembers.filter((m: any) => m.isCheckedIn).length
         const totalCheckedIn = (primaryCheckedIn ? 1 : 0) + secondaryCheckedIn
         const totalRegistered = 1 + (participant.secondaryMembers?.length || 0)
@@ -98,6 +100,7 @@ export async function performSecondaryMemberCheckIn(data: SecondaryMemberCheckIn
 
         // Update overall check-in status if primary is checked in or any secondary is checked in
         const anyCheckedIn = participant.checkIn?.isCheckedIn || 
+                           // eslint-disable-next-line @typescript-eslint/no-explicit-any
                            participant.secondaryMembers.some((m: any) => m.isCheckedIn)
         
         if (!participant.checkIn) {
@@ -123,7 +126,9 @@ export async function performSecondaryMemberCheckIn(data: SecondaryMemberCheckIn
 }
 
 // Sync function to derive check-in state from actual data (primary + secondary)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function syncCheckinStatus(participant: any) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const secondaryChecked = participant.secondaryMembers?.filter((m: any) => m.isCheckedIn).length || 0
     const totalMembers = 1 + (participant.secondaryMembers?.length || 0)
     const totalChecked = (participant.checkIn?.memberPresent ? 1 : 0) + secondaryChecked
@@ -212,6 +217,7 @@ export async function getCheckInStats() {
                     checkedInMembers++
                 }
                 // Count checked-in secondary members from secondaryMembers array
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const secondaryCheckedIn = p.secondaryMembers?.filter((m: any) => m.isCheckedIn).length || 0
                 checkedInParticipants += secondaryCheckedIn
             }

@@ -10,7 +10,7 @@ export async function POST() {
         
         let updatedCount = 0
         
-        for (let p of participants) {
+        for (const p of participants) {
             const totalMembers = 1 + (p.secondaryMembers?.length || 0)
             const ticketPrice = p.ticketPrice || 0
             
