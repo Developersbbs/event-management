@@ -11,12 +11,14 @@ export async function GET() {
         let totalPeople = 0
         let totalCheckedIn = 0
         let totalSecondaryCheckedIn = 0
-
-        let totalRevenue = 0
+        let primaryMembers = 0
+        let secondaryMembers = 0
 
         participants.forEach((p: any) => {
-            totalPeople += 1 + (p.secondaryMembers?.length || 0)
-            totalRevenue += p.totalAmount || 0
+            const secondaryCount = p.secondaryMembers?.length || 0
+            totalPeople += 1 + secondaryCount
+            primaryMembers += 1
+            secondaryMembers += secondaryCount
             if (p.checkIn?.isCheckedIn) {
                 totalCheckedIn += (p.checkIn?.memberPresent ? 1 : 0) + (p.secondaryMembers?.filter((m: any) => m.isCheckedIn).length || 0)
             }
@@ -28,7 +30,8 @@ export async function GET() {
             totalPeople,
             totalCheckedIn,
             totalSecondaryCheckedIn,
-            totalRevenue
+            primaryMembers,
+            secondaryMembers
         })
     } catch (error) {
         console.error("Dashboard stats error:", error)

@@ -21,7 +21,8 @@ interface DashboardStats {
     totalPeople: number
     totalCheckedIn: number
     totalSecondaryCheckedIn: number
-    totalRevenue: number
+    primaryMembers: number
+    secondaryMembers: number
 }
 
 interface DashboardRecord {
@@ -139,19 +140,16 @@ export default function DashboardPage() {
                     <div className="text-2xl font-bold">{stats?.totalRegistrations || 0}</div>
                 </div>
                 <div className="p-4 rounded-lg border bg-card text-card-foreground shadow-sm">
-                    <div className="text-sm text-muted-foreground">Total Members</div>
-                    <div className="text-2xl font-bold">{stats?.totalPeople || 0}</div>
-                    <div className="text-xs text-muted-foreground">
-                        ({stats?.totalRegistrations || 0} Primary + {(stats?.totalPeople || 0) - (stats?.totalRegistrations || 0)} Secondary)
-                    </div>
+                    <div className="text-sm text-muted-foreground">Primary Members</div>
+                    <div className="text-2xl font-bold">{stats?.primaryMembers || 0}</div>
                 </div>
-                <div className="p-4 rounded-lg border bg-green-50 text-green-900 border-green-100 dark:bg-green-900/20 dark:text-green-100 dark:border-green-900">
-                    <div className="text-sm opacity-80">Checked-in People</div>
+                <div className="p-4 rounded-lg border bg-card text-card-foreground shadow-sm">
+                    <div className="text-sm text-muted-foreground">Secondary Members</div>
+                    <div className="text-2xl font-bold">{stats?.secondaryMembers || 0}</div>
+                </div>
+                <div className="p-4 rounded-lg border bg-card text-card-foreground shadow-sm">
+                    <div className="text-sm text-muted-foreground">Checked-in People</div>
                     <div className="text-2xl font-bold">{stats?.totalCheckedIn || 0}</div>
-                </div>
-                <div className="p-4 rounded-lg border bg-blue-50 text-blue-900 border-blue-100 dark:bg-blue-900/20 dark:text-blue-100 dark:border-blue-900">
-                    <div className="text-sm opacity-80">Total Revenue</div>
-                    <div className="text-2xl font-bold">₹{stats?.totalRevenue || 0}</div>
                 </div>
             </div>
 

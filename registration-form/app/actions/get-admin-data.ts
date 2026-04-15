@@ -34,11 +34,13 @@ export async function getAdminData() {
             // nonVegCount: 0,
             foodGuestCount: 0,
             morningFoodCount: 0,
+            totalMembers: 0,
         };
 
         (participants as unknown as IParticipant[]).forEach((p: IParticipant) => {
             // Handle new schema fields for participants
             const secondaryMembersCount = p.secondaryMembers?.length || 0
+            const totalMembers = 1 + secondaryMembersCount
             const totalAmount = p.totalAmount || 0
             const paymentMethod = p.paymentMethod || "cash"
             const approvalStatus = p.approvalStatus || "pending"
@@ -47,12 +49,13 @@ export async function getAdminData() {
             // const nonVeg = p.foodPreference?.nonVeg || 0
             const foodGuest = p.foodPreference?.guest || 0
 
-            stats.totalGuests += secondaryMembersCount
+            stats.totalGuests += totalMembers
             stats.totalAmount += totalAmount
             // FOOD PREFERENCE - Commented out
             // stats.vegCount += veg
             // stats.nonVegCount += nonVeg
             stats.foodGuestCount += foodGuest
+            stats.totalMembers += totalMembers
             
             if (paymentMethod === "cash") {
                 stats.cashPayments += 1

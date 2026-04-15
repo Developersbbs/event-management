@@ -19,6 +19,7 @@ interface SectionCardsProps {
     onlinePayments: number
     foodGuestCount: number
     morningFoodCount: number
+    totalMembers?: number
   }
 }
 
@@ -34,7 +35,10 @@ export function SectionCards({ stats }: SectionCardsProps) {
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            <IconUsers className="size-4 text-blue-500" /> Total Guests: {stats.totalGuests}
+            <IconUsers className="size-4 text-blue-500" /> Total Members: {stats.totalMembers || stats.totalGuests}
+          </div>
+          <div className="text-muted-foreground text-xs">
+            ({stats.totalRegistrations} Primary + {(stats.totalMembers || stats.totalGuests) - stats.totalRegistrations} Secondary)
           </div>
           <div className="text-muted-foreground">
             Total Amount: ₹{stats.totalAmount}
@@ -79,7 +83,7 @@ export function SectionCards({ stats }: SectionCardsProps) {
         </CardFooter>
       </Card>
 
-      <Card className="@container/card">
+      {/* <Card className="@container/card">
         <CardHeader>
           <CardDescription>Food Guests</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
@@ -91,9 +95,9 @@ export function SectionCards({ stats }: SectionCardsProps) {
             <IconSoup className="size-4 text-primary" /> Total Food Opted
           </div>
         </CardFooter>
-      </Card>
+      </Card> */}
 
-      <Card className="@container/card">
+      {/* <Card className="@container/card">
         <CardHeader>
           <CardDescription>Morning Breakfast</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
@@ -105,7 +109,7 @@ export function SectionCards({ stats }: SectionCardsProps) {
             <IconCoffee className="size-4 text-orange-500" /> Opted In
           </div>
         </CardFooter>
-      </Card>
+      </Card> */}
     </div>
   )
 }

@@ -57,6 +57,15 @@ export const columns: ColumnDef<Participant>[] = [
         },
     },
     {
+        id: "secondaryMembers",
+        accessorFn: (row) => row.secondaryMembers?.length || 0,
+        header: "Secondary Members",
+        cell: ({ row }) => {
+            const count = row.original.secondaryMembers?.length || 0
+            return <div className="text-center">{count}</div>
+        },
+    },
+    {
         accessorKey: "paymentMethod",
         header: "Payment",
         cell: ({ row }) => {
@@ -100,7 +109,7 @@ export const columns: ColumnDef<Participant>[] = [
                     <Button
                         size="sm"
                         onClick={handleMarkAsPaid}
-                        className="bg-blue-600 hover:bg-blue-700"
+                        className="bg-orange-700 hover:bg-orange-800"
                     >
                         Mark as Paid
                     </Button>
@@ -110,8 +119,13 @@ export const columns: ColumnDef<Participant>[] = [
             return (
                 <Badge 
                     variant={status === "completed" ? "default" : status === "failed" ? "destructive" : "secondary"}
+                    className={
+                        status === "completed" ? "bg-green-600 hover:bg-green-700" :
+                        status === "failed" ? "bg-red-600 hover:bg-red-700" :
+                        "bg-orange-500 hover:bg-orange-600 text-white"
+                    }
                 >
-                    {status}
+                    {status === "completed" ? "Paid" : status === "failed" ? "Failed" : "Pending"}
                 </Badge>
             )
         },
