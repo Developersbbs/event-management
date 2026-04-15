@@ -49,14 +49,6 @@ export const columns: ColumnDef<Participant>[] = [
         },
     },
     {
-        accessorKey: "guestCount",
-        header: "Guests",
-        cell: ({ row }) => {
-            const guestCount = row.getValue("guestCount") as number
-            return <div className="text-center">{guestCount}</div>
-        },
-    },
-    {
         accessorKey: "totalAmount",
         header: "Amount",
         cell: ({ row }) => {
@@ -81,6 +73,40 @@ export const columns: ColumnDef<Participant>[] = [
         header: "Payment Status",
         cell: ({ row }) => {
             const status = row.getValue("paymentStatus") as string
+            const paymentMethod = row.getValue("paymentMethod") as string
+            
+            const handleMarkAsPaid = async () => {
+                try {
+                    const response = await fetch("/api/payment/mark-paid", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ id: row.original._id })
+                    })
+                    
+                    if (response.ok) {
+                        window.location.reload()
+                    } else {
+                        const { error } = await response.json()
+                        alert(error || "Failed to mark as paid")
+                    }
+                } catch {
+                    alert("Error marking as paid")
+                }
+            }
+            
+            // Show Mark as Paid button for cash payments with pending status
+            if (paymentMethod === "cash" && status === "pending") {
+                return (
+                    <Button
+                        size="sm"
+                        onClick={handleMarkAsPaid}
+                        className="bg-blue-600 hover:bg-blue-700"
+                    >
+                        Mark as Paid
+                    </Button>
+                )
+            }
+            
             return (
                 <Badge 
                     variant={status === "completed" ? "default" : status === "failed" ? "destructive" : "secondary"}

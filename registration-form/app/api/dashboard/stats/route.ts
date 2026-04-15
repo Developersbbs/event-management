@@ -12,29 +12,23 @@ export async function GET() {
         let totalCheckedIn = 0
         let totalSecondaryCheckedIn = 0
 
+        let totalRevenue = 0
+
         participants.forEach((p: any) => {
-            const secondaryCount = p.secondaryMembers?.length || 0
-            totalPeople += 1 + secondaryCount
-
-            // primary
+            totalPeople += 1 + (p.secondaryMembers?.length || 0)
+            totalRevenue += p.totalAmount || 0
             if (p.checkIn?.isCheckedIn) {
-                totalCheckedIn += 1
+                totalCheckedIn += (p.checkIn?.memberPresent ? 1 : 0) + (p.secondaryMembers?.filter((m: any) => m.isCheckedIn).length || 0)
             }
-
-            // secondary
-            p.secondaryMembers?.forEach((m: any) => {
-                if (m.isCheckedIn) {
-                    totalCheckedIn += 1
-                    totalSecondaryCheckedIn += 1
-                }
-            })
+            totalSecondaryCheckedIn += p.secondaryMembers?.filter((m: any) => m.isCheckedIn).length || 0
         })
 
         return NextResponse.json({
             totalRegistrations,
             totalPeople,
             totalCheckedIn,
-            totalSecondaryCheckedIn
+            totalSecondaryCheckedIn,
+            totalRevenue
         })
     } catch (error) {
         console.error("Dashboard stats error:", error)

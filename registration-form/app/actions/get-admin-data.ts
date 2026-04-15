@@ -38,7 +38,7 @@ export async function getAdminData() {
 
         (participants as unknown as IParticipant[]).forEach((p: IParticipant) => {
             // Handle new schema fields for participants
-            const guestCount = p.guestCount || 0
+            const secondaryMembersCount = p.secondaryMembers?.length || 0
             const totalAmount = p.totalAmount || 0
             const paymentMethod = p.paymentMethod || "cash"
             const approvalStatus = p.approvalStatus || "pending"
@@ -47,7 +47,7 @@ export async function getAdminData() {
             // const nonVeg = p.foodPreference?.nonVeg || 0
             const foodGuest = p.foodPreference?.guest || 0
 
-            stats.totalGuests += guestCount
+            stats.totalGuests += secondaryMembersCount
             stats.totalAmount += totalAmount
             // FOOD PREFERENCE - Commented out
             // stats.vegCount += veg
@@ -120,7 +120,7 @@ export async function getLocationStats(from?: string, to?: string) {
                 $group: {
                     _id: "$location",
                     membersCount: { $sum: 1 },
-                    totalGuest: { $sum: "$guestCount" },
+                    totalGuest: { $sum: { $size: "$secondaryMembers" } },
                     // Check-in Metrics
                     checkedInMembers: {
                         $sum: {

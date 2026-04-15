@@ -79,11 +79,9 @@ export function RegisterForm() {
     location: ""
   })
   const [eventData, setEventData] = useState({
-    guestCount: 0,
     ticketType: "",
     paymentMethod: "cash",
     foodGuest: 0,
-    ageGuest: 0,
     isMorningFood: false,
   })
   const [secondaryMembers, setSecondaryMembers] = useState<{ name: string; mobileNumber: string; email: string; businessName: string; businessCategory: string; location: string; isMember?: boolean; showCustomLocation?: boolean; customLocation?: string }[]>([])
@@ -135,10 +133,10 @@ export function RegisterForm() {
   })
 
   // --- Derived State (Pricing) ---
-  // Calculate total guests: 1 (primary) + guestCount (primary's additional guests) + memberCount (secondary members)
-  const totalGuests = useMemo(() => {
-    return 1 + (eventData.guestCount || 0) + secondaryMembers.length
-  }, [eventData.guestCount, secondaryMembers.length])
+  // Calculate total members: 1 (primary) + secondary members
+  const totalMembers = useMemo(() => {
+    return 1 + secondaryMembers.length
+  }, [secondaryMembers.length])
 
   const pricePerPerson = useMemo(() => {
     if (!activeEvent || !eventData.ticketType) return 0
@@ -147,8 +145,8 @@ export function RegisterForm() {
   }, [activeEvent, eventData.ticketType])
 
   const totalAmount = useMemo(() => {
-    return totalGuests * pricePerPerson
-  }, [totalGuests, pricePerPerson])
+    return totalMembers * pricePerPerson
+  }, [totalMembers, pricePerPerson])
 
   // Fetch active event on mount
   useEffect(() => {
@@ -242,11 +240,11 @@ export function RegisterForm() {
         businessName: personalData.businessName,
         businessCategory: personalData.businessCategory,
         location: personalData.location,
-        guestCount: secondaryMembers.length,
+        guestCount: 0,
         ticketType: eventData.ticketType,
         paymentMethod: eventData.paymentMethod,
-        foodGuest: eventData.guestCount + 1, // Total people for food
-        ageGuest: eventData.guestCount,      // Just guests for age groups
+        foodGuest: totalMembers, // Total people for food
+        ageGuest: 0,
         isMorningFood: eventData.isMorningFood,
         secondaryMembers: filteredSecondaryMembers
       }
@@ -369,11 +367,9 @@ export function RegisterForm() {
                     location: existingParticipant?.location || ""
                   })
                   setEventData({
-                    guestCount: existingParticipant?.guestCount || 0,
                     ticketType: existingParticipant?.ticketType || "",
                     paymentMethod: existingParticipant?.paymentMethod || "cash",
                     foodGuest: existingParticipant?.foodPreference?.guest || 0,
-                    ageGuest: existingParticipant?.ageGroups?.guest || 0,
                     isMorningFood: existingParticipant?.isMorningFood || false
                   })
                   personalForm.reset({
@@ -555,24 +551,6 @@ export function RegisterForm() {
               <h3 className="font-semibold">Guest Count</h3>
             </div>
             <div className="flex items-center gap-4">
-              <Button 
-                variant="outline" 
-                size="icon" 
-                className="h-10 w-10" 
-                onClick={() => setEventData(prev => ({ ...prev, guestCount: Math.max(0, prev.guestCount - 1) }))}
-                disabled={eventData.guestCount <= 0}
-              >
-                <Minus className="h-4 w-4" />
-              </Button>
-              <span className="text-xl font-semibold w-8 text-center">{eventData.guestCount}</span>
-              <Button 
-                variant="outline" 
-                size="icon" 
-                className="h-10 w-10" 
-                onClick={() => setEventData(prev => ({ ...prev, guestCount: prev.guestCount + 1 }))}
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
               <span className="text-sm text-muted-foreground ml-2">
                 Total: {totalGuests} person{totalGuests !== 1 ? 's' : ''} (Including you)
               </span>
@@ -826,7 +804,6 @@ export function RegisterForm() {
               )}
           </div>
 
-          {eventData.guestCount > 0 && <Separator />}
 
           {/* Ticket Type */}
           <div className="space-y-3">
@@ -859,8 +836,8 @@ export function RegisterForm() {
                   <span className="font-semibold text-lg">₹{pricePerPerson}</span>
                 </div>
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-muted-foreground">Total guests:</span>
-                  <span className="font-medium">{totalGuests}</span>
+                  <span className="text-muted-foreground">Total members:</span>
+                  <span className="font-medium">{totalMembers}</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between items-center">
@@ -1003,9 +980,8 @@ export function RegisterForm() {
           <div className="p-4 bg-muted rounded-lg text-left text-sm space-y-2">
             <div className="flex justify-between"><span>Name:</span><span className="font-medium">{personalData.name}</span></div>
             <div className="flex justify-between"><span>Mobile:</span><span className="font-medium">{verifiedPhone}</span></div>
-            {/* <div className="flex justify-between"><span>Guest Count:</span><span className="font-medium">{eventData.guestCount}</span></div> */}
             <div className="flex justify-between"><span>Secondary Members:</span><span className="font-medium">{secondaryMembers.length}</span></div>
-            <div className="flex justify-between"><span>Total Members:</span><span className="font-medium">{totalGuests}</span></div>
+            <div className="flex justify-between"><span>Total Members:</span><span className="font-medium">{totalMembers}</span></div>
             <div className="flex justify-between"><span>Ticket Type:</span><span className="font-medium">{eventData.ticketType}</span></div>
             <div className="flex justify-between"><span>Total Amount:</span><span className="font-bold text-primary">₹{totalAmount}</span></div>
             {/* FOOD PREFERENCE - Commented out */}

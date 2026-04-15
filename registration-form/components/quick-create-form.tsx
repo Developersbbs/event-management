@@ -45,7 +45,6 @@ export function QuickCreateForm() {
     const [verifiedPhone, setVerifiedPhone] = useState("")
     const [personalData, setPersonalData] = useState({ name: "", location: "" })
     const [eventData, setEventData] = useState({
-        guestCount: 0,
         ageGuest: 0,
         foodGuest: 0,
         ticketType: "General",
@@ -68,9 +67,9 @@ export function QuickCreateForm() {
     })
 
     // --- Derived State (Pricing) ---
-    const totalGuests = useMemo(() => {
-        return 1 + eventData.guestCount
-    }, [eventData.guestCount])
+    const totalMembers = useMemo(() => {
+        return 1
+    }, [])
 
     // FOOD PREFERENCE - Commented out
     // Update Food Prefs when total guests changes
@@ -120,9 +119,9 @@ export function QuickCreateForm() {
                 mobileNumber: verifiedPhone,
                 name: personalData.name,
                 location: personalData.location,
-                guestCount: eventData.guestCount,
-                ageGuest: eventData.guestCount,
-                foodGuest: eventData.guestCount + 1,
+                guestCount: 0,
+                ageGuest: 0,
+                foodGuest: 1,
                 ticketType: eventData.ticketType || "General",
             }
 
@@ -209,9 +208,8 @@ export function QuickCreateForm() {
                                     location: existingParticipant?.location || ""
                                 })
                                 setEventData({
-                                    guestCount: existingParticipant?.guestCount || 0,
-                                    ageGuest: existingParticipant?.ageGroups?.guest || 0,
-                                    foodGuest: existingParticipant?.foodPreference?.guest || 1,
+                                    ageGuest: 0,
+                                    foodGuest: 1,
                                     ticketType: existingParticipant?.ticketType || "General"
                                 })
                                 personalForm.reset({
@@ -286,22 +284,21 @@ export function QuickCreateForm() {
                                 variant="outline"
                                 size="icon"
                                 className="h-10 w-10"
-                                onClick={() => setEventData(prev => ({ ...prev, guestCount: Math.max(0, prev.guestCount - 1) }))}
-                                disabled={eventData.guestCount <= 0}
+                                disabled={true}
                             >
                                 <Minus className="h-4 w-4" />
                             </Button>
-                            <span className="text-xl font-semibold w-8 text-center">{eventData.guestCount}</span>
+                            <span className="text-xl font-semibold w-8 text-center">0</span>
                             <Button
                                 variant="outline"
                                 size="icon"
                                 className="h-10 w-10"
-                                onClick={() => setEventData(prev => ({ ...prev, guestCount: prev.guestCount + 1 }))}
+                                disabled={true}
                             >
                                 <Plus className="h-4 w-4" />
                             </Button>
                             <span className="text-sm text-muted-foreground ml-2">
-                                Total: {totalGuests} person{totalGuests !== 1 ? 's' : ''} (Including you)
+                                Total: {totalMembers} person{totalMembers !== 1 ? 's' : ''} (Including you)
                             </span>
                         </div>
                     </div>
@@ -393,14 +390,14 @@ export function QuickCreateForm() {
                     <div className="p-4 bg-muted rounded-lg text-left text-sm space-y-2">
                         <div className="flex justify-between"><span>Name:</span><span className="font-medium">{personalData.name}</span></div>
                         <div className="flex justify-between"><span>Mobile:</span><span className="font-medium">{verifiedPhone}</span></div>
-                        <div className="flex justify-between"><span>Total Guests:</span><span className="font-medium">{totalGuests}</span></div>
+                        <div className="flex justify-between"><span>Total Members:</span><span className="font-medium">{totalMembers}</span></div>
                     </div>
                     <Button className="w-full" onClick={() => {
                         setStep(Step.PHONE_INPUT)
                         phoneForm.reset()
                         personalForm.reset()
                         setPersonalData({ name: "", location: "" })
-                        setEventData({ guestCount: 0, ageGuest: 0, foodGuest: 0, ticketType: "General" })
+                        setEventData({ ageGuest: 0, foodGuest: 0, ticketType: "General" })
                         setVerifiedPhone("")
                     }}>Add Another</Button>
                 </CardContent>

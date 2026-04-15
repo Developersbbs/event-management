@@ -50,6 +50,13 @@ export async function updateParticipant(id: string, data: Partial<IParticipant>)
             existingParticipant.guestCount = ageGroups.guest || 0
         }
 
+        // Recalculate totalAmount based on actual member count (backend-only)
+        const actualMemberCount = existingParticipant.secondaryMembers?.length || 0
+        const totalMembers = 1 + actualMemberCount
+        const ticketPrice = existingParticipant.ticketPrice || 0
+        existingParticipant.totalAmount = totalMembers * ticketPrice
+        existingParticipant.memberCount = actualMemberCount
+
         if (foodPreference) existingParticipant.foodPreference = foodPreference
         if (isMorningFood !== undefined) existingParticipant.isMorningFood = isMorningFood
         existingParticipant.updatedAt = new Date()

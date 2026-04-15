@@ -87,7 +87,7 @@ export default async function UserDashboard() {
                                                 </div>
                                                 <div className="flex items-center gap-2">
                                                     <Users className="h-4 w-4 text-muted-foreground" />
-                                                    <span>Guests: {registrationData.participant.guestCount || 0}</span>
+                                                    <span>Secondary Members: {registrationData.participant.secondaryMembers?.length || 0}</span>
                                                 </div>
                                                 <div className="flex items-center gap-2">
                                                     <Receipt className="h-4 w-4 text-muted-foreground" />

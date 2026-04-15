@@ -60,8 +60,8 @@ export async function registerParticipant(data: RegisterParticipantData) {
             secondaryMembers = []
         } = data
 
-        const totalPeople = 1 + (guestCount || 0)
-        const finalAgeGroups = { guest: ageGuest || guestCount || 0 }
+        const totalPeople = 1 + secondaryMembers.length
+        const finalAgeGroups = { guest: ageGuest || 0 }
         const finalFoodPreference = { guest: foodGuest || totalPeople }
 
         // COMPREHENSIVE VALIDATION
@@ -226,9 +226,15 @@ export async function registerParticipant(data: RegisterParticipantData) {
         }
 
         const actualMemberCount = formattedSecondaryMembers.length
-        // guestCount is for primary registrant's additional guests, memberCount is for secondary members
-        const actualTotalPeople = 1 + (guestCount || 0) + actualMemberCount
+        const actualTotalPeople = 1 + actualMemberCount
         const finalTotalAmount = actualTotalPeople * pricePerPerson
+        
+        // Force recalculation in backend (never trust frontend)
+        const backendTotalMembers = 1 + actualMemberCount
+        const backendTotalAmount = backendTotalMembers * pricePerPerson
+        
+        // Use backend-calculated amount
+        const finalAmount = backendTotalAmount
 
         // Create participant with validated and sanitized data
         const participant = await Participant.create({
@@ -247,11 +253,11 @@ export async function registerParticipant(data: RegisterParticipantData) {
             eventId: activeEvent._id,
             eventDate: activeEvent.startDate,
             ageGroups: finalAgeGroups,
-            guestCount: guestCount || 0,
+            guestCount: 0,
             memberCount: actualMemberCount,
             ticketType,
             ticketPrice: pricePerPerson,
-            totalAmount: finalTotalAmount,
+            totalAmount: finalAmount,
             isMember,
             secondaryMembers: formattedSecondaryMembers
         })

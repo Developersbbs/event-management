@@ -46,8 +46,8 @@ export function EditParticipantDialog({ participant, open, onOpenChange, onSucce
 
     // Event Data State
     const [eventData, setEventData] = useState({
-        guestCount: participant.guestCount || 0,
-        ageGuest: participant.ageGroups?.guest || 0,
+        guestCount: 0,
+        ageGuest: 0,
         foodGuest: participant.foodPreference?.guest || 1,
         isMorningFood: participant.isMorningFood || false,
     })
@@ -65,8 +65,8 @@ export function EditParticipantDialog({ participant, open, onOpenChange, onSucce
     useEffect(() => {
         if (open && participant) {
             setEventData({
-                guestCount: participant.guestCount || 0,
-                ageGuest: participant.ageGroups?.guest || 0,
+                guestCount: 0,
+                ageGuest: 0,
                 foodGuest: participant.foodPreference?.guest || 1,
                 isMorningFood: participant.isMorningFood || false,
             })
@@ -80,18 +80,10 @@ export function EditParticipantDialog({ participant, open, onOpenChange, onSucce
     }, [open, participant, form])
 
     // --- Derived State (Pricing) ---
-    const totalGuests = useMemo(() => {
-        return 1 + eventData.guestCount
-    }, [eventData.guestCount])
+    const totalMembers = useMemo(() => {
+        return 1 + (participant.secondaryMembers?.length || 0)
+    }, [participant.secondaryMembers])
 
-    // Update Guest Counts when total guests changes
-    useEffect(() => {
-        setEventData(prev => ({
-            ...prev,
-            ageGuest: prev.guestCount,
-            foodGuest: prev.guestCount + 1
-        }))
-    }, [eventData.guestCount])
 
     // --- Handlers ---
 
@@ -102,8 +94,8 @@ export function EditParticipantDialog({ participant, open, onOpenChange, onSucce
         try {
             const payload = {
                 ...data,
-                guestCount: eventData.guestCount,
-                ageGroups: { guest: eventData.ageGuest },
+                guestCount: 0,
+                ageGroups: { guest: 0 },
                 foodPreference: { guest: eventData.foodGuest },
                 isMorningFood: eventData.isMorningFood,
             }
@@ -178,22 +170,22 @@ export function EditParticipantDialog({ participant, open, onOpenChange, onSucce
                                         size="icon"
                                         className="h-8 w-8"
                                         onClick={() => setEventData(prev => ({ ...prev, guestCount: Math.max(0, prev.guestCount - 1) }))}
-                                        disabled={eventData.guestCount <= 0}
+                                        disabled={true}
                                     >
                                         <Minus className="h-4 w-4" />
                                     </Button>
-                                    <span className="text-xl font-semibold w-8 text-center">{eventData.guestCount}</span>
+                                    <span className="text-xl font-semibold w-8 text-center">0</span>
                                     <Button
                                         type="button"
                                         variant="outline"
                                         size="icon"
                                         className="h-8 w-8"
-                                        onClick={() => setEventData(prev => ({ ...prev, guestCount: prev.guestCount + 1 }))}
+                                        disabled={true}
                                     >
                                         <Plus className="h-4 w-4" />
                                     </Button>
                                     <span className="text-xs text-muted-foreground">
-                                        Total Participation: {totalGuests}
+                                        Total Participation: {totalMembers}
                                     </span>
                                 </div>
                             </div>

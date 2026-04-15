@@ -86,7 +86,7 @@ export async function performSecondaryMemberCheckIn(data: SecondaryMemberCheckIn
         const primaryCheckedIn = participant.checkIn?.memberPresent || false
         const secondaryCheckedIn = participant.secondaryMembers.filter((m: any) => m.isCheckedIn).length
         const totalCheckedIn = (primaryCheckedIn ? 1 : 0) + secondaryCheckedIn
-        const totalRegistered = 1 + (participant.guestCount || 0) + (participant.memberCount || 0)
+        const totalRegistered = 1 + (participant.secondaryMembers?.length || 0)
         
         if (totalCheckedIn >= totalRegistered) {
             return { success: false, error: "All registered members already checked in" }
@@ -159,7 +159,7 @@ export async function performCheckIn(id: string, data: CheckInData) {
         }
 
         // Negative Test Case 6: Prevent over check-in
-        const totalRegistered = 1 + (participant.guestCount || 0) + (participant.memberCount || 0)
+        const totalRegistered = 1 + (participant.secondaryMembers?.length || 0)
         const actualGuests = (data.memberPresent ? 1 : 0) + data.guestCount
         
         if (actualGuests > totalRegistered) {
@@ -203,8 +203,8 @@ export async function getCheckInStats() {
 
         (participants as unknown as IParticipant[]).forEach((p) => {
             registeredMembers++
-            // Use memberCount for secondary members, not guestCount
-            const totalSecondary = p.memberCount || 0
+            // Use secondaryMembers.length for secondary members
+            const totalSecondary = p.secondaryMembers?.length || 0
             registeredParticipants += totalSecondary
 
             if (p.checkIn?.isCheckedIn) {
