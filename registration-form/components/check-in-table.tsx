@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Search, Loader2, Minus, Plus, RefreshCw } from "lucide-react"
+import { Search, Loader2, Minus, Plus, RefreshCw, Users, CheckCircle2, Eye } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -15,11 +15,135 @@ import {
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { performCheckIn, getCheckInStats, getParticipantsByStatus } from "@/app/actions/check-in"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog"
+import { performCheckIn, performSecondaryMemberCheckIn, getCheckInStats, getParticipantsByStatus } from "@/app/actions/check-in"
 import { toast } from "sonner"
-import { IParticipant } from "@/lib/types"
+import { IParticipant, ISecondaryMember } from "@/lib/types"
 
 type ViewMode = 'search' | 'pending' | 'checked-in'
+
+interface MembersDialogProps {
+    participant: IParticipant
+    open: boolean
+    onOpenChange: (open: boolean) => void
+    onRefresh: () => void
+}
+
+function MembersDialog({ participant, open, onOpenChange, onRefresh }: MembersDialogProps) {
+    const [checkingIn, setCheckingIn] = React.useState<string | null>(null)
+
+    const handleSecondaryMemberCheckIn = async (member: ISecondaryMember) => {
+        if (!member.mobileNumber) {
+            toast.error("Member has no mobile number")
+            return
+        }
+        
+        setCheckingIn(member.mobileNumber)
+        const res = await performSecondaryMemberCheckIn({
+            participantId: participant._id,
+            memberMobileNumber: member.mobileNumber
+        })
+        setCheckingIn(null)
+        
+        if (res.success) {
+            toast.success(`${res.memberName} checked in successfully`)
+            onRefresh()
+        } else {
+            toast.error(res.error)
+        }
+    }
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                        <Users className="h-5 w-5" />
+                        Members - {participant.name}
+                    </DialogTitle>
+                    <DialogDescription>
+                        View and manage check-in status for all members
+                    </DialogDescription>
+                </DialogHeader>
+                
+                <div className="space-y-4 mt-4">
+                    {/* Primary Member */}
+                    <div className="border rounded-lg p-4 bg-muted/30">
+                        <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                                <CheckCircle2 className={`h-5 w-5 ${participant.checkIn?.memberPresent ? 'text-green-600' : 'text-muted-foreground'}`} />
+                                <span className="font-semibold">Primary Member</span>
+                            </div>
+                            <Badge variant={participant.checkIn?.memberPresent ? "default" : "outline"}>
+                                {participant.checkIn?.memberPresent ? "Checked In" : "Pending"}
+                            </Badge>
+                        </div>
+                        <div className="text-sm space-y-1">
+                            <p><span className="font-medium">Name:</span> {participant.name}</p>
+                            <p><span className="font-medium">Mobile:</span> {participant.mobileNumber}</p>
+                            {participant.email && <p><span className="font-medium">Email:</span> {participant.email}</p>}
+                            {participant.location && <p><span className="font-medium">Location:</span> {participant.location}</p>}
+                        </div>
+                    </div>
+
+                    {/* Secondary Members */}
+                    {participant.secondaryMembers && participant.secondaryMembers.length > 0 ? (
+                        <div className="space-y-3">
+                            <h4 className="font-semibold flex items-center gap-2">
+                                <Users className="h-4 w-4" />
+                                Secondary Members ({participant.secondaryMembers.length})
+                            </h4>
+                            {participant.secondaryMembers.map((member, index) => (
+                                <div key={index} className="border rounded-lg p-4 bg-muted/30">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <div className="flex items-center gap-2">
+                                            <CheckCircle2 className={`h-5 w-5 ${member.isCheckedIn ? 'text-green-600' : 'text-muted-foreground'}`} />
+                                            <span className="font-semibold">Member {index + 1}</span>
+                                        </div>
+                                        <Badge variant={member.isCheckedIn ? "default" : "outline"}>
+                                            {member.isCheckedIn ? "Checked In" : "Pending"}
+                                        </Badge>
+                                    </div>
+                                    <div className="text-sm space-y-1">
+                                        <p><span className="font-medium">Name:</span> {member.name}</p>
+                                        {member.mobileNumber && <p><span className="font-medium">Mobile:</span> {member.mobileNumber}</p>}
+                                        {member.email && <p><span className="font-medium">Email:</span> {member.email}</p>}
+                                        {member.businessName && <p><span className="font-medium">Business:</span> {member.businessName}</p>}
+                                        {member.location && <p><span className="font-medium">Location:</span> {member.location}</p>}
+                                        {member.checkedInAt && <p><span className="font-medium">Checked In At:</span> {new Date(member.checkedInAt).toLocaleString()}</p>}
+                                    </div>
+                                    {!member.isCheckedIn && member.mobileNumber && (
+                                        <Button
+                                            className="w-full mt-3"
+                                            onClick={() => handleSecondaryMemberCheckIn(member)}
+                                            disabled={checkingIn === member.mobileNumber}
+                                        >
+                                            {checkingIn === member.mobileNumber ? (
+                                                <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Checking In...</>
+                                            ) : (
+                                                <><CheckCircle2 className="h-4 w-4 mr-2" /> Check In Member</>
+                                            )}
+                                        </Button>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center text-muted-foreground py-4">
+                            No secondary members added
+                        </div>
+                    )}
+                </div>
+            </DialogContent>
+        </Dialog>
+    )
+}
 
 export function CheckInTable() {
     const [view, setView] = React.useState<ViewMode>('search')
@@ -139,8 +263,8 @@ export function CheckInTable() {
                                 <TableHead className="w-[250px]">Participant</TableHead>
                                 <TableHead className="text-center">Registered</TableHead>
                                 <TableHead className="text-center">Member</TableHead>
+                                <TableHead className="text-center">Secondary</TableHead>
                                 <TableHead className="text-center">Guests</TableHead>
-                                <TableHead className="text-center">Balance</TableHead>
                                 <TableHead className="text-right">Action</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -151,7 +275,7 @@ export function CheckInTable() {
                                 ))
                             ) : (
                                 <TableRow>
-                                    <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                                    <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
                                         {loading ? "Loading..." : (
                                             view === 'search'
                                                 ? (query.length < 2 ? "Enter search query..." : "No participants found.")
@@ -172,6 +296,8 @@ export function CheckInTable() {
 }
 
 function CheckInRow({ participant, onRefresh }: { participant: IParticipant, onRefresh: () => void }) {
+    const [showMembersDialog, setShowMembersDialog] = React.useState(false)
+    
     // Initial State derived from DB
     const isCheckedIn = participant.checkIn?.isCheckedIn
 
@@ -217,65 +343,90 @@ function CheckInRow({ participant, onRefresh }: { participant: IParticipant, onR
     }
 
     return (
-        <TableRow>
-            <TableCell>
-                <div className="font-semibold">{participant.name}</div>
-                <div className="text-xs text-muted-foreground">{participant.mobileNumber}</div>
-                <Badge variant="outline" className="mt-1">{participant.location || "Unassigned"}</Badge>
-            </TableCell>
-            <TableCell className="text-center">
-                <div className="text-sm font-medium">
-                    Guests: {regGuestsCount}
-                </div>
-                <div className="text-[10px] text-muted-foreground">Total: {regGuestsCount + 1}</div>
-            </TableCell>
+        <>
+            <TableRow>
+                <TableCell>
+                    <div className="font-semibold">{participant.name}</div>
+                    <div className="text-xs text-muted-foreground">{participant.mobileNumber}</div>
+                    <Badge variant="outline" className="mt-1">{participant.location || "Unassigned"}</Badge>
+                </TableCell>
+                <TableCell className="text-center">
+                    <div className="text-sm font-medium">
+                        Guests: {regGuestsCount}
+                    </div>
+                    <div className="text-[10px] text-muted-foreground">Total: {regGuestsCount + 1}</div>
+                </TableCell>
 
-            {/* Member Checkbox */}
-            <TableCell className="text-center">
-                <Checkbox
-                    checked={memberPresent}
-                    onCheckedChange={(c) => setMemberPresent(!!c)}
-                    className="h-5 w-5"
-                />
-            </TableCell>
-
-            <TableCell className="text-center">
-                <div className="flex items-center justify-center gap-2">
-                    <Button
-                        variant="outline" size="icon" className="h-6 w-6"
-                        onClick={() => setGuestsCheckedIn(Math.max(0, guestsCheckedIn - 1))}
-                    >
-                        <Minus className="h-3 w-3" />
-                    </Button>
-                    <span className="w-4 font-mono font-bold">{guestsCheckedIn}</span>
-                    <Button
-                        variant="outline" size="icon" className="h-6 w-6"
-                        disabled={guestsCheckedIn >= maxGuests}
-                        onClick={() => setGuestsCheckedIn(guestsCheckedIn + 1)}
-                    >
-                        <Plus className="h-3 w-3" />
-                    </Button>
-                </div>
-                <div className="text-[10px] text-muted-foreground mt-1">Max Guests: {maxGuests}</div>
-            </TableCell>
-
-            <TableCell className="text-center text-muted-foreground font-mono text-xs">
-                <div>Guests: {balanceGuests}</div>
-            </TableCell>
-
-            <TableCell className="text-right">
-                <Button
-                    size="sm"
-                    onClick={handleSave}
-                    disabled={saving}
-                    variant={isCheckedIn ? (isFullCheckIn ? "default" : "outline") : "default"}
-                    className={isCheckedIn ? (isFullCheckIn ? "bg-green-600 hover:bg-green-700 w-28" : "border-green-500 text-green-600 hover:text-green-700 hover:bg-green-50 w-28") : "w-28"}
-                >
-                    {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : (
-                        isCheckedIn ? (isFullCheckIn ? "Checked All" : "Update") : "Check In"
+                <TableCell className="text-center">
+                    <div className="text-sm font-medium">
+                        {participant.memberCount || 0}
+                    </div>
+                    {participant.secondaryMembers && participant.secondaryMembers.length > 0 && (
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 text-xs mt-1"
+                            onClick={() => setShowMembersDialog(true)}
+                        >
+                            <Eye className="h-3 w-3 mr-1" />
+                            View
+                        </Button>
                     )}
-                </Button>
-            </TableCell>
-        </TableRow>
+                </TableCell>
+
+                {/* Member Checkbox */}
+                <TableCell className="text-center">
+                    <Checkbox
+                        checked={memberPresent}
+                        onCheckedChange={(c) => setMemberPresent(!!c)}
+                        className="h-5 w-5"
+                    />
+                </TableCell>
+
+                <TableCell className="text-center">
+                    <div className="flex items-center justify-center gap-2">
+                        <Button
+                            variant="outline" size="icon" className="h-6 w-6"
+                            onClick={() => setGuestsCheckedIn(Math.max(0, guestsCheckedIn - 1))}
+                        >
+                            <Minus className="h-3 w-3" />
+                        </Button>
+                        <span className="w-4 font-mono font-bold">{guestsCheckedIn}</span>
+                        <Button
+                            variant="outline" size="icon" className="h-6 w-6"
+                            disabled={guestsCheckedIn >= maxGuests}
+                            onClick={() => setGuestsCheckedIn(guestsCheckedIn + 1)}
+                        >
+                            <Plus className="h-3 w-3" />
+                        </Button>
+                    </div>
+                    <div className="text-[10px] text-muted-foreground mt-1">Max Guests: {maxGuests}</div>
+                </TableCell>
+
+                <TableCell className="text-center text-muted-foreground font-mono text-xs">
+                    <div>Guests: {balanceGuests}</div>
+                </TableCell>
+
+                <TableCell className="text-right">
+                    <Button
+                        size="sm"
+                        onClick={handleSave}
+                        disabled={saving}
+                        variant={isCheckedIn ? (isFullCheckIn ? "default" : "outline") : "default"}
+                        className={isCheckedIn ? (isFullCheckIn ? "bg-green-600 hover:bg-green-700 w-28" : "border-green-500 text-green-600 hover:text-green-700 hover:bg-green-50 w-28") : "w-28"}
+                    >
+                        {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : (
+                            isCheckedIn ? (isFullCheckIn ? "Checked All" : "Update") : "Check In"
+                        )}
+                    </Button>
+                </TableCell>
+            </TableRow>
+            <MembersDialog
+                participant={participant}
+                open={showMembersDialog}
+                onOpenChange={setShowMembersDialog}
+                onRefresh={onRefresh}
+            />
+        </>
     )
 }

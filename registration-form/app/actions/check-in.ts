@@ -16,7 +16,9 @@ export async function searchParticipants(query: string) {
         const participants = await Participant.find({
             $or: [
                 { name: { $regex: regex } },
-                { mobileNumber: { $regex: regex } }
+                { mobileNumber: { $regex: regex } },
+                { "secondaryMembers.mobileNumber": { $regex: regex } },
+                { "secondaryMembers.name": { $regex: regex } }
             ]
         }).sort({ createdAt: -1 }).limit(10).lean()
 
@@ -33,6 +35,71 @@ export async function searchParticipants(query: string) {
 interface CheckInData {
     memberPresent: boolean
     guestCount: number
+}
+
+interface SecondaryMemberCheckInData {
+    participantId: string
+    memberMobileNumber: string
+}
+
+export async function performSecondaryMemberCheckIn(data: SecondaryMemberCheckInData) {
+    try {
+        await dbConnect()
+        const user = await getCurrentUser()
+
+        if (!user) {
+            return { success: false, error: "Unauthorized" }
+        }
+
+        const participant = await Participant.findById(data.participantId)
+        if (!participant) {
+            return { success: false, error: "Participant not found" }
+        }
+
+        // Find the secondary member by mobile number
+        const memberIndex = participant.secondaryMembers.findIndex(
+            (m: any) => m.mobileNumber === data.memberMobileNumber
+        )
+
+        if (memberIndex === -1) {
+            return { success: false, error: "Secondary member not found" }
+        }
+
+        const member = participant.secondaryMembers[memberIndex]
+
+        // Prevent duplicate check-in
+        if (member.isCheckedIn) {
+            return { success: false, error: "Member already checked in" }
+        }
+
+        // Check-in the secondary member
+        participant.secondaryMembers[memberIndex].isCheckedIn = true
+        participant.secondaryMembers[memberIndex].checkedInAt = new Date()
+
+        // Update overall check-in status if primary is checked in or any secondary is checked in
+        const anyCheckedIn = participant.checkIn?.isCheckedIn || 
+                           participant.secondaryMembers.some((m: any) => m.isCheckedIn)
+        
+        if (!participant.checkIn) {
+            participant.checkIn = {
+                isCheckedIn: anyCheckedIn,
+                memberPresent: false,
+                timestamp: new Date(),
+                checkedInBy: user.email
+            }
+        } else {
+            participant.checkIn.isCheckedIn = anyCheckedIn
+            participant.checkIn.checkedInBy = user.email
+        }
+
+        await participant.save()
+        revalidatePath("/admin/checkin")
+
+        return { success: true, memberName: member.name }
+    } catch (error: unknown) {
+        console.error("Secondary member check-in error:", error)
+        return { success: false, error: error instanceof Error ? error.message : "Check-in failed" }
+    }
 }
 
 export async function performCheckIn(id: string, data: CheckInData) {
@@ -131,7 +198,9 @@ export async function getParticipantsByStatus(status: 'all' | 'checked-in' | 'pe
             const regex = new RegExp(query, 'i')
             dbQuery["$or"] = [
                 { name: { $regex: regex } },
-                { mobileNumber: { $regex: regex } }
+                { mobileNumber: { $regex: regex } },
+                { "secondaryMembers.mobileNumber": { $regex: regex } },
+                { "secondaryMembers.name": { $regex: regex } }
             ]
         }
 
