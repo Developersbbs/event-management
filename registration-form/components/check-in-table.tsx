@@ -318,7 +318,7 @@ export function CheckInTable() {
                                 ))
                             ) : (
                                 <TableRow>
-                                    <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                                    <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
                                         {loading ? "Loading..." : (
                                             view === 'search'
                                                 ? (query.length < 2 ? "Enter search query..." : "No participants found.")
@@ -341,55 +341,12 @@ export function CheckInTable() {
 function CheckInRow({ participant, onRefresh }: { participant: IParticipant, onRefresh: () => void }) {
     const [showMembersDialog, setShowMembersDialog] = React.useState(false)
     
-    // Initial State derived from DB
-    const isCheckedIn = participant.checkIn?.isCheckedIn
-
-    // Registered Values
-    const regGuests = participant.ageGroups?.guest || 0
-
-    const dbMemberPresent = participant.checkIn?.memberPresent ?? true
-    const dbActualGuests = participant.checkIn?.actualGuests ?? 0
-
-    const getInitialGuests = () => {
-        if (!isCheckedIn) return 0
-        return Math.max(0, dbActualGuests - (dbMemberPresent ? 1 : 0))
-    }
-
-    const [memberPresent, setMemberPresent] = React.useState(
-        isCheckedIn ? (participant.checkIn?.memberPresent ?? false) : false
-    )
-    const [guestsCheckedIn, setGuestsCheckedIn] = React.useState(getInitialGuests())
-
-    const [saving, setSaving] = React.useState(false)
-
-    // Constraints - Registrant + Guests = Total Registered People
-    const regGuestsCount = participant.guestCount ?? regGuests
-    const maxGuests = regGuestsCount
-
-    const currentActualTotal = (memberPresent ? 1 : 0) + guestsCheckedIn
-    const balanceGuests = regGuestsCount - guestsCheckedIn
-    const isFullCheckIn = balanceGuests === 0 && memberPresent
-
-    // Calculate total check-in count (primary + secondary)
+    // Derive state from actual data (primary + secondary)
     const primaryCheckedIn = participant.checkIn?.memberPresent || false
     const secondaryCheckedIn = participant.secondaryMembers?.filter((m: any) => m.isCheckedIn).length || 0
-    const totalCheckedIn = (primaryCheckedIn ? 1 : 0) + secondaryCheckedIn + guestsCheckedIn
-    const totalRegistered = 1 + (participant.guestCount || 0) + (participant.memberCount || 0)
-
-    const handleSave = async () => {
-        setSaving(true)
-        const res = await performCheckIn(participant._id, {
-            memberPresent,
-            guestCount: guestsCheckedIn
-        })
-        setSaving(false)
-        if (res.success) {
-            onRefresh()
-            toast.success("Check-in updated")
-        } else {
-            toast.error(res.error)
-        }
-    }
+    const totalCheckedIn = (primaryCheckedIn ? 1 : 0) + secondaryCheckedIn
+    const totalRegistered = 1 + (participant.memberCount || 0) // Using only primary + secondary members
+    const isAllChecked = totalCheckedIn === totalRegistered
 
     return (
         <>
@@ -405,9 +362,9 @@ function CheckInRow({ participant, onRefresh }: { participant: IParticipant, onR
                 </TableCell>
                 <TableCell className="text-center">
                     <div className="text-sm font-medium">
-                        Member: {regGuestsCount}
+                        {primaryCheckedIn ? "✓" : "○"}
                     </div>
-                    <div className="text-[10px] text-muted-foreground">Total: {regGuestsCount + 1}</div>
+                    <div className="text-[10px] text-muted-foreground">Primary</div>
                 </TableCell>
 
                 <TableCell className="text-center">
@@ -427,52 +384,23 @@ function CheckInRow({ participant, onRefresh }: { participant: IParticipant, onR
                     )}
                 </TableCell>
 
-                {/* Member Checkbox */}
+                {/* Check In Status Button */}
                 <TableCell className="text-center">
-                    <Checkbox
-                        checked={memberPresent}
-                        onCheckedChange={(c) => setMemberPresent(!!c)}
-                        className="h-5 w-5"
-                    />
+                    {isAllChecked ? (
+                        <Badge variant="default" className="bg-green-600">
+                            Checked In All
+                        </Badge>
+                    ) : (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setShowMembersDialog(true)}
+                        >
+                            Update
+                        </Button>
+                    )}
                 </TableCell>
 
-                {/* <TableCell className="text-center">
-                    <div className="flex items-center justify-center gap-2">
-                        <Button
-                            variant="outline" size="icon" className="h-6 w-6"
-                            onClick={() => setGuestsCheckedIn(Math.max(0, guestsCheckedIn - 1))}
-                        >
-                            <Minus className="h-3 w-3" />
-                        </Button>
-                        <span className="w-4 font-mono font-bold">{guestsCheckedIn}</span>
-                        <Button
-                            variant="outline" size="icon" className="h-6 w-6"
-                            disabled={guestsCheckedIn >= maxGuests}
-                            onClick={() => setGuestsCheckedIn(guestsCheckedIn + 1)}
-                        >
-                            <Plus className="h-3 w-3" />
-                        </Button>
-                    </div>
-                    <div className="text-[10px] text-muted-foreground mt-1">Max Guests: {maxGuests}</div>
-                </TableCell> */}
-
-                {/* <TableCell className="text-center text-muted-foreground font-mono text-xs">
-                    <div>Guests: {balanceGuests}</div>
-                </TableCell> */}
-
-                <TableCell className="text-right">
-                    <Button
-                        size="sm"
-                        onClick={handleSave}
-                        disabled={saving}
-                        variant={isCheckedIn ? (isFullCheckIn ? "default" : "outline") : "default"}
-                        className={isCheckedIn ? (isFullCheckIn ? "bg-green-600 hover:bg-green-700 w-28" : "border-green-500 text-green-600 hover:text-green-700 hover:bg-green-50 w-28") : "w-28"}
-                    >
-                        {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : (
-                            isCheckedIn ? (isFullCheckIn ? "Checked All" : "Update") : "Check In"
-                        )}
-                    </Button>
-                </TableCell>
             </TableRow>
             <MembersDialog
                 participant={participant}

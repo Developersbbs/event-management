@@ -122,6 +122,18 @@ export async function performSecondaryMemberCheckIn(data: SecondaryMemberCheckIn
     }
 }
 
+// Sync function to derive check-in state from actual data (primary + secondary)
+function syncCheckinStatus(participant: any) {
+    const secondaryChecked = participant.secondaryMembers?.filter((m: any) => m.isCheckedIn).length || 0
+    const totalMembers = 1 + (participant.secondaryMembers?.length || 0)
+    const totalChecked = (participant.checkIn?.memberPresent ? 1 : 0) + secondaryChecked
+
+    // AUTO DERIVE STATE
+    participant.checkIn = participant.checkIn || {}
+    participant.checkIn.memberPresent = totalChecked > 0
+    participant.checkIn.isCheckedIn = totalChecked === totalMembers
+}
+
 export async function performCheckIn(id: string, data: CheckInData) {
     try {
         await dbConnect()
@@ -165,6 +177,9 @@ export async function performCheckIn(id: string, data: CheckInData) {
             actualGuests: actualGuests,
             checkedInBy: user.email // Updates last modifier
         }
+
+        // Sync check-in status after primary check-in
+        syncCheckinStatus(participant)
 
         await participant.save()
         revalidatePath("/admin/checkin")
