@@ -9,6 +9,8 @@ import {
   IconUsers,
   IconCalendarEvent,
   IconWorld,
+  IconDatabase,
+  IconPlus,
 } from "@tabler/icons-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -31,9 +33,19 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
   const navMain = [
     {
       title: "Dashboard",
-      url: "/admin",
+      url: "/admin/dashboard",
       icon: IconDashboard,
     },
+    {
+      title: "Records",
+      url: "/admin",
+      icon: IconDatabase,
+    },
+    // {
+    //   title: "Quick Create",
+    //   url: "/admin/quick-create",
+    //   icon: IconPlus,
+    // },
     {
       title: "Location Stats",
       url: "/admin/locations",
