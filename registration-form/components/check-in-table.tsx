@@ -32,24 +32,31 @@ interface MembersDialogProps {
     open: boolean
     onOpenChange: (open: boolean) => void
     onRefresh: () => void
+    onOptimisticCheckIn: (id: string, type: 'primary' | 'secondary', memberId?: string) => void
 }
 
-function MembersDialog({ participant, open, onOpenChange, onRefresh }: MembersDialogProps) {
+function MembersDialog({ participant, open, onOpenChange, onRefresh, onOptimisticCheckIn }: MembersDialogProps) {
     const [checkingIn, setCheckingIn] = React.useState<string | null>(null)
     const [searchQuery, setSearchQuery] = React.useState("")
 
     const handlePrimaryCheckIn = async () => {
         setCheckingIn("primary")
+        const newMemberPresent = !participant.checkIn?.memberPresent
+
+        // Optimistic update
+        onOptimisticCheckIn(participant._id, 'primary')
+
         const res = await performCheckIn(participant._id, {
-            memberPresent: !participant.checkIn?.memberPresent,
+            memberPresent: newMemberPresent,
             guestCount: participant.checkIn?.actualGuests ? (participant.checkIn.actualGuests - (participant.checkIn.memberPresent ? 1 : 0)) : 0
         })
         setCheckingIn(null)
-        
+
         if (res.success) {
             onRefresh()
             toast.success("Primary member check-in updated")
         } else {
+            onRefresh() // Revert by refreshing
             toast.error(res.error)
         }
     }
@@ -59,18 +66,23 @@ function MembersDialog({ participant, open, onOpenChange, onRefresh }: MembersDi
             toast.error("Member has no mobile number")
             return
         }
-        
+
         setCheckingIn(member.mobileNumber)
+
+        // Optimistic update
+        onOptimisticCheckIn(participant._id, 'secondary', member.mobileNumber)
+
         const res = await performSecondaryMemberCheckIn({
             participantId: participant._id,
             memberMobileNumber: member.mobileNumber
         })
         setCheckingIn(null)
-        
+
         if (res.success) {
             toast.success(`${res.memberName} checked in successfully`)
             onRefresh()
         } else {
+            onRefresh() // Revert by refreshing
             toast.error(res.error)
         }
     }
@@ -204,6 +216,35 @@ export function CheckInTable() {
         checkedInParticipants: 0
     })
 
+    // Optimistic update function
+    const handleOptimisticCheckIn = (participantId: string, type: 'primary' | 'secondary', memberId?: string) => {
+        setResults(prev =>
+            prev.map(p => {
+                if (p._id !== participantId) return p
+
+                if (type === 'primary') {
+                    return {
+                        ...p,
+                        checkIn: { ...p.checkIn, memberPresent: !p.checkIn?.memberPresent } as any
+                    }
+                }
+
+                if (type === 'secondary' && memberId) {
+                    return {
+                        ...p,
+                        secondaryMembers: p.secondaryMembers?.map(m =>
+                            m.mobileNumber === memberId
+                                ? { ...m, isCheckedIn: true }
+                                : m
+                        )
+                    }
+                }
+
+                return p
+            })
+        )
+    }
+
     const loadStats = async () => {
         const s = await getCheckInStats()
         setStats(s)
@@ -317,7 +358,7 @@ export function CheckInTable() {
                         <TableBody>
                             {results.length > 0 ? (
                                 results.map((p) => (
-                                    <CheckInRow key={p._id} participant={p} onRefresh={handleRefresh} />
+                                    <CheckInRow key={p._id} participant={p} onRefresh={handleRefresh} onOptimisticCheckIn={handleOptimisticCheckIn} />
                                 ))
                             ) : (
                                 <TableRow>
@@ -341,14 +382,14 @@ export function CheckInTable() {
     )
 }
 
-function CheckInRow({ participant, onRefresh }: { participant: IParticipant, onRefresh: () => void }) {
+function CheckInRow({ participant, onRefresh, onOptimisticCheckIn }: { participant: IParticipant, onRefresh: () => void, onOptimisticCheckIn: (id: string, type: 'primary' | 'secondary', memberId?: string) => void }) {
     const [showMembersDialog, setShowMembersDialog] = React.useState(false)
     
     // Derive state from actual data (primary + secondary)
     const primaryCheckedIn = participant.checkIn?.memberPresent || false
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const secondaryCheckedIn = participant.secondaryMembers?.filter((m: any) => m.isCheckedIn).length || 0
-    const totalSecondary = participant.memberCount || 0
+    const totalSecondary = participant.secondaryMembers?.length || 0
     const balanceSecondary = totalSecondary - secondaryCheckedIn
     const totalCheckedIn = (primaryCheckedIn ? 1 : 0) + secondaryCheckedIn
     const totalRegistered = 1 + totalSecondary
@@ -426,6 +467,7 @@ function CheckInRow({ participant, onRefresh }: { participant: IParticipant, onR
                 open={showMembersDialog}
                 onOpenChange={setShowMembersDialog}
                 onRefresh={onRefresh}
+                onOptimisticCheckIn={onOptimisticCheckIn}
             />
         </>
     )
