@@ -13,7 +13,7 @@ export async function GET(request: Request) {
         const search = searchParams.get('search') || ''
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const query: any = { isRegistered: true, approvalStatus: 'approved' }
+        const query: any = { isRegistered: true }
         
         if (filter === 'checked-in') {
             query["checkIn.isCheckedIn"] = true
@@ -35,7 +35,8 @@ export async function GET(request: Request) {
             email: 1,
             location: 1,
             checkIn: 1,
-            secondaryMembers: 1
+            secondaryMembers: 1,
+            approvalStatus: 1
         }).lean()
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -46,6 +47,7 @@ export async function GET(request: Request) {
             // primary
             if (type === 'all' || type === 'primary') {
                 records.push({
+                    _id: p._id.toString(),
                     type: "Primary",
                     name: p.name,
                     phone: p.mobileNumber,
@@ -54,7 +56,8 @@ export async function GET(request: Request) {
                     eventDate: p.eventDate || "",
                     location: p.location || "",
                     primaryMember: "",
-                    primaryPhone: ""
+                    primaryPhone: "",
+                    approvalStatus: p.approvalStatus || "pending"
                 })
             }
 
@@ -63,6 +66,7 @@ export async function GET(request: Request) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 p.secondaryMembers?.forEach((m: any) => {
                     records.push({
+                        _id: p._id.toString(),
                         type: "Secondary",
                         name: m.name,
                         phone: m.mobileNumber,
@@ -71,7 +75,8 @@ export async function GET(request: Request) {
                         eventDate: p.eventDate || "",
                         location: m.location || p.location || "",
                         primaryMember: p.name,
-                        primaryPhone: p.mobileNumber
+                        primaryPhone: p.mobileNumber,
+                        approvalStatus: p.approvalStatus || "pending"
                     })
                 })
             }

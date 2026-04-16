@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useMemo } from "react"
-import { Download, CheckCircle2, Loader2 } from "lucide-react"
+import { Download, CheckCircle2, Loader2, XCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -26,6 +26,7 @@ interface DashboardStats {
 }
 
 interface DashboardRecord {
+    _id: string
     type: string
     name: string
     phone: string
@@ -35,6 +36,7 @@ interface DashboardRecord {
     location: string
     primaryMember: string
     primaryPhone: string
+    approvalStatus?: string
 }
 
 interface PaginationData {
@@ -54,6 +56,7 @@ export default function DashboardPage() {
     const [page, setPage] = React.useState(1)
     const [pagination, setPagination] = React.useState<PaginationData | null>(null)
     const [downloading, setDownloading] = React.useState(false)
+    const [approving, setApproving] = React.useState<string | null>(null)
 
     const loadStats = React.useCallback(async () => {
         try {
@@ -112,6 +115,50 @@ export default function DashboardPage() {
             console.error("Failed to download Excel:", error)
         } finally {
             setDownloading(false)
+        }
+    }
+
+    const handleApprove = async (participantId: string) => {
+        setApproving(participantId)
+        try {
+            const res = await fetch("/api/approve-registration", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ participantId })
+            })
+            const result = await res.json()
+            if (result.success) {
+                loadRecords() // Refresh the table
+            } else {
+                alert(result.error || "Failed to approve registration")
+            }
+        } catch (error) {
+            console.error("Approval error:", error)
+            alert("Failed to approve registration")
+        } finally {
+            setApproving(null)
+        }
+    }
+
+    const handleReject = async (participantId: string) => {
+        setApproving(participantId)
+        try {
+            const res = await fetch("/api/reject-registration", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ participantId })
+            })
+            const result = await res.json()
+            if (result.success) {
+                loadRecords() // Refresh the table
+            } else {
+                alert(result.error || "Failed to reject registration")
+            }
+        } catch (error) {
+            console.error("Rejection error:", error)
+            alert("Failed to reject registration")
+        } finally {
+            setApproving(null)
         }
     }
 
@@ -199,19 +246,21 @@ export default function DashboardPage() {
                             <TableHead>Email</TableHead>
                             <TableHead>Primary Member</TableHead>
                             <TableHead>Location</TableHead>
+                            <TableHead>Status</TableHead>
                             <TableHead>Checked-in</TableHead>
+                            <TableHead>Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {loading ? (
                             <TableRow>
-                                <TableCell colSpan={7} className="text-center py-8">
+                                <TableCell colSpan={9} className="text-center py-8">
                                     <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                                 </TableCell>
                             </TableRow>
                         ) : records.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                                <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                                     No records found
                                 </TableCell>
                             </TableRow>
@@ -246,10 +295,55 @@ export default function DashboardPage() {
                                     </TableCell>
                                     <TableCell>{record.location || "-"}</TableCell>
                                     <TableCell>
+                                        <Badge variant={
+                                            record.approvalStatus === "approved" ? "default" :
+                                            record.approvalStatus === "rejected" ? "destructive" :
+                                            "secondary"
+                                        } className={
+                                            record.approvalStatus === "approved" ? "bg-green-600" :
+                                            record.approvalStatus === "rejected" ? "bg-red-600" :
+                                            "bg-yellow-600"
+                                        }>
+                                            {record.approvalStatus || "pending"}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell>
                                         {record.checkedIn ? (
                                             <CheckCircle2 className="h-4 w-4 text-green-600" />
                                         ) : (
                                             <span className="text-gray-400">○</span>
+                                        )}
+                                    </TableCell>
+                                    <TableCell>
+                                        {record.approvalStatus === "pending" && (
+                                            <div className="flex gap-2">
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    className="h-8 w-8 p-0"
+                                                    onClick={() => handleApprove(record._id)}
+                                                    disabled={approving === record._id}
+                                                >
+                                                    {approving === record._id ? (
+                                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                                    ) : (
+                                                        <CheckCircle2 className="h-4 w-4 text-green-600" />
+                                                    )}
+                                                </Button>
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    className="h-8 w-8 p-0"
+                                                    onClick={() => handleReject(record._id)}
+                                                    disabled={approving === record._id}
+                                                >
+                                                    {approving === record._id ? (
+                                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                                    ) : (
+                                                        <XCircle className="h-4 w-4 text-red-600" />
+                                                    )}
+                                                </Button>
+                                            </div>
                                         )}
                                     </TableCell>
                                 </TableRow>
