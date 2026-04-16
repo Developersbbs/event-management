@@ -74,6 +74,9 @@ export async function createUser(prevState: unknown, formData: FormData) {
 
         const existingUser = await User.findOne({ email })
         if (existingUser) {
+            if (!password && existingUser.inviteToken) {
+                return { success: false, error: "Invite already sent to this user" }
+            }
             return { success: false, error: 'User already exists' }
         }
 
@@ -88,6 +91,8 @@ export async function createUser(prevState: unknown, formData: FormData) {
             // Generate Invite Token
             inviteToken = crypto.randomBytes(32).toString('hex')
             inviteTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+            console.log("DEBUG CREATE - Generated token:", inviteToken)
+            console.log("DEBUG CREATE - Token expiry:", inviteTokenExpiry)
         }
 
         const newUser = new User({
@@ -99,6 +104,10 @@ export async function createUser(prevState: unknown, formData: FormData) {
         })
 
         await newUser.save()
+
+        console.log("DEBUG FINAL - User saved with token:", newUser.inviteToken)
+        console.log("DEBUG FINAL - Token expiry in DB:", newUser.inviteTokenExpiry)
+        console.log("DEBUG FINAL - Final token sent in email:", inviteToken)
 
         if (inviteToken) {
             // Send Invite Email
@@ -116,6 +125,10 @@ export async function createUser(prevState: unknown, formData: FormData) {
                 const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
                 const inviteUrl = `${appUrl}/setup-account?token=${inviteToken}`
 
+                console.log("DEBUG EMAIL - Token being sent:", inviteToken)
+                console.log("DEBUG EMAIL - Invite URL:", inviteUrl)
+                console.log("DEBUG EMAIL - Sending to:", email)
+
                 await transporter.sendMail({
                     from: fromEmail || user,
                     to: email,
@@ -127,6 +140,8 @@ export async function createUser(prevState: unknown, formData: FormData) {
                         <p>This link expires in 24 hours.</p>
                     `
                 })
+
+                console.log("DEBUG EMAIL - Email sent successfully")
             } else {
                 console.warn("SMTP config missing, invite email not sent.")
                 return { success: true, message: "User created, but SMTP config missing. Email not sent." }
@@ -168,12 +183,27 @@ export async function setupAccount(token: string, formData: FormData) {
     try {
         await dbConnect()
 
+        console.log("DEBUG SETUP - Token from URL:", token)
+        console.log("DEBUG SETUP - Current time:", new Date())
+
         const user = await User.findOne({
             inviteToken: token,
             inviteTokenExpiry: { $gt: new Date() }
         })
 
+        console.log("DEBUG SETUP - Found user:", user?.email)
+        console.log("DEBUG SETUP - User token expiry:", user?.inviteTokenExpiry)
+
         if (!user) {
+            // Try to find user by token without expiry check to see if it exists
+            const userWithoutExpiry = await User.findOne({ inviteToken: token })
+            console.log("DEBUG SETUP - User without expiry check:", userWithoutExpiry?.email)
+            console.log("DEBUG SETUP - User token expiry without check:", userWithoutExpiry?.inviteTokenExpiry)
+
+            // Also check if any user has this token at all
+            const allUsersWithToken = await User.find({ inviteToken: { $exists: true } })
+            console.log("DEBUG SETUP - All users with invite tokens:", allUsersWithToken.map(u => ({ email: u.email, token: u.inviteToken?.substring(0, 8) + '...' })))
+
             return { success: false, error: "Invalid or expired token" }
         }
 

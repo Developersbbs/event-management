@@ -29,6 +29,8 @@ const UserSchema = new mongoose.Schema<IUserDocument>({
     },
     inviteToken: {
         type: String,
+        unique: true,
+        sparse: true,
     },
     inviteTokenExpiry: {
         type: Date,
