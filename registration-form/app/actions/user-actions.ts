@@ -121,7 +121,7 @@ export async function createUser(prevState: unknown, formData: FormData) {
                     to: email,
                     subject: "Welcome to Pongal Vizha Admin Panel",
                     html: `
-                        <p>You have been invited to join the Pongal Vizha Admin Panel.</p>
+                        <p>You have been invited to join the Rifah Annual Summit.</p>
                         <p>Click the link below to set your password and access your account:</p>
                         <a href="${inviteUrl}">${inviteUrl}</a>
                         <p>This link expires in 24 hours.</p>
