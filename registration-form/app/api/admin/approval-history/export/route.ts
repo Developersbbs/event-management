@@ -10,9 +10,9 @@ export async function GET(request: Request) {
         
         const user = await getCurrentUser()
         
-        if (!user || user.role !== "super-admin") {
+        if (!user || (user.role !== "admin" && user.role !== "super-admin")) {
             return NextResponse.json(
-                { error: "Unauthorized - Super admin access required" },
+                { error: "Unauthorized - Admin access required" },
                 { status: 403 }
             )
         }
@@ -40,7 +40,6 @@ export async function GET(request: Request) {
 
         // Fetch participants with approval logs
         const participants = await Participant.find(query)
-            .populate("approvalLogs.approvedBy", "name email")
             .lean()
 
         // Flatten approval logs into records
@@ -55,12 +54,10 @@ export async function GET(request: Request) {
                     const searchLower = search.toLowerCase()
                     const participantName = participant.name?.toLowerCase() || ""
                     const participantPhone = participant.mobileNumber?.toLowerCase() || ""
-                    const approvedByName = log.approvedBy?.name?.toLowerCase() || ""
-                    const approvedByEmail = log.approvedBy?.email?.toLowerCase() || ""
-                    
-                    if (!participantName.includes(searchLower) && 
-                        !participantPhone.includes(searchLower) && 
-                        !approvedByName.includes(searchLower) && 
+                    const approvedByEmail = log.approvedByEmail?.toLowerCase() || ""
+
+                    if (!participantName.includes(searchLower) &&
+                        !participantPhone.includes(searchLower) &&
                         !approvedByEmail.includes(searchLower)) {
                         return
                     }
@@ -70,7 +67,7 @@ export async function GET(request: Request) {
                     "Participant Name": participant.name || "",
                     "Participant Phone": participant.mobileNumber || "",
                     "Participant Email": participant.email || "",
-                    "Approved By": log.approvedBy?.email || "",
+                    "Approved By": log.approvedByEmail || "Unknown",
                     "Role": log.role,
                     "Status": log.status,
                     "Date": new Date(log.timestamp).toLocaleString(),

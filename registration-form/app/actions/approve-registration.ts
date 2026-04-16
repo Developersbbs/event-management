@@ -35,6 +35,7 @@ export async function approveRegistration(participantId: string) {
             $push: {
                 approvalLogs: {
                     approvedBy: user._id,
+                    approvedByEmail: user.email,
                     role: user.role,
                     status: "approved",
                     timestamp: new Date()
@@ -82,6 +83,7 @@ export async function rejectRegistration(participantId: string, reason?: string)
             $push: {
                 approvalLogs: {
                     approvedBy: user._id,
+                    approvedByEmail: user.email,
                     role: user.role,
                     status: "rejected",
                     timestamp: new Date()

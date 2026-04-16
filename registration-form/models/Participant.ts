@@ -230,6 +230,9 @@ const ParticipantSchema = new mongoose.Schema({
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "User"
             },
+            approvedByEmail: {
+                type: String
+            },
             role: {
                 type: String,
                 enum: ["admin", "super-admin"]

@@ -9,9 +9,9 @@ export async function GET(request: Request) {
         
         const user = await getCurrentUser()
         
-        if (!user || user.role !== "super-admin") {
+        if (!user || (user.role !== "admin" && user.role !== "super-admin")) {
             return NextResponse.json(
-                { error: "Unauthorized - Super admin access required" },
+                { error: "Unauthorized - Admin access required" },
                 { status: 403 }
             )
         }
@@ -41,14 +41,23 @@ export async function GET(request: Request) {
 
         // Fetch participants with approval logs
         const participants = await Participant.find(query)
-            .populate("approvalLogs.approvedBy", "name email")
             .lean()
 
         // Flatten approval logs into records
         let records: any[] = []
 
+        console.log("DEBUG: Total participants found:", participants.length)
+
         participants.forEach((participant: any) => {
+            console.log("DEBUG: Participant:", participant.name, "Logs:", participant.approvalLogs?.length)
             participant.approvalLogs?.forEach((log: any) => {
+                console.log("DEBUG: Log entry:", {
+                    role: log.role,
+                    status: log.status,
+                    approvedBy: log.approvedBy,
+                    approvedByName: log.approvedBy?.name,
+                    approvedByEmail: log.approvedBy?.email
+                })
                 // Apply filters
                 if (role !== 'all' && log.role !== role) return
                 if (status !== 'all' && log.status !== status) return
@@ -56,12 +65,10 @@ export async function GET(request: Request) {
                     const searchLower = search.toLowerCase()
                     const participantName = participant.name?.toLowerCase() || ""
                     const participantPhone = participant.mobileNumber?.toLowerCase() || ""
-                    const approvedByName = log.approvedBy?.name?.toLowerCase() || ""
-                    const approvedByEmail = log.approvedBy?.email?.toLowerCase() || ""
-                    
-                    if (!participantName.includes(searchLower) && 
-                        !participantPhone.includes(searchLower) && 
-                        !approvedByName.includes(searchLower) && 
+                    const approvedByEmail = log.approvedByEmail?.toLowerCase() || ""
+
+                    if (!participantName.includes(searchLower) &&
+                        !participantPhone.includes(searchLower) &&
                         !approvedByEmail.includes(searchLower)) {
                         return
                     }
@@ -71,8 +78,8 @@ export async function GET(request: Request) {
                     participantName: participant.name || "",
                     participantPhone: participant.mobileNumber || "",
                     participantEmail: participant.email || "",
-                    approvedBy: log.approvedBy?.name || "",
-                    approvedByEmail: log.approvedBy?.email || "",
+                    approvedBy: log.approvedByEmail || "Unknown",
+                    approvedByEmail: log.approvedByEmail || "Unknown",
                     role: log.role,
                     status: log.status,
                     date: log.timestamp,
@@ -80,6 +87,9 @@ export async function GET(request: Request) {
                 })
             })
         })
+
+        console.log("DEBUG: Final records:", records.length)
+        console.log("DEBUG: Sample record:", records[0])
 
         // Sort by date (newest first)
         records.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
