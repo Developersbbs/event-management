@@ -69,7 +69,7 @@ export async function GET(request: Request) {
                         email: m.email || "",
                         checkedIn: m.isCheckedIn || false,
                         eventDate: p.eventDate || "",
-                        location: p.location || "",
+                        location: m.location || p.location || "",
                         primaryMember: p.name,
                         primaryPhone: p.mobileNumber
                     })

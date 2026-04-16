@@ -36,7 +36,7 @@ export async function GET() {
                     Email: m.email || "",
                     CheckedIn: m.isCheckedIn ? "Yes" : "No",
                     EventDate: p.eventDate || "",
-                    Location: p.location || "",
+                    Location: m.location || p.location || "",
                     PrimaryMember: p.name,
                     PrimaryPhone: p.mobileNumber
                 })

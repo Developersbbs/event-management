@@ -18,8 +18,8 @@ const notoSansTamil = Noto_Sans_Tamil({
 });
 
 export const metadata: Metadata = {
-  title: "Pongal Vizha - 2026",
-  description: "Tamizhar Parinthurai Vanigam Pongal Vizha 2026",
+  title: "RIFAH ANNUAL SUMMIT - 2026",
+  description: "Rifah Annual Summit 2026 Together For Sustainable Future",
 };
 
 export default function RootLayout({
