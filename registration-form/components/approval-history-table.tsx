@@ -67,7 +67,7 @@ export function ApprovalHistoryTable() {
     })
     const [totalPages, setTotalPages] = React.useState(0)
     const [total, setTotal] = React.useState(0)
-    const [roleFilter, setRoleFilter] = React.useState("all")
+    const [roleFilter, setRoleFilter] = React.useState("super-admin")
     const [statusFilter, setStatusFilter] = React.useState("all")
     const [dateRange, setDateRange] = React.useState<DateRange | undefined>({
         from: addDays(new Date(), -30),
