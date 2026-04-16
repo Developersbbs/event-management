@@ -185,7 +185,26 @@ const ParticipantSchema = new mongoose.Schema({
         checkedInBy: String,
     },
 
-    
+    approvalLogs: [
+        {
+            approvedBy: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "User"
+            },
+            role: {
+                type: String,
+                enum: ["admin", "super-admin"]
+            },
+            status: {
+                type: String,
+                enum: ["approved", "rejected"]
+            },
+            timestamp: {
+                type: Date,
+                default: Date.now
+            }
+        }
+    ]
 
 }, { timestamps: true })
 

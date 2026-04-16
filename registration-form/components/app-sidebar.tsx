@@ -9,6 +9,7 @@ import {
   IconWorld,
   IconDatabase,
   IconListDetails,
+  IconHistory,
 } from "@tabler/icons-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -59,11 +60,18 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
       url: "/admin/checkin",
       icon: IconListDetails,
     },
-    ...(user?.role === 'super-admin' ? [{
-      title: "Users",
-      url: "/admin/users",
-      icon: IconUsers,
-    }] : []),
+    ...(user?.role === 'super-admin' ? [
+      {
+        title: "Approval History",
+        url: "/admin/approval-history",
+        icon: IconHistory,
+      },
+      {
+        title: "Users",
+        url: "/admin/users",
+        icon: IconUsers,
+      }
+    ] : []),
   ]
 
   const userData = {
