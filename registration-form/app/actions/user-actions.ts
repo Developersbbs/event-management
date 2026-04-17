@@ -122,7 +122,9 @@ export async function createUser(prevState: unknown, formData: FormData) {
                     auth: { user, pass },
                 })
 
-                const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+                const appUrl = process.env.NODE_ENV === "production"
+                    ? "https://event-management-yd8m.vercel.app/"
+                    : "http://localhost:3000"
                 const inviteUrl = `${appUrl}/setup-account?token=${inviteToken}`
 
                 // console.log("DEBUG EMAIL - Token being sent:", inviteToken)
