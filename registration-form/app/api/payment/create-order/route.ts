@@ -1,17 +1,21 @@
 import Razorpay from "razorpay"
 
-// Check if env variables are set
-if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
-  console.error("Missing Razorpay environment variables")
-}
-
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID!,
-  key_secret: process.env.RAZORPAY_KEY_SECRET!,
-})
-
 export async function POST(req: Request) {
   try {
+    // Check if env variables are set
+    if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+      console.error("Missing Razorpay environment variables")
+      return Response.json(
+        { error: "Payment configuration error" },
+        { status: 500 }
+      )
+    }
+
+    const razorpay = new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_KEY_SECRET,
+    })
+
     const body = await req.json()
     console.log("Create order request body:", body)
 
@@ -35,11 +39,11 @@ export async function POST(req: Request) {
 
     console.log("Razorpay order created successfully:", order.id)
     return Response.json(order)
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error creating Razorpay order:", error)
-    console.error("Error details:", error.message, error.stack)
+    const errorMessage = error instanceof Error ? error.message : "Failed to create order"
     return Response.json(
-      { error: error.message || "Failed to create order" },
+      { error: errorMessage },
       { status: 500 }
     )
   }

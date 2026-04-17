@@ -65,7 +65,7 @@ export function RegisterForm() {
   const [isCheckingDb, setIsCheckingDb] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [dbError, setDbError] = useState<string | null>(null)
-  const [activeEvent, setActiveEvent] = useState<{ _id: string; eventName: string; startDate: string; endDate: string; ticketsPrice: { name: string; price: number }[] } | null>(null)
+  const [activeEvent, setActiveEvent] = useState<{ _id: string; eventName: string; eventDate: string; startTime: string; endTime: string; venue: { name: string; address: string; city: string }; ticketsPrice: { name: string; price: number }[] } | null>(null)
   const [isLoadingEvent, setIsLoadingEvent] = useState(false)
 
   // Registration Data State
@@ -223,7 +223,7 @@ export function RegisterForm() {
     setStep(Step.EVENT_DETAILS)
   }
 
-  const handleOnlinePayment = async (participantId: string | null) => {
+  const handleOnlinePayment = async () => {
     try {
       console.log("Starting online payment")
 
@@ -246,7 +246,7 @@ export function RegisterForm() {
       }
 
       // Check if Razorpay is loaded
-      if (typeof (window as any).Razorpay === 'undefined') {
+      if (typeof (window as { Razorpay?: unknown }).Razorpay === 'undefined') {
         console.error("Razorpay not loaded")
         throw new Error("Payment gateway not loaded. Please refresh the page.")
       }
@@ -264,8 +264,8 @@ export function RegisterForm() {
         mobileNumber: verifiedPhone,
         ...personalData,
         ...eventData,
-        eventId: activeEvent._id,
-        eventDate: activeEvent.startDate,
+        eventId: activeEvent?._id || '',
+        eventDate: activeEvent?.eventDate || '',
         guestCount: secondaryMembers.length,
         memberCount: totalMembers,
         ticketPrice: pricePerPerson,
@@ -288,7 +288,7 @@ export function RegisterForm() {
         description: "Event Ticket",
         order_id: order.id,
 
-        handler: async function (response: any) {
+        handler: async function (response: { razorpay_payment_id: string; razorpay_order_id: string; razorpay_signature: string }) {
           console.log("Payment successful:", response)
           // Verify payment and create participant
           await fetch("/api/payment/verify", {
@@ -322,7 +322,7 @@ export function RegisterForm() {
         },
       }
 
-      const rzp = new (window as any).Razorpay(options)
+      const rzp = new (window as { Razorpay: new (options: unknown) => unknown }).Razorpay(options)
       rzp.open()
     } catch (error) {
       console.error("Payment error:", error)
@@ -1133,7 +1133,7 @@ export function RegisterForm() {
               <Alert className="border-green-200 bg-green-50">
                 <Info className="h-4 w-4 text-green-600" />
                 <AlertDescription className="text-green-700 text-sm">
-                  Secure online payment via Razorpay. You'll be redirected to complete payment.
+                  Secure online payment via Razorpay. You&apos;ll be redirected to complete payment.
                 </AlertDescription>
               </Alert>
             )}

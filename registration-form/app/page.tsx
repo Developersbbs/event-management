@@ -4,11 +4,11 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Calendar, MapPin, Menu, ArrowRight, Instagram, Facebook, Twitter, Mail, Clock, AlertCircle, Earth, Wheat, Utensils } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Calendar, MapPin, Menu, ArrowRight, Instagram, Facebook, Twitter, Mail, Clock, AlertCircle, Earth } from "lucide-react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import Image from "next/image"
 import { useState, useEffect } from "react"
 import { Users, Search, Globe, BookOpen, Shield, Handshake } from "lucide-react";
 
@@ -19,9 +19,14 @@ interface EventStatus {
   event?: {
     _id: string
     eventName: string
-    startDate: string
-    endDate: string
-    location: string
+    eventDate: string
+    startTime: string
+    endTime: string
+    venue: {
+      name: string
+      address: string
+      city: string
+    }
     maxCapacity: number
     registeredCount: number
   }
@@ -41,8 +46,8 @@ export default function PongalLandingPage() {
 
         if (data) {
           const now = new Date()
-          const registrationStart = new Date(data.registrationStart || data.startDate)
-          const registrationEnd = new Date(data.registrationEnd || data.endDate)
+          const registrationStart = new Date(data.registrationStart)
+          const registrationEnd = new Date(data.registrationEnd)
 
           const status: EventStatus = {
             isActive: false,
@@ -289,10 +294,11 @@ export default function PongalLandingPage() {
               {/* Right: Parai Isai Card */}
               <Card className="group overflow-hidden border-border/50 hover:border-primary/50 transition-colors">
                 <div className="aspect-video bg-muted relative overflow-hidden">
-                  <img
+                  <Image
                     src="/assets/register-banner.jpeg"
                     alt="Parai Isai Performance"
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
                     {/* <Badge className="bg-primary text-primary-foreground border-none">Music</Badge> */}
@@ -360,10 +366,11 @@ export default function PongalLandingPage() {
 
               {/* Right: Banner Image */}
               <div className="relative aspect-square md:aspect-[4/3] rounded-2xl overflow-hidden border border-border bg-card p-2 shadow-2xl rotate-3 transition-transform hover:rotate-0 duration-500">
-                <img
+                <Image
                   src="/assets/banner-1.png"
                   alt="RIFAH Presence Across India"
-                  className="w-150 h-150 object-cover rounded-xl"
+                  fill
+                  className="object-cover rounded-xl"
                 />
               </div>
 
