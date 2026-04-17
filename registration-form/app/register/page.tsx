@@ -99,8 +99,8 @@ export default function RegisterPage() {
         <div className="flex flex-col gap-4 p-6 md:p-10">
           <div className="flex justify-center gap-2 md:justify-start">
             <Link href="/" className="flex items-center gap-2 font-medium">
-              <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
-                <Earth className="size-4" />
+              <div className="flex  items-center justify-center rounded-md">
+               <img src="/assets/logo.png" alt="RIFAH" className="w-10 h-10"  />
               </div>
               RIFAH ANNUAL SUMMIT
             </Link>
@@ -129,8 +129,8 @@ export default function RegisterPage() {
         <div className="flex flex-col gap-4 p-6 md:p-10">
           <div className="flex justify-center gap-2 md:justify-start">
             <Link href="/" className="flex items-center gap-2 font-medium">
-              <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
-                <Earth className="size-4" />
+              <div className="flex items-center justify-center rounded-md">
+               <img src="/assets/logo.png" alt="RIFAH" className="w-10 h-10"  />
               </div>
               RIFAH ANNUAL SUMMIT
             </Link>
@@ -174,8 +174,8 @@ export default function RegisterPage() {
       <div className="flex flex-col gap-4 p-6 md:p-10">
         <div className="flex justify-center gap-2 md:justify-start">
           <Link href="/" className="flex items-center gap-2 font-medium">
-            <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
-              <Earth className="size-4" />
+            <div className="foreground flex items-center justify-center rounded-md">
+             <img src="/assets/logo.png" alt="RIFAH" className="w-10 h-10" />
             </div>
             RIFAH ANNUAL SUMMIT
           </Link>

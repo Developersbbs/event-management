@@ -5,12 +5,13 @@ import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Calendar, MapPin, Menu, ArrowRight, Instagram, Facebook, Twitter, Mail, Clock, AlertCircle, Earth } from "lucide-react"
+import { Calendar, MapPin, Menu, ArrowRight, Instagram, Facebook, Twitter, Mail, Clock, AlertCircle, Earth, Phone } from "lucide-react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import { useState, useEffect } from "react"
 import { Users, Search, Globe, BookOpen, Shield, Handshake } from "lucide-react";
+
 
 interface EventStatus {
   isActive: boolean
@@ -112,7 +113,8 @@ export default function PongalLandingPage() {
       <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Earth className="h-6 w-6 text-primary animate-spin-slow" />
+            {/* <Earth className="h-6 w-6 text-primary animate-spin-slow" /> */}
+            <img src="/assets/logo.png" alt="RIFAH" className="h-7 sm:h-12 w-auto" />
             <span className="text-xl font-bold tracking-tight">RIFAH ANNUAL SUMMIT</span>
           </div>
 
@@ -139,22 +141,54 @@ export default function PongalLandingPage() {
                 <span className="sr-only">Toggle menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="right">
-              <div className="flex flex-col gap-6 mt-10">
-                <Link href="#about" className="text-lg font-medium hover:text-primary">About</Link>
-                <Link href="#events" className="text-lg font-medium hover:text-primary">Events</Link>
-                <Link href="#schedule" className="text-lg font-medium hover:text-primary">Schedule</Link>
-                <Link href="#gallery" className="text-lg font-medium hover:text-primary">Gallery</Link>
-                <Link href="#contact" className="text-lg font-medium hover:text-primary">Contact</Link>
-                <div className="w-full">
+            <SheetContent side="right" className="w-[280px] sm:w-[320px] p-0">
+              <div className="flex flex-col h-full">
+
+                {/* Sheet Header */}
+                <div className="px-6 py-5 border-b border-border/50">
+                  <div className="flex items-center gap-2">
+                    <img src="/assets/logo.png" alt="RIFAH" className="h-7 w-auto" />
+                    <span className="font-semibold text-sm tracking-wide">RIFAH ANNUAL SUMMIT</span>
+                  </div>
+                </div>
+
+                {/* Nav Links */}
+                <nav className="flex flex-col px-4 py-6 gap-1 flex-1">
+                  {[
+                    { href: "#about", label: "About" },
+                    { href: "#events", label: "Events" },
+                    { href: "#schedule", label: "Schedule" },
+                    { href: "#gallery", label: "Gallery" },
+                    { href: "#contact", label: "Contact" },
+                  ].map(({ href, label }) => (
+                    <Link
+                      key={href}
+                      href={href}
+                      className="flex items-center gap-3 px-3 py-3 rounded-lg text-base font-medium text-foreground hover:bg-primary/10 hover:text-primary transition-colors"
+                    >
+                      {label}
+                    </Link>
+                  ))}
+                </nav>
+
+                {/* Bottom CTA */}
+                <div className="px-6 py-6 border-t border-border/50">
                   <Button
                     onClick={handleRegistrationClick}
-                    className="w-full"
+                    className="w-full h-11 text-sm font-semibold"
                     disabled={loading || !eventStatus?.isActive}
                   >
-                    {loading ? "Loading..." : eventStatus?.isActive ? "Open Registration" : "Registration Closed"}
+                    {loading
+                      ? "Loading..."
+                      : eventStatus?.isActive
+                        ? "Open Registration"
+                        : "Registration Closed"}
                   </Button>
+                  <p className="text-xs text-muted-foreground text-center mt-3">
+                    RIFAH Annual Summit 2026
+                  </p>
                 </div>
+
               </div>
             </SheetContent>
           </Sheet>
@@ -643,69 +677,69 @@ export default function PongalLandingPage() {
 
       {/* Footer */}
       <footer className="text-primary-foreground py-16 border-t border-primary-foreground/10 bg-[url('/assets/herobg.png')] bg-cover bg-center bg-no-repeat">
-        <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12 mb-16">
-            {/* Brand */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 text-primary-foreground">
-                <Earth className="h-6 w-6 text-primary-foreground animate-spin-slow" />
-                <span className="text-xl font-bold tracking-tight">RIFAH ANNUAL SUMMIT</span>
-              </div>
-              <p className="text-sm leading-relaxed text-primary-foreground/80">
-                Rifah Annual Summit 2026 Together For Sustainable Future
-              </p>
-            </div>
+        <div className="container mx-auto px-4 text-center">
 
-            {/* Quick Links */}
-            <div className="space-y-4">
-              <h3 className="text-primary-foreground font-semibold tracking-tight">Quick Links</h3>
-              <ul className="space-y-2 text-sm text-primary-foreground/80">
-                <li><Link href="#" className="hover:text-primary-foreground transition-colors">About Us</Link></li>
-                <li><Link href="#" className="hover:text-primary-foreground transition-colors">Events Schedule</Link></li>
-                <li><Link href="#" className="hover:text-primary-foreground transition-colors">Gallery</Link></li>
-                <li>
-                  <button
-                    onClick={handleRegistrationClick}
-                    className="hover:text-primary-foreground transition-colors text-left"
-                    disabled={loading || !eventStatus?.isActive}
-                  >
-                    {loading ? "Loading..." : eventStatus?.isActive ? "Register" : "Register (Closed)"}
-                  </button>
-                </li>
-              </ul>
+          {/* Brand */}
+          <div className="mb-8">
+            <div className="flex items-center justify-center gap-2 text-primary-foreground mb-4">
+              <img src="/assets/logo.png" alt="RIFAH" className="h-7 sm:h-12 w-auto" />
+              <span className="text-xl font-bold tracking-tight">RIFAH ANNUAL SUMMIT</span>
             </div>
+            <p className="text-sm leading-relaxed text-primary-foreground/80">
+              RIFAH Chamber of Commerce and Industry is dedicated to building an ethical business
+              ecosystem that empowers entrepreneurs, fosters collaboration, and drives sustainable
+              growth across communities and industries in India.
+            </p>
+          </div>
 
-            {/* Legal */}
-            <div className="space-y-4">
-              <h3 className="text-primary-foreground font-semibold tracking-tight">Legal</h3>
-              <ul className="space-y-2 text-sm text-primary-foreground/80">
-                <li><Link href="#" className="hover:text-primary-foreground transition-colors">Privacy Policy</Link></li>
-                <li><Link href="#" className="hover:text-primary-foreground transition-colors">Terms of Service</Link></li>
-                <li><Link href="#" className="hover:text-primary-foreground transition-colors">Cookie Policy</Link></li>
-                <li><Link href="#" className="hover:text-primary-foreground transition-colors">Contact Support</Link></li>
-              </ul>
-            </div>
+          {/* Quick Links */}
+          {/* <div className="mb-8">
+            <h3 className="text-primary-foreground font-semibold text-base mb-3">Quick Links</h3>
+            <ul className="space-y-2 text-sm text-primary-foreground/80">
+              <li><Link href="#about" className="hover:text-primary-foreground transition-colors">About Us</Link></li>
+              <li><Link href="#events" className="hover:text-primary-foreground transition-colors">Events</Link></li>
+              <li><Link href="#schedule" className="hover:text-primary-foreground transition-colors">Schedule</Link></li>
+              <li><Link href="#gallery" className="hover:text-primary-foreground transition-colors">Gallery</Link></li>
+              <li>
+                <button
+                  onClick={handleRegistrationClick}
+                  className="hover:text-primary-foreground transition-colors text-left"
+                  disabled={loading || !eventStatus?.isActive}
+                >
+                  {loading ? "Loading..." : eventStatus?.isActive ? "Register" : "Register (Closed)"}
+                </button>
+              </li>
+            </ul>
+          </div> */}
 
-            {/* Newsletter */}
-            <div className="space-y-4">
-              <h3 className="text-primary-foreground font-semibold tracking-tight">Stay Updated</h3>
-              <p className="text-sm text-primary-foreground/80">Subscribe to our newsletter for the latest updates and announcements.</p>
-              <div className="flex gap-2">
-                <Input placeholder="Enter your email" className="bg-primary-foreground/10 border-primary-foreground/20 focus-visible:ring-primary-foreground placeholder:text-primary-foreground/50 text-primary-foreground" />
-                <Button disabled size="icon" variant="secondary" className="shrink-0 text-primary hover:text-primary opacity-50 cursor-not-allowed">
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
+          {/* Contact Info */}
+          <div className="mb-10">
+            <h3 className="text-primary-foreground font-semibold text-base mb-3">Contact Us</h3>
+            <ul className="space-y-3 text-sm text-primary-foreground/80">
+              <li className="flex items-start justify-center gap-3">
+                <MapPin className="h-4 w-4 mt-0.5 shrink-0 text-primary-foreground/60" />
+                <span className="leading-relaxed text-left">
+                  KAY EM SPECTRA Vanagaram,
+                  Near Maduravoyal Bridge,
+                  Chennai
+                </span>
+              </li>
+              <li className="flex items-center justify-center gap-3">
+                <Mail className="h-4 w-4 shrink-0 text-primary-foreground/60" />
+                <span>info@rafah.co.in</span>
+              </li>
+              {/* <li className="flex items-center justify-center gap-3">
+                <Phone className="h-4 w-4 shrink-0 text-primary-foreground/60" />
+                <span></span>
+              </li> */}
+            </ul>
           </div>
 
           <Separator className="bg-primary-foreground/10 mb-8" />
 
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6 text-sm">
-            <div className="flex items-center gap-2">
-              <span>&copy; 2026 | SBBS. All rights reserved.</span>
-            </div>
-
+          {/* Bottom Bar */}
+          <div className="flex flex-col items-center justify-center gap-6 text-sm text-primary-foreground/80">
+            <span>&copy; 2026 | SBBS. All rights reserved.</span>
             <div className="flex items-center gap-4">
               <Link href="#" className="h-10 w-10 rounded-full bg-primary-foreground/10 flex items-center justify-center hover:bg-primary-foreground hover:text-primary transition-all duration-300">
                 <Instagram className="h-5 w-5" />
@@ -721,6 +755,7 @@ export default function PongalLandingPage() {
               </Link>
             </div>
           </div>
+
         </div>
       </footer>
     </div >
