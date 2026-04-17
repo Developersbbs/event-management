@@ -4,10 +4,13 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Calendar, MapPin, Menu, ArrowRight, Instagram, Facebook, Twitter, Mail, Clock, AlertCircle, Earth } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Calendar, MapPin, Menu, ArrowRight, Instagram, Facebook, Twitter, Mail, Clock, AlertCircle, Earth, Wheat, Utensils } from "lucide-react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useState, useEffect } from "react"
+import { Users, Search, Globe, BookOpen, Shield, Handshake } from "lucide-react";
 
 interface EventStatus {
   isActive: boolean
@@ -116,7 +119,7 @@ export default function PongalLandingPage() {
             <Button
               onClick={handleRegistrationClick}
               size="sm"
-              className="rounded-full px-6"
+              className="rbg-[#f5d78e] text-white hover:bg-amber-400 font-semibold rounded-full px-8"
               disabled={loading || !eventStatus?.isActive}
             >
               {loading ? "Loading..." : eventStatus?.isActive ? "Open Registration" : "Registration Closed"}
@@ -155,217 +158,484 @@ export default function PongalLandingPage() {
 
       <main>
         {/* Hero Section */}
-        <section className="relative pt-24 pb-20 md:pt-32 md:pb-48 overflow-hidden">
-          {/* Ornamental Background Elements */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl opacity-10 pointer-events-none">
-            <div className="absolute top-10 right-10 w-64 h-64 rounded-full bg-primary blur-3xl"></div>
-            <div className="absolute bottom-10 left-10 w-96 h-96 rounded-full bg-secondary blur-3xl"></div>
-          </div>
+        <section className="relative pt-24 pb-20 md:pt-32 md:pb-48 overflow-hidden bg-primary/7 bg-[url('/assets/herobg.png')] bg-cover bg-center bg-no-repeat">
 
-          <div className="container mx-auto px-4 flex flex-col items-center text-center relative z-10">
-            {/* <Badge variant="outline" className="mb-6 px-4 py-1 border-primary/20 text-primary bg-primary/5 uppercase tracking-widest text-xs">
-              தமிழ் பாரம்பரியத்தைப் போற்றும்
-            </Badge> */}
-            <h1 className="text-3xl sm:text-5xl md:text-7xl lg:text-7xl font-black tracking-tighter mb-4 bg-gradient-to-b from-foreground to-foreground/70 bg-clip-text text-transparent h-auto py-2">
-              Building Connections Creating Opportunities Driving Business Growth 
-              {/* <span className="text-primary block md:inline">2026</span> */}
+          <div className="container mx-auto px-4 sm:px-6 flex flex-col items-center text-center relative z-10">
+
+            <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tighter mb-6 bg-gradient-to-b from-foreground to-foreground/70 bg-clip-text text-transparent text-white leading-[1.1] py-2 w-full max-w-5xl">
+              Building Connections{" "}
+              Creating Opportunities{" "}
+              Driving Business Growth
             </h1>
-            <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mb-10 leading-relaxed px-4">
-              Join 400+ entrepreneurs, professionals, and business leaders for a day of 
+
+            <p className="text-sm sm:text-base md:text-lg lg:text-xl text-white max-w-xl md:max-w-2xl mb-5 leading-relaxed px-2">
+              Join 400+ entrepreneurs, professionals, and business leaders for a day of
               networking, collaboration, and growth.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-              <Button
-                onClick={handleRegistrationClick}
-                size="lg"
-                className="rounded-full text-base h-12 sm:px-8 shadow-lg shadow-primary/20"
-                disabled={loading || !eventStatus?.isActive}
-              >
-                {loading ? "Loading..." : eventStatus?.isActive ? "Open Registration" : "Registration Closed"}
-              </Button>
-              {/* <Button disabled size="lg" variant="outline" className="rounded-full text-base h-12 px-8 opacity-50 cursor-not-allowed">
-                Schedule (Coming Soon)
-              </Button> */}
-            </div>
 
+            <p className="text-sm sm:text-base text-white max-w-xl md:max-w-2xl mb-8 leading-relaxed px-2 opacity-80">
+              A one-day business summit designed to connect ideas, people, and
+              opportunities — all under one roof.
+            </p>
+
+            {/* Event Meta Info */}
             {!loading && eventStatus?.event && (
-              <div className="flex flex-col md:flex-row flex-wrap justify-center items-center gap-4 sm:gap-6 lg:gap-8 mt-12 md:mt-16 text-sm text-muted-foreground w-full px-4">
+              <div className="flex flex-col sm:flex-row flex-wrap justify-center items-center gap-3 sm:gap-5 lg:gap-8 mt-6 md:mt-10 text-xs sm:text-sm text-white w-full px-2 mb-6">
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-primary shrink-0" />
-                  <span className="text-center md:text-left">
-                    {new Date(eventStatus.event.eventDate).toLocaleDateString('en-IN', {
-                      day: '2-digit',
-                      month: 'short',
-                      year: 'numeric'
+                  <span>
+                    {new Date(eventStatus.event.eventDate).toLocaleDateString("en-IN", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
                     })}
                   </span>
                 </div>
-                <div className="hidden md:block h-4 w-px bg-border"></div>
+
+                <div className="hidden sm:block h-4 w-px bg-white/30" />
+
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-primary shrink-0" />
-                  <span className="text-center md:text-left">
-                    {new Date(eventStatus.event.startTime).toLocaleTimeString('en-IN', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                      hour12: true
-                    })} - {new Date(eventStatus.event.endTime).toLocaleTimeString('en-IN', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                      hour12: true
+                  <span>
+                    {new Date(eventStatus.event.startTime).toLocaleTimeString("en-IN", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: true,
+                    })}{" "}
+                    -{" "}
+                    {new Date(eventStatus.event.endTime).toLocaleTimeString("en-IN", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: true,
                     })}
                   </span>
                 </div>
-                <div className="hidden md:block h-4 w-px bg-border"></div>
-                <div className="flex items-center gap-2 text-center md:text-left">
+
+                <div className="hidden sm:block h-4 w-px bg-white/30" />
+
+                <div className="flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-primary shrink-0" />
-                  <span className="break-words max-w-[250px] md:max-w-none">{eventStatus.event.venue?.city || eventStatus.event.venue?.name || 'TBD'}</span>
+                  <span className="max-w-[220px] sm:max-w-none leading-snug">
+                    {eventStatus.event.venue?.city ||
+                      eventStatus.event.venue?.name ||
+                      "TBD"}
+                  </span>
                 </div>
               </div>
             )}
 
-            {/* Event Status Message */}
+            {/* Event Status Alert */}
             {!loading && eventStatus && !eventStatus.isActive && (
-              <div className="mt-6 max-w-md mx-auto">
-                <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg border">
-                  <AlertCircle className="h-4 w-4 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">
+              <div className="mt-4 mb-6 w-full max-w-sm mx-auto">
+                <div className="flex items-start gap-2 p-3 bg-muted/50 rounded-lg border">
+                  <AlertCircle className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                  <p className="text-xs sm:text-sm text-muted-foreground text-left">
                     {eventStatus.message}
                   </p>
                 </div>
               </div>
             )}
+
+            {/* CTA Button */}
+            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto mt-2 sm:mt-4 px-4 sm:px-0">
+              <Button
+                onClick={handleRegistrationClick}
+                size="lg"
+                className="w-full sm:w-auto rounded-full text-sm sm:text-base h-12 sm:px-8 shadow-lg shadow-primary/30"
+                disabled={loading || !eventStatus?.isActive}
+              >
+                {loading
+                  ? "Loading..."
+                  : eventStatus?.isActive
+                    ? "Open Registration"
+                    : "Registration Closed"}
+              </Button>
+            </div>
+
+          </div>
+        </section>
+
+        {/* Events Grid */}
+        <section id="events" className="py-24">
+          <div className="container mx-auto px-4">
+            <div className="text-center max-w-2xl mx-auto mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">What is RIFAH Annual Summit 2026</h2>
+              <p className="text-muted-foreground">
+                Building Connections Creating Opportunities Driving Business Growth
+              </p>
+            </div>
+
+            {/* Top row: Text + Card */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+              {/* Left: Description */}
+              <div className="flex flex-col justify-center">
+                <h2 className="text-2xl md:text-3xl font-bold mb-6 leading-snug">
+                  RIFAH Annual Summit 2026 is a flagship business event that brings together
+                  entrepreneurs, professionals, and industry leaders from across Tamil Nadu and India.
+                </h2>
+                <h3 className="text-lg md:text-xl font-semibold mb-6">
+                  This summit is built around one simple idea —{" "}
+                  <span className="text-primary">
+                    grow together through meaningful connections and ethical business practices.
+                  </span>
+                </h3>
+                <p className="text-muted-foreground text-sm md:text-base">
+                  From networking opportunities to collaboration discussions, the event is designed
+                  to help individuals and businesses move forward with clarity, purpose, and the
+                  right connections.
+                </p>
+              </div>
+
+              {/* Right: Parai Isai Card */}
+              <Card className="group overflow-hidden border-border/50 hover:border-primary/50 transition-colors">
+                <div className="aspect-video bg-muted relative overflow-hidden">
+                  <img
+                    src="/assets/register-banner.jpeg"
+                    alt="Parai Isai Performance"
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
+                    {/* <Badge className="bg-primary text-primary-foreground border-none">Music</Badge> */}
+                  </div>
+                </div>
+                <CardHeader>
+                  <CardTitle className="group-hover:text-primary transition-colors">RIFAH Annual Summit</CardTitle>
+                  {/* <CardDescription>Rhythm of the Tamils.</CardDescription> */}
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    grow together through meaningful connections and ethical business practices.
+                  </p>
+                  <Link href="/register" className="text-sm font-medium hover:underline flex items-center gap-1">
+                    Register Now <ArrowRight className="h-3 w-3" />
+                  </Link>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </section>
 
         {/* Introduction / About */}
-        {/* <section id="about" className="py-24 bg-secondary/30">
+        <section id="about" className="py-24 bg-secondary/30">
           <div className="container mx-auto px-4">
             <div className="grid md:grid-cols-2 gap-12 lg:gap-20 items-center">
+
+              {/* Left Content */}
               <div className="space-y-6">
                 <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
-                  Harvesting Gratitude, <br />
-                  <span className="text-primary">Celebrating Heritage.</span>
+                  RIFAH Presence
+                  <span className="text-primary"> Across India.</span>
                 </h2>
                 <p className="text-muted-foreground leading-relaxed">
-                  Pongal is not just a harvest festival; it is an emotion that connects us to our roots, our land, and our farmers.
-                  Tha.Pa.Va is proud to bring you "Pongal Vizha 2026", a grand celebration of Tamil culture using modern aesthetics while preserving traditional values.
+                  RIFAH has established a strong and expanding network across multiple states, connecting businesses nationwide.
                 </p>
-                <div className="flex flex-col gap-4">
-                  <div className="flex gap-4">
-                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                      <Wheat className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold">Traditional Pongal</h3>
-                      <p className="text-sm text-muted-foreground">Witness the majestic Pongal cooking ceremony in earthenware pots.</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-4">
-                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                      <Utensils className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold">Grand Feast</h3>
-                      <p className="text-sm text-muted-foreground">Enjoy a traditional banana leaf feast with 21 varieties of dishes.</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="relative aspect-square md:aspect-[4/3] rounded-2xl overflow-hidden border border-border bg-card p-2 shadow-2xl rotate-3 transition-transform hover:rotate-0 duration-500">
-                <div className="w-full h-full bg-muted/50 rounded-xl flex items-center justify-center text-muted-foreground flex-col gap-4">
 
-                  <div className="grid grid-cols-2 gap-2 p-4 w-full h-full">
-                    <div className="bg-primary/20 rounded-lg w-full h-full"></div>
-                    <div className="bg-primary/10 rounded-lg w-full h-full"></div>
-                    <div className="bg-primary/5 rounded-lg w-full h-full"></div>
-                    <div className="bg-primary/15 rounded-lg w-full h-full"></div>
+                {/* States Section */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-primary shrink-0" />
+                    <h3 className="font-semibold text-sm uppercase tracking-widest text-primary">
+                      States List
+                    </h3>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      "Karnataka", "Maharashtra", "Telangana", "Tamil Nadu",
+                      "Gujarat", "Delhi", "West Bengal", "Chhattisgarh",
+                      "Andhra Pradesh", "Uttar Pradesh", "Goa", "Rajasthan",
+                      "Madhya Pradesh", "Punjab", "Bihar", "Uttarakhand",
+                      "Assam", "Kerala"
+                    ].map((state) => (
+                      <span
+                        key={state}
+                        className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors cursor-default"
+                      >
+                        {state}
+                      </span>
+                    ))}
                   </div>
                 </div>
               </div>
+
+              {/* Right: Banner Image */}
+              <div className="relative aspect-square md:aspect-[4/3] rounded-2xl overflow-hidden border border-border bg-card p-2 shadow-2xl rotate-3 transition-transform hover:rotate-0 duration-500">
+                <img
+                  src="/assets/banner-1.png"
+                  alt="RIFAH Presence Across India"
+                  className="w-150 h-150 object-cover rounded-xl"
+                />
+              </div>
+
             </div>
           </div>
-        </section> */}
+        </section>
 
-        {/* Events Grid */}
-        {/* <section id="events" className="py-24">
+        {/* Why Attend Section */}
+        <section id="why-attend" className="py-24 bg-background">
           <div className="container mx-auto px-4">
+
+            {/* Header */}
             <div className="text-center max-w-2xl mx-auto mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">Festival Highlights</h2>
+              <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
+                Why You Should Attend This Summit
+              </h2>
               <p className="text-muted-foreground">
-                Experience the vibrancy of Tamil culture through our carefully curated events tailored for all age groups.
+                Five powerful reasons that make RIFAH Annual Summit 2026 the event you cannot afford to miss.
               </p>
             </div>
 
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              Event Card 1
-              <Card className="group overflow-hidden border-border/50 hover:border-primary/50 transition-colors">
-                <div className="aspect-video bg-muted relative">
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
-                    <Badge className="bg-primary text-primary-foreground border-none">Cultural</Badge>
+            {/* Cards Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+              {[
+                {
+                  icon: <Users className="h-5 w-5 text-primary" />,
+                  title: "Meet the right people",
+                  desc: "Connect directly with entrepreneurs, business owners, and professionals who are actively growing.",
+                },
+                {
+                  icon: <Search className="h-5 w-5 text-primary" />,
+                  title: "Find real opportunities",
+                  desc: "Discover collaborations, partnerships, and business leads that actually matter.",
+                },
+                {
+                  icon: <Globe className="h-5 w-5 text-primary" />,
+                  title: "Broaden your connections nationwide",
+                  desc: "Interact with members from multiple chapters across Tamil Nadu and India.",
+                },
+                {
+                  icon: <BookOpen className="h-5 w-5 text-primary" />,
+                  title: "Learn from real experiences",
+                  desc: "Gain insights from people who are already building and scaling businesses.",
+                },
+                {
+                  icon: <Shield className="h-5 w-5 text-primary" />,
+                  title: "Be part of a purpose-driven community",
+                  desc: "Engage in a platform that promotes ethical and value-based business growth.",
+                },
+                {
+                  icon: <Handshake className="h-5 w-5 text-primary" />,
+                  title: "Build lasting business relationships",
+                  desc: "Walk away with meaningful connections that go beyond the event and turn into long-term partnerships.",
+                },
+              ].map((item, i) => (
+                <div
+                  key={i}
+                  className="group flex flex-col gap-4 p-6 rounded-xl border border-border/50 bg-card hover:border-primary/40 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                      {item.icon}
+                    </div>
+                    <h3 className="font-semibold text-base leading-snug">{item.title}</h3>
                   </div>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
                 </div>
-                <CardHeader>
-                  <CardTitle className="group-hover:text-primary transition-colors">Uri Adithal</CardTitle>
-                  <CardDescription>The traditional pot breaking ceremony.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Test your strength and focus in this classic rural game that brings laughter and cheer.
-                  </p>
-                  <Link href="#" className="text-sm font-medium hover:underline flex items-center gap-1">
-                    Register to Participate <ArrowRight className="h-3 w-3" />
-                  </Link>
-                </CardContent>
-              </Card>
+              ))}
+            </div>
 
-              Event Card 2
-              <Card className="group overflow-hidden border-border/50 hover:border-primary/50 transition-colors">
-                <div className="aspect-video bg-muted relative">
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
-                    <Badge className="bg-primary text-primary-foreground border-none">Art</Badge>
-                  </div>
-                </div>
-                <CardHeader>
-                  <CardTitle className="group-hover:text-primary transition-colors">Kolam Contest</CardTitle>
-                  <CardDescription>Decorate the earth with colors.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Showcase your artistic skills in our grand Rangoli competition. Theme: "Harvest".
-                  </p>
-                  <Link href="#" className="text-sm font-medium hover:underline flex items-center gap-1">
-                    Register to Participate <ArrowRight className="h-3 w-3" />
-                  </Link>
-                </CardContent>
-              </Card>
+            {/* Bottom CTA Banner */}
+            <div className="max-w-5xl mx-auto mt-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-primary/10 border border-primary/20 rounded-xl px-6 py-5">
+              <div>
+                <p className="font-semibold text-primary">Ready to grow with RIFAH?</p>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  Join hundreds of business leaders at the Annual Summit 2026.
+                </p>
+              </div>
+              <Link href="/register" className="px-6 py-2 bg-primary rounded-full text-white shrink-0">Open Registration</Link>
+            </div>
 
-              Event Card 3
-              <Card className="group overflow-hidden border-border/50 hover:border-primary/50 transition-colors">
-                <div className="aspect-video bg-muted relative">
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
-                    <Badge className="bg-primary text-primary-foreground border-none">Music</Badge>
+          </div>
+        </section>
+
+        {/* Sponsor Section */}
+        <section id="sponsors" className="py-24 bg-secondary/30">
+          <div className="container mx-auto px-4 max-w-5xl">
+
+            {/* Header */}
+            <div className="text-center max-w-2xl mx-auto mb-14">
+              <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
+                Sponsor the RIFAH Annual Summit 2026
+              </h2>
+              <p className="text-muted-foreground leading-relaxed">
+                A unique opportunity for brands to directly connect with a highly relevant audience
+                of entrepreneurs and decision-makers.
+              </p>
+            </div>
+
+            {/* Sponsor Table */}
+            <div className="overflow-x-auto rounded-xl border border-border/50 mb-14">
+              <table className="w-full text-sm min-w-[540px]">
+                <thead>
+                  <tr className="bg-[#7a1a1a] text-[#f5d78e]">
+                    <th className="text-left px-5 py-4 font-semibold">Category</th>
+                    {[
+                      { label: "Title", bg: "bg-amber-400 text-amber-900" },
+                      { label: "Platinum", bg: "bg-gray-300 text-gray-800" },
+                      { label: "Gold", bg: "bg-yellow-300 text-yellow-900" },
+                      { label: "Silver", bg: "bg-gray-200 text-gray-700" },
+                    ].map(({ label, bg }) => (
+                      <th key={label} className="text-center px-4 py-4 font-semibold">
+                        <span className={`inline-block text-xs px-2.5 py-0.5 rounded-full mb-1 ${bg}`}>
+                          {label}
+                        </span>
+                        <div>Sponsor</div>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    {
+                      label: "Amount per sponsor",
+                      values: ["₹50,000", "₹30,000", "₹20,000", "₹10,000"],
+                      bold: true,
+                    },
+                    { label: "No. of sponsors", values: ["1", "4", "6", "6"] },
+                    { label: "Delegate passes", values: ["5", "3", "2", "1"] },
+                    {
+                      label: "Pamphlet distribution",
+                      values: ["Yes", "Yes", "Yes", "No"],
+                      badge: true,
+                    },
+                    {
+                      label: "Branding at venue & promotions",
+                      values: ["Yes", "Yes", "Yes", "Yes"],
+                      badge: true,
+                    },
+                  ].map((row, i) => (
+                    <tr key={i} className={i % 2 === 1 ? "bg-muted/40" : ""}>
+                      <td className="px-5 py-3.5 font-medium text-muted-foreground border-r border-border/40">
+                        {row.label}
+                      </td>
+                      {row.values.map((val, j) => (
+                        <td key={j} className="text-center px-4 py-3.5 border-r border-border/40 last:border-r-0">
+                          {row.badge ? (
+                            <span
+                              className={`inline-block text-xs font-medium px-3 py-1 rounded-full ${val === "Yes"
+                                ? "bg-green-100 text-green-800"
+                                : "bg-red-100 text-red-700"
+                                }`}
+                            >
+                              {val}
+                            </span>
+                          ) : (
+                            <span className={row.bold ? "font-semibold text-base" : ""}>{val}</span>
+                          )}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Key Benefits */}
+            <div className="mb-14">
+              <h3 className="text-2xl font-bold text-center mb-8">Key Benefits for Sponsors</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[
+                  "Reach 400–500 active entrepreneurs from across Tamil Nadu",
+                  "Get direct visibility among business owners, professionals, and decision-makers",
+                  "Access support from RIFAH's national network of experienced consultants",
+                  "Expand your business across Tamil Nadu and Pan India through RIFAH chapters",
+                  "Strengthen your brand presence through on-ground promotions and engagement",
+                  "Be part of an initiative that promotes ethical business practices based on strong values",
+                ].map((benefit, i) => (
+                  <div
+                    key={i}
+                    className="flex items-start gap-3 p-4 rounded-xl border border-border/50 bg-card"
+                  >
+                    <div className="mt-1.5 h-2 w-2 rounded-full bg-primary shrink-0" />
+                    <p className="text-sm text-muted-foreground leading-relaxed">{benefit}</p>
                   </div>
-                </div>
-                <CardHeader>
-                  <CardTitle className="group-hover:text-primary transition-colors">Parai Isai</CardTitle>
-                  <CardDescription>Rhythm of the Tamils.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    An electrifying performance by renowned Parai artists that will make your heart beat in sync.
-                  </p>
-                  <Link href="#" className="text-sm font-medium hover:underline flex items-center gap-1">
-                    View Performers <ArrowRight className="h-3 w-3" />
-                  </Link>
-                </CardContent>
-              </Card>
+                ))}
+              </div>
+            </div>
+
+            {/* CTA Banner */}
+            <div className="rounded-xl bg-[#7a1a1a] px-6 py-10 text-center">
+              <h3 className="text-xl font-bold text-[#f5d78e] mb-2">
+                Ready to sponsor RIFAH Annual Summit 2026?
+              </h3>
+              <p className="text-sm text-[#e8c485] mb-6 opacity-90">
+                Secure your sponsorship slot before they fill up.
+              </p>
+              <Button className="rounded-full text-base h-12 sm:px-8 shadow-lg shadow-primary/30">
+                Register Now
+              </Button>
+            </div>
+
+          </div>
+        </section>
+
+        {/* About RIFAH */}
+        <section className="py-12 px-4">
+          <div className="max-w-3xl mx-auto">
+            <div className=" text-center">
+
+              {/* Tag */}
+              {/* <span className="inline-block bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 text-xs font-medium tracking-widest uppercase px-4 py-1.5 rounded-full mb-5">
+                About Us
+              </span> */}
+
+              {/* Title */}
+              <h2 className="text-3xl sm:text-4xl font-semibold text-foreground leading-tight mb-4">
+                RIFAH Chamber of Commerce
+              </h2>
+
+              {/* Description */}
+              <p className="text-sm sm:text-base text-muted-foreground leading-relaxed max-w-3xl mx-auto mb-8">
+                A not-for-profit business network empowering entrepreneurs through collaboration,mentorship, and ethical growth. RIFAH supports businesses with consulting, startup guidance, financial advisory, and international expansion — rooted in responsible entrepreneurship.
+              </p>
+
+              {/* Stats Row */}
+              {/* <div className="flex flex-wrap justify-center gap-3 mb-8">
+                {[
+                  { num: "500+", label: "Members" },
+                  { num: "12+", label: "Countries" },
+                  { num: "10", label: "Years Active" },
+                ].map((stat) => (
+                  <div
+                    key={stat.label}
+                    className="bg-muted border border-border/40 rounded-lg px-5 py-3 min-w-[90px] text-center"
+                  >
+                    <span className="block text-lg font-semibold text-foreground">{stat.num}</span>
+                    <span className="block text-xs text-muted-foreground mt-0.5">{stat.label}</span>
+                  </div>
+                ))}
+              </div> */}
+
+              {/* Divider */}
+              <hr className="border-border/40 mb-8" />
+
+              {/* Summit Block */}
+              <div className="bg-muted rounded-xl px-6 py-6 max-w-xl mx-auto mb-8">
+                <p className="text-xs font-medium tracking-widest uppercase text-muted-foreground mb-1">
+                  Annual Summit 2026
+                </p>
+                <h3 className="text-lg sm:text-xl font-semibold text-foreground leading-snug mb-2">
+                  Be part of the RIFAH Annual Summit 2026
+                </h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Join business leaders, entrepreneurs, and professionals to build a visionary
+                  Tamil Nadu and a sustainable India.
+                </p>
+              </div>
+
+              {/* CTA Button */}
+              <Link href="/register" className="rounded-full text-sm sm:text-base bg-primary p-4 text-white font-medium h-12 px-8 gap-2 shadow-none">
+                Register Now
+                <span aria-hidden="true">→</span>
+              </Link>
+
             </div>
           </div>
-        </section> */}
+        </section>
       </main>
 
       {/* Footer */}
-      <footer className="bg-primary text-primary-foreground py-16 border-t border-primary-foreground/10">
+      <footer className="text-primary-foreground py-16 border-t border-primary-foreground/10 bg-[url('/assets/herobg.png')] bg-cover bg-center bg-no-repeat">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12 mb-16">
             {/* Brand */}
@@ -375,7 +645,7 @@ export default function PongalLandingPage() {
                 <span className="text-xl font-bold tracking-tight">RIFAH ANNUAL SUMMIT</span>
               </div>
               <p className="text-sm leading-relaxed text-primary-foreground/80">
-                Rifah Annual Summit 2026 Together For Sustainable Future             
+                Rifah Annual Summit 2026 Together For Sustainable Future
               </p>
             </div>
 
