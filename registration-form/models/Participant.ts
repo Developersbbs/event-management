@@ -122,6 +122,15 @@ const ParticipantSchema = new mongoose.Schema({
         type: String,
     },
 
+    //  TERMS & CONDITIONS ACCEPTANCE
+    termsAccepted: {
+        type: Boolean,
+        default: false,
+    },
+    termsAcceptedAt: {
+        type: Date,
+    },
+
     //  ADD THIS (TRACK AMOUNT)
     totalAmount: {
         type: Number,

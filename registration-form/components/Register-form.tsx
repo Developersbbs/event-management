@@ -91,6 +91,7 @@ export function RegisterForm() {
     isMorningFood: false,
   })
   const [gstNumber, setGstNumber] = useState("")
+  const [termsAccepted, setTermsAccepted] = useState(false)
   const [secondaryMembers, setSecondaryMembers] = useState<{ name: string; mobileNumber: string; email: string; businessName: string; businessCategory: string; location: string; gender?: string; isMember?: boolean; showCustomLocation?: boolean; customLocation?: string }[]>([])
   const [currentMember, setCurrentMember] = useState<{ name: string; mobileNumber: string; email: string; businessName: string; businessCategory: string; location: string; gender?: string; isMember?: boolean; showCustomLocation?: boolean; customLocation?: string }>({ name: '', mobileNumber: '', email: '', businessName: '', businessCategory: '', location: '', isMember: false, showCustomLocation: false, customLocation: '' })
   const [showAddMemberForm, setShowAddMemberForm] = useState(false)
@@ -278,6 +279,8 @@ export function RegisterForm() {
         baseAmount: taxCalculation.baseAmount,
         gstNumber: gstNumber || undefined,
         secondaryMembers,
+        termsAccepted: termsAccepted,
+        termsAcceptedAt: new Date(),
       }
 
       const options = {
@@ -343,6 +346,12 @@ export function RegisterForm() {
       return
     }
 
+    // Terms & Conditions validation
+    if (!termsAccepted) {
+      setDbError("Please accept the Terms & Conditions to proceed with registration.")
+      return
+    }
+
     // For online payment, trigger payment first (participant created after successful payment)
     if (eventData.paymentMethod === 'online') {
       setIsSubmitting(true)
@@ -376,7 +385,9 @@ export function RegisterForm() {
         ageGuest: 0,
         isMorningFood: eventData.isMorningFood,
         secondaryMembers: filteredSecondaryMembers,
-        gstNumber: gstNumber.trim() || undefined
+        gstNumber: gstNumber.trim() || undefined,
+        termsAccepted: termsAccepted,
+        termsAcceptedAt: new Date(),
       }
 
       const result = await registerParticipant(payload)
@@ -1202,12 +1213,28 @@ export function RegisterForm() {
         </CardContent>
         <CardFooter className="flex justify-between">
           <Button variant="ghost" onClick={() => setStep(Step.PERSONAL_DETAILS)}>Back</Button>
-          <Button 
-            onClick={onFinalSubmit} 
-            disabled={isSubmitting || !eventData.ticketType || !activeEvent}
-          >
-            {isSubmitting ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : "Complete Registration"}
-          </Button>
+          <div className="flex flex-col gap-3">
+            {/* Terms & Conditions Checkbox */}
+            <div className="flex items-start gap-2">
+              <input
+                type="checkbox"
+                id="terms"
+                checked={termsAccepted}
+                onChange={(e) => setTermsAccepted(e.target.checked)}
+                className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+              />
+              <label htmlFor="terms" className="text-xs text-muted-foreground leading-tight">
+                I agree to the <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Terms & Conditions</a> for event registration and payment processing.
+              </label>
+            </div>
+
+            <Button
+              onClick={onFinalSubmit}
+              disabled={isSubmitting || !eventData.ticketType || !activeEvent || !termsAccepted}
+            >
+              {isSubmitting ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : "Complete Registration"}
+            </Button>
+          </div>
         </CardFooter>
       </Card>
     )
