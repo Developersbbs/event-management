@@ -16,9 +16,13 @@ interface EventStatus {
   event?: {
     _id: string
     eventName: string
-    startDate: string
-    endDate: string
-    location: string
+    registrationStart: string
+    registrationEnd: string
+    venue: {
+      name: string
+      address: string
+      city: string
+    }
     maxCapacity: number
     registeredCount: number
   }
@@ -38,8 +42,8 @@ export default function RegisterPage() {
         
         if (data) {
           const now = new Date()
-          const start = new Date(data.startDate)
-          const end = new Date(data.endDate)
+          const start = new Date(data.registrationStart)
+          const end = new Date(data.registrationEnd)
           
           const status: EventStatus = {
             isActive: false,

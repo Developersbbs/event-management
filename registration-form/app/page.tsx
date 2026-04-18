@@ -82,7 +82,7 @@ export default function PongalLandingPage() {
             isActive: false,
             isUpcoming: false,
             isPast: false,
-            message: "No events scheduled at the moment"
+            message: ""
           })
         }
       } catch (error) {
@@ -128,7 +128,7 @@ export default function PongalLandingPage() {
               className="rbg-[#f5d78e] text-white hover:bg-amber-400 font-semibold rounded-full px-8"
               disabled={loading || !eventStatus?.isActive}
             >
-              {loading ? "Loading..." : eventStatus?.isActive ? "Open Registration" : "Registration Closed"}
+              {loading ? "Loading..." : eventStatus?.isActive ? "Registration Open" : "Registration Closed"}
             </Button>
           </nav>
 
@@ -223,6 +223,7 @@ export default function PongalLandingPage() {
                   <Calendar className="h-4 w-4 text-primary shrink-0" />
                   <span>
                     {new Date(eventStatus.event.eventDate).toLocaleDateString("en-IN", {
+                      weekday: "long",
                       day: "2-digit",
                       month: "short",
                       year: "numeric",
@@ -263,7 +264,7 @@ export default function PongalLandingPage() {
             )}
 
             {/* Event Status Alert */}
-            {!loading && eventStatus && !eventStatus.isActive && (
+            {/* {!loading && eventStatus && !eventStatus.isActive && (
               <div className="mt-4 mb-6 w-full max-w-sm mx-auto">
                 <div className="flex items-start gap-2 p-3 bg-muted/50 rounded-lg border">
                   <AlertCircle className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
@@ -272,7 +273,7 @@ export default function PongalLandingPage() {
                   </p>
                 </div>
               </div>
-            )}
+            )} */}
 
             {/* CTA Button */}
             <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto mt-2 sm:mt-4 px-4 sm:px-0">
@@ -285,7 +286,7 @@ export default function PongalLandingPage() {
                 {loading
                   ? "Loading..."
                   : eventStatus?.isActive
-                    ? "Open Registration"
+                    ? "Registration Open"
                     : "Registration Closed"}
               </Button>
             </div>
@@ -482,7 +483,7 @@ export default function PongalLandingPage() {
                   Join hundreds of business leaders at the Annual Summit 2026.
                 </p>
               </div>
-              <Link href="/register" className="px-6 py-2 bg-primary rounded-full text-white shrink-0">Open Registration</Link>
+              <Link href="/register" className="px-6 py-2 bg-primary rounded-full text-white shrink-0">Registration Open</Link>
             </div>
 
           </div>
