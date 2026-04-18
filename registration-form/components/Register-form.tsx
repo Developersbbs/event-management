@@ -203,7 +203,7 @@ export function RegisterForm() {
         if (data.valid && data.gstName) {
           setPersonalData(prev => ({ ...prev, businessName: data.gstName }))
         }
-      } catch (error) {
+      } catch {
         setGstValidation({
           isValid: false,
           isLoading: false,
