@@ -88,8 +88,6 @@ export function RegisterForm() {
   const [eventData, setEventData] = useState({
     ticketType: "",
     paymentMethod: "cash",
-    foodGuest: 0,
-    isMorningFood: false,
   })
   const [gstNumber, setGstNumber] = useState("")
   const [invoiceLink, setInvoiceLink] = useState<string | null>(null)
@@ -112,20 +110,18 @@ export function RegisterForm() {
   const [primaryLocationOpen, setPrimaryLocationOpen] = useState(false)
   const [primaryCustomLocation, setPrimaryCustomLocation] = useState("")
   const [showPrimaryCustomInput, setShowPrimaryCustomInput] = useState(false)
-  const [existingParticipant, setExistingParticipant] = useState<{ 
-    mobileNumber: string; 
-    name: string; 
-    isRegistered: boolean; 
-    email?: string; 
-    businessName?: string; 
-    businessCategory?: string; 
-    location?: string; 
-    ageGroups?: { guest: number }; 
-    guestCount?: number; 
-    ticketType?: string; 
-    paymentMethod?: string; 
-    foodPreference?: { guest: number }; 
-    isMorningFood?: boolean 
+  const [existingParticipant, setExistingParticipant] = useState<{
+    mobileNumber?: string;
+    name: string;
+    isRegistered: boolean;
+    email?: string;
+    businessName?: string;
+    businessCategory?: string;
+    location?: string;
+    ageGroups?: { guest: number };
+    guestCount?: number;
+    ticketType?: string;
+    paymentMethod?: string;
   } | null>(null)
 
   // Handle primary location selection
@@ -469,9 +465,7 @@ export function RegisterForm() {
         guestCount: 0,
         ticketType: eventData.ticketType,
         paymentMethod: eventData.paymentMethod,
-        foodGuest: totalMembers, // Total people for food
         ageGuest: 0,
-        isMorningFood: eventData.isMorningFood,
         secondaryMembers: filteredSecondaryMembers,
         gstNumber: gstNumber.trim() || undefined,
         termsAccepted: termsAccepted,
@@ -598,8 +592,6 @@ export function RegisterForm() {
                   setEventData({
                     ticketType: existingParticipant?.ticketType || "",
                     paymentMethod: existingParticipant?.paymentMethod || "cash",
-                    foodGuest: existingParticipant?.foodPreference?.guest || 0,
-                    isMorningFood: existingParticipant?.isMorningFood || false
                   })
                   personalForm.reset({
                     name: existingParticipant?.name || "",
@@ -1317,17 +1309,6 @@ export function RegisterForm() {
               </div>
             </div>
 
-            <div className="flex items-center space-x-2 border p-4 rounded-lg bg-orange-50/50 border-orange-100">
-              <Checkbox
-                id="morning-food"
-                checked={eventData.isMorningFood}
-                onCheckedChange={(c) => setEventData(prev => ({ ...prev, isMorningFood: !!c }))}
-              />
-              <div>
-                <Label htmlFor="morning-food" className="font-medium cursor-pointer">Morning Food Required</Label>
-                <p className="text-xs text-muted-foreground">Select if you plan to attend the morning breakfast.</p>
-              </div>
-            </div>
           </div> */}
 
           {dbError && <Alert variant="destructive"><AlertCircle className="h-4 w-4" /><AlertTitle>Error</AlertTitle><AlertDescription>{dbError}</AlertDescription></Alert>}

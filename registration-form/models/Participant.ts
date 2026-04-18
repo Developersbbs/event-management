@@ -200,17 +200,6 @@ const ParticipantSchema = new mongoose.Schema({
         guest: { type: Number, default: 0 },
     },
 
-    foodPreference: {
-        // veg: { type: Number, default: 0 },
-        // nonVeg: { type: Number, default: 0 },
-        guest: { type: Number, default: 0 },
-    },
-
-    isMorningFood: {
-        type: Boolean,
-        default: false,
-    },
-
     isRegistered: {
         type: Boolean,
         default: false,

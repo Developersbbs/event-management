@@ -47,8 +47,6 @@ export function EditParticipantDialog({ participant, open, onOpenChange, onSucce
     const [eventData, setEventData] = useState({
         guestCount: 0,
         ageGuest: 0,
-        foodGuest: participant.foodPreference?.guest || 1,
-        isMorningFood: participant.isMorningFood || false,
     })
 
     const form = useForm<z.infer<typeof personalDetailsSchema>>({
@@ -66,8 +64,6 @@ export function EditParticipantDialog({ participant, open, onOpenChange, onSucce
             setEventData({
                 guestCount: 0,
                 ageGuest: 0,
-                foodGuest: participant.foodPreference?.guest || 1,
-                isMorningFood: participant.isMorningFood || false,
             })
             form.reset({
                 name: participant.name,
@@ -95,8 +91,6 @@ export function EditParticipantDialog({ participant, open, onOpenChange, onSucce
                 ...data,
                 guestCount: 0,
                 ageGroups: { guest: 0 },
-                foodPreference: { guest: eventData.foodGuest },
-                isMorningFood: eventData.isMorningFood,
             }
 
             const result = await updateParticipant(participant._id, payload)
@@ -189,20 +183,6 @@ export function EditParticipantDialog({ participant, open, onOpenChange, onSucce
                                 </div>
                             </div>
 
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-2">
-                                    <Utensils className="h-4 w-4 text-primary" />
-                                    <h3 className="text-sm font-medium text-muted-foreground">Morning Food</h3>
-                                </div>
-                                <div className="flex items-center space-x-2 border p-3 rounded-lg bg-muted/20">
-                                    <Checkbox
-                                        id="edit-morning-food"
-                                        checked={eventData.isMorningFood}
-                                        onCheckedChange={(c) => setEventData(prev => ({ ...prev, isMorningFood: !!c }))}
-                                    />
-                                    <Label htmlFor="edit-morning-food" className="font-medium cursor-pointer">Morning Food Required</Label>
-                                </div>
-                            </div>
 
                             {dbError && <Alert variant="destructive"><AlertCircle className="h-4 w-4" /><AlertTitle>Error</AlertTitle><AlertDescription>{dbError}</AlertDescription></Alert>}
 

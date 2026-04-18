@@ -4,12 +4,6 @@ export interface IAgeGroups {
     guest: number;
 }
 
-export interface IFoodPreference {
-    // veg: number;
-    // nonVeg: number;
-    guest: number;
-}
-
 export interface ICheckIn {
     isCheckedIn: boolean;
     memberPresent: boolean;
@@ -62,8 +56,6 @@ export interface IParticipant {
     approvedBy?: string;
     approvedRole?: "admin" | "super-admin";
     ageGroups?: IAgeGroups;
-    foodPreference?: IFoodPreference;
-    isMorningFood: boolean;
     isRegistered: boolean;
     createdAt: string | Date;
     updatedAt: string | Date;

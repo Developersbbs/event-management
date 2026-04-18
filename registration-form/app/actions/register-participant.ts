@@ -30,9 +30,6 @@ interface RegisterParticipantData {
     location?: string
     gender?: string
     paymentMethod?: string
-    // Simplified food preference
-    foodGuest?: number
-    isMorningFood?: boolean
     guestCount?: number
     // Simplified age groups
     ageGuest?: number
@@ -55,8 +52,6 @@ export async function registerParticipant(data: RegisterParticipantData) {
             location,
             gender,
             paymentMethod = "cash",
-            foodGuest = 0,
-            isMorningFood = false,
             ageGuest = 0,
             ticketType,
             isMember = false,
@@ -66,7 +61,6 @@ export async function registerParticipant(data: RegisterParticipantData) {
 
         const totalPeople = 1 + secondaryMembers.length
         const finalAgeGroups = { guest: ageGuest || 0 }
-        const finalFoodPreference = { guest: foodGuest || totalPeople }
 
         // COMPREHENSIVE VALIDATION
         if (!mobileNumber || !name || !ticketType) {
@@ -272,8 +266,6 @@ export async function registerParticipant(data: RegisterParticipantData) {
             paymentMethod,
             paymentStatus,
             approvalStatus,
-            foodPreference: finalFoodPreference,
-            isMorningFood,
             isRegistered: true,
             eventId: activeEvent._id,
             eventDate: activeEvent.eventDate,

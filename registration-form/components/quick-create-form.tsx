@@ -71,8 +71,6 @@ export function QuickCreateForm() {
     const [eventData, setEventData] = useState({
         ticketType: "",
         paymentMethod: "cash",
-        foodGuest: 0,
-        isMorningFood: false,
     })
     const [secondaryMembers, setSecondaryMembers] = useState<{ name: string; mobileNumber: string; email: string; businessName: string; businessCategory: string; location: string; isMember?: boolean; showCustomLocation?: boolean; customLocation?: string }[]>([])
     const [currentMember, setCurrentMember] = useState<{ name: string; mobileNumber: string; email: string; businessName: string; businessCategory: string; location: string; isMember?: boolean; showCustomLocation?: boolean; customLocation?: string }>({ name: '', mobileNumber: '', email: '', businessName: '', businessCategory: '', location: '', isMember: false, showCustomLocation: false, customLocation: '' })
@@ -81,8 +79,9 @@ export function QuickCreateForm() {
     const [primaryCustomLocation, setPrimaryCustomLocation] = useState("")
     const [showPrimaryCustomInput, setShowPrimaryCustomInput] = useState(false)
     const [secondaryLocationOpen, setSecondaryLocationOpen] = useState(false)
-    const [existingParticipant, setExistingParticipant] = useState<{ 
+    const [existingParticipant, setExistingParticipant] = useState<{
         name?: string;
+        isRegistered: boolean;
         email?: string;
         businessName?: string;
         businessCategory?: string;
@@ -90,7 +89,6 @@ export function QuickCreateForm() {
         guestCount?: number;
         ageGroups?: { guest: number };
         foodPreference?: { guest: number };
-        isMorningFood?: boolean;
         ticketType?: string;
         paymentMethod?: string;
     } | null>(null)
@@ -229,9 +227,7 @@ export function QuickCreateForm() {
                 guestCount: 0,
                 ticketType: eventData.ticketType || "General",
                 paymentMethod: eventData.paymentMethod,
-                foodGuest: totalMembers, // Total people for food
                 ageGuest: 0,
-                isMorningFood: eventData.isMorningFood,
                 secondaryMembers: filteredSecondaryMembers
             }
 
@@ -292,7 +288,7 @@ export function QuickCreateForm() {
                             </FormItem>
                         )} />
                         {dbError && <Alert variant="destructive"><AlertCircle className="h-4 w-4" /><AlertTitle>Error</AlertTitle><AlertDescription>{dbError}</AlertDescription></Alert>}
-                        <Button type="submit" className="w-full" disabled={isCheckingDb}>{isCheckingDb ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : "Check Number"}</Button>
+                        <Button type="submit" className="w-full" disabled={isCheckingDb}>{isCheckingDb ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : "Enter Number"}</Button>
                     </form>
                 </Form>
             </div>
@@ -323,8 +319,6 @@ export function QuickCreateForm() {
                                 setEventData({
                                     ticketType: existingParticipant?.ticketType || "",
                                     paymentMethod: existingParticipant?.paymentMethod || "cash",
-                                    foodGuest: 1,
-                                    isMorningFood: existingParticipant?.isMorningFood || false
                                 })
                                 personalForm.reset({
                                     name: existingParticipant?.name || "",
@@ -832,7 +826,7 @@ export function QuickCreateForm() {
                         phoneForm.reset()
                         personalForm.reset()
                         setPersonalData({ name: "", email: "", businessName: "", businessCategory: "", location: "" })
-                        setEventData({ ticketType: "", paymentMethod: "cash", foodGuest: 0, isMorningFood: false })
+                        setEventData({ ticketType: "", paymentMethod: "cash" })
                         setSecondaryMembers([])
                         setVerifiedPhone("")
                     }}>Add Another</Button>

@@ -5,6 +5,7 @@ import { Separator } from "@/components/ui/separator"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Calendar, MapPin, Menu, ArrowRight, Instagram, Facebook, Twitter, Mail, Clock } from "lucide-react"
+import { CheckCircle2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
@@ -109,7 +110,7 @@ export default function PongalLandingPage() {
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-primary selection:text-primary-foreground font-sans">
       {/* Navbar */}
-      <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/60">
+      <header className=" w-full border-b border-white/10 ">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             {/* <Earth className="h-6 w-6 text-primary animate-spin-slow" /> */}
@@ -125,7 +126,7 @@ export default function PongalLandingPage() {
             <Button
               onClick={handleRegistrationClick}
               size="sm"
-              className="rbg-[#f5d78e] text-white hover:bg-amber-400 font-semibold rounded-full px-8"
+              className="bg-red-700 hover:bg-red-700 text-white font-semibold rounded-full px-8"
               disabled={loading || !eventStatus?.isActive}
             >
               {loading ? "Loading..." : eventStatus?.isActive ? "Registration Open" : "Registration Closed"}
@@ -152,7 +153,7 @@ export default function PongalLandingPage() {
                 </div>
 
                 {/* Nav Links */}
-                <nav className="flex flex-col px-4 py-6 gap-1 flex-1">
+                {/* <nav className="flex flex-col px-4 py-6 gap-1 flex-1">
                   {[
                     { href: "#about", label: "About" },
                     { href: "#events", label: "Events" },
@@ -168,13 +169,13 @@ export default function PongalLandingPage() {
                       {label}
                     </Link>
                   ))}
-                </nav>
+                </nav> */}
 
                 {/* Bottom CTA */}
                 <div className="px-6 py-6 border-t border-border/50">
                   <Button
                     onClick={handleRegistrationClick}
-                    className="w-full h-11 text-sm font-semibold"
+                    className="w-full h-11 text-sm font-semibold bg-red-800 rounded-full hover:bg-red-800"
                     disabled={loading || !eventStatus?.isActive}
                   >
                     {loading
@@ -196,7 +197,7 @@ export default function PongalLandingPage() {
 
       <main>
         {/* Hero Section */}
-        <section className="relative pt-24 pb-20 md:pt-32 md:pb-48 overflow-hidden bg-primary/7 bg-[url('/assets/herobg.png')] bg-cover bg-center bg-no-repeat">
+        <section className="relative pt-24 pb-20 md:pt-20 md:pb-48 overflow-hidden bg-primary/7 bg-[url('/assets/herobg.png')] bg-cover bg-center bg-no-repeat">
 
           <div className="container mx-auto px-4 sm:px-6 flex flex-col items-center text-center relative z-10">
 
@@ -280,7 +281,7 @@ export default function PongalLandingPage() {
               <Button
                 onClick={handleRegistrationClick}
                 size="lg"
-                className="w-full sm:w-auto rounded-full text-sm sm:text-base h-12 sm:px-8 shadow-lg shadow-primary/30"
+                className="w-full sm:w-auto rounded-full text-sm sm:text-base h-12 sm:px-8 bg-red-800 hover:bg-red-800 shadow-lg shadow-red-600/30"
                 disabled={loading || !eventStatus?.isActive}
               >
                 {loading
@@ -295,11 +296,11 @@ export default function PongalLandingPage() {
         </section>
 
         {/* Events Grid */}
-        <section id="events" className="py-24">
+        <section id="events" className="py-12 sm:py-24">
           <div className="container mx-auto px-4">
             <div className="text-center max-w-2xl mx-auto mb-16">
               <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">What is RIFAH Annual Summit 2026</h2>
-              <p className="text-muted-foreground">
+              <p className="">
                 Building Connections Creating Opportunities Driving Business Growth
               </p>
             </div>
@@ -314,11 +315,11 @@ export default function PongalLandingPage() {
                 </h2>
                 <h3 className="text-lg md:text-xl font-semibold mb-6">
                   This summit is built around one simple idea —{" "}
-                  <span className="text-primary">
+                  <span className="text-red-700">
                     grow together through meaningful connections and ethical business practices.
                   </span>
                 </h3>
-                <p className="text-muted-foreground text-sm md:text-base">
+                <p className="text-sm md:text-base">
                   From networking opportunities to collaboration discussions, the event is designed
                   to help individuals and businesses move forward with clarity, purpose, and the
                   right connections.
@@ -327,25 +328,21 @@ export default function PongalLandingPage() {
 
               {/* Right: Parai Isai Card */}
               <Card className="group overflow-hidden border-border/50 hover:border-primary/50 transition-colors">
-                <div className="aspect-video bg-muted relative overflow-hidden">
+                <div className="relative w-full h-[400px] overflow-hidden">
                   <Image
                     src="/assets/register-banner.jpeg"
-                    alt="Parai Isai Performance"
+                    alt="RIFAH Annual Summit"
                     fill
                     className="object-cover"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
-                    {/* <Badge className="bg-primary text-primary-foreground border-none">Music</Badge> */}
-                  </div>
                 </div>
                 <CardHeader>
-                  <CardTitle className="group-hover:text-primary transition-colors">RIFAH Annual Summit</CardTitle>
-                  {/* <CardDescription>Rhythm of the Tamils.</CardDescription> */}
+                  <CardTitle className="group-hover:text-red-700 transition-colors">RIFAH Annual Summit</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground mb-4">
+                  {/* <p className="text-sm mb-4">
                     grow together through meaningful connections and ethical business practices.
-                  </p>
+                  </p> */}
                   <Link href="/register" className="text-sm font-medium hover:underline flex items-center gap-1">
                     Register Now <ArrowRight className="h-3 w-3" />
                   </Link>
@@ -356,7 +353,7 @@ export default function PongalLandingPage() {
         </section>
 
         {/* Introduction / About */}
-        <section id="about" className="py-24 bg-secondary/30">
+        <section id="about" className="py-12 sm:py-24 bg-secondary/30">
           <div className="container mx-auto px-4">
             <div className="grid md:grid-cols-2 gap-12 lg:gap-20 items-center">
 
@@ -364,9 +361,9 @@ export default function PongalLandingPage() {
               <div className="space-y-6">
                 <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
                   RIFAH Presence
-                  <span className="text-primary"> Across India.</span>
+                  <span className="text-red-700"> Across India</span>
                 </h2>
-                <p className="text-muted-foreground leading-relaxed">
+                <p className="leading-relaxed">
                   RIFAH has established a strong and expanding network across multiple states, connecting businesses nationwide.
                 </p>
 
@@ -374,7 +371,7 @@ export default function PongalLandingPage() {
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <MapPin className="h-4 w-4 text-primary shrink-0" />
-                    <h3 className="font-semibold text-sm uppercase tracking-widest text-primary">
+                    <h3 className="font-semibold text-sm uppercase tracking-widest text-red-700">
                       States List
                     </h3>
                   </div>
@@ -389,7 +386,7 @@ export default function PongalLandingPage() {
                     ].map((state) => (
                       <span
                         key={state}
-                        className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors cursor-default"
+                        className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-300/10 text-red-700 border border-red-300/20 hover:bg-primary/20 transition-colors cursor-default"
                       >
                         {state}
                       </span>
@@ -399,12 +396,12 @@ export default function PongalLandingPage() {
               </div>
 
               {/* Right: Banner Image */}
-              <div className="relative aspect-square md:aspect-[4/3] rounded-2xl overflow-hidden border border-border bg-card p-2 shadow-2xl rotate-3 transition-transform hover:rotate-0 duration-500">
+              <div className="relative sm:h-[550px] h-[300px] rounded-2xl overflow-hidden border border-border bg-card p-2 shadow-2xl transition-transform duration-500">
                 <Image
-                  src="/assets/banner-1.png"
+                  src="/assets/banner-2.jpeg"
                   alt="RIFAH Presence Across India"
                   fill
-                  className="object-cover rounded-xl"
+                  className="object-cover object-center rounded-xl"
                 />
               </div>
 
@@ -421,7 +418,7 @@ export default function PongalLandingPage() {
               <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
                 Why You Should Attend This Summit
               </h2>
-              <p className="text-muted-foreground">
+              <p className="">
                 Five powerful reasons that make RIFAH Annual Summit 2026 the event you cannot afford to miss.
               </p>
             </div>
@@ -462,28 +459,28 @@ export default function PongalLandingPage() {
               ].map((item, i) => (
                 <div
                   key={i}
-                  className="group flex flex-col gap-4 p-6 rounded-xl border border-border/50 bg-card hover:border-primary/40 transition-colors"
+                  className="group flex flex-col gap-4 p-6 rounded-xl border border-border/50 bg-card hover:border-red-500/40 transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <div className="h-10 w-10 rounded-lg bg-red-500/10 flex items-center justify-center shrink-0">
                       {item.icon}
                     </div>
-                    <h3 className="font-semibold text-base leading-snug">{item.title}</h3>
+                    <h3 className="font-bold text-lg text-base leading-snug">{item.title}</h3>
                   </div>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
+                  <p className="text-sm leading-relaxed">{item.desc}</p>
                 </div>
               ))}
             </div>
 
             {/* Bottom CTA Banner */}
-            <div className="max-w-5xl mx-auto mt-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-primary/10 border border-primary/20 rounded-xl px-6 py-5">
+            <div className="max-w-5xl mx-auto mt-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-red-200/10 border border-red-400/20 rounded-xl px-6 py-5">
               <div>
-                <p className="font-semibold text-primary">Ready to grow with RIFAH?</p>
-                <p className="text-sm text-muted-foreground mt-0.5">
+                <p className="font-semibold text-red-700">Ready to grow with RIFAH?</p>
+                <p className="text-sm  mt-0.5">
                   Join hundreds of business leaders at the Annual Summit 2026.
                 </p>
               </div>
-              <Link href="/register" className="px-6 py-2 bg-primary rounded-full text-white shrink-0">Registration Open</Link>
+              <Link href="/register" className="px-6 py-2 bg-red-800 rounded-full text-white shrink-0">Registration Open</Link>
             </div>
 
           </div>
@@ -498,7 +495,7 @@ export default function PongalLandingPage() {
               <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
                 Sponsor the RIFAH Annual Summit 2026
               </h2>
-              <p className="text-muted-foreground leading-relaxed">
+              <p className="leading-relaxed">
                 A unique opportunity for brands to directly connect with a highly relevant audience
                 of entrepreneurs and decision-makers.
               </p>
@@ -546,7 +543,7 @@ export default function PongalLandingPage() {
                     },
                   ].map((row, i) => (
                     <tr key={i} className={i % 2 === 1 ? "bg-muted/40" : ""}>
-                      <td className="px-5 py-3.5 font-medium text-muted-foreground border-r border-border/40">
+                      <td className="px-5 py-3.5 font-medium border-r border-border/40">
                         {row.label}
                       </td>
                       {row.values.map((val, j) => (
@@ -587,8 +584,9 @@ export default function PongalLandingPage() {
                     key={i}
                     className="flex items-start gap-3 p-4 rounded-xl border border-border/50 bg-card"
                   >
-                    <div className="mt-1.5 h-2 w-2 rounded-full bg-primary shrink-0" />
-                    <p className="text-sm text-muted-foreground leading-relaxed">{benefit}</p>
+                    <CheckCircle2 className="mt-0.5 h-5 w-5 text-red-700 shrink-0" />
+
+                    <p className="text-sm  leading-relaxed">{benefit}</p>
                   </div>
                 ))}
               </div>
@@ -602,9 +600,9 @@ export default function PongalLandingPage() {
               <p className="text-sm text-[#e8c485] mb-6 opacity-90">
                 Secure your sponsorship slot before they fill up.
               </p>
-              <Button className="rounded-full text-base h-12 sm:px-8 shadow-lg shadow-primary/30">
+              <Link href="/register" className="rounded-full p-3 bg-[#f5d78e] sm:px-8 shadow-lg shadow-red-700/30">
                 Register Now
-              </Button>
+              </Link>
             </div>
 
           </div>
@@ -626,7 +624,7 @@ export default function PongalLandingPage() {
               </h2>
 
               {/* Description */}
-              <p className="text-sm sm:text-base text-muted-foreground leading-relaxed max-w-3xl mx-auto mb-8">
+              <p className="text-sm sm:text-base  leading-relaxed max-w-3xl mx-auto mb-8">
                 A not-for-profit business network empowering entrepreneurs through collaboration,mentorship, and ethical growth. RIFAH supports businesses with consulting, startup guidance, financial advisory, and international expansion — rooted in responsible entrepreneurship.
               </p>
 
@@ -658,17 +656,20 @@ export default function PongalLandingPage() {
                 <h3 className="text-lg sm:text-xl font-semibold text-foreground leading-snug mb-2">
                   Be part of the RIFAH Annual Summit 2026
                 </h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
+                <p className="text-sm  leading-relaxed">
                   Join business leaders, entrepreneurs, and professionals to build a visionary
                   Tamil Nadu and a sustainable India.
                 </p>
+
+                <div className="mt-10">
+                  {/* CTA Button */}
+                  <Link href="/register" className="rounded-full text-sm sm:text-base bg-red-800 p-3 text-white font-medium h-12 px-8 gap-2 shadow-none">
+                    Register Now
+                    {/* <span aria-hidden="true">→</span> */}
+                  </Link>
+                </div>
               </div>
 
-              {/* CTA Button */}
-              <Link href="/register" className="rounded-full text-sm sm:text-base bg-primary p-4 text-white font-medium h-12 px-8 gap-2 shadow-none">
-                Register Now
-                <span aria-hidden="true">→</span>
-              </Link>
 
             </div>
           </div>
@@ -676,8 +677,8 @@ export default function PongalLandingPage() {
       </main>
 
       {/* Footer */}
-      <footer className="text-primary-foreground py-16 border-t border-primary-foreground/10 bg-[url('/assets/herobg.png')] bg-cover bg-center bg-no-repeat">
-        <div className="container mx-auto px-4 text-center">
+      <footer className="text-primary-foreground py-10 border-t border-primary-foreground/10 bg-[url('/assets/herobg.png')] bg-cover bg-center bg-no-repeat">
+        <div className="container mx-auto px-6 text-center">
 
           {/* Brand */}
           <div className="mb-8">
@@ -685,75 +686,36 @@ export default function PongalLandingPage() {
               <Image src="/assets/logo.png" alt="RIFAH" width={48} height={48} className="h-7 sm:h-12 w-auto" />
               <span className="text-xl font-bold tracking-tight">RIFAH ANNUAL SUMMIT</span>
             </div>
-            <p className="text-sm leading-relaxed text-primary-foreground/80">
+            <p className="text-sm">
               RIFAH Chamber of Commerce and Industry is dedicated to building an ethical business
-              ecosystem that empowers entrepreneurs, fosters collaboration, and drives sustainable
-              growth across communities and industries in India.
+              ecosystem that empowers entrepreneurs, fosters collaboration, and drives
+              sustainable growth across communities and industries in India.
             </p>
           </div>
-
-          {/* Quick Links */}
-          {/* <div className="mb-8">
-            <h3 className="text-primary-foreground font-semibold text-base mb-3">Quick Links</h3>
-            <ul className="space-y-2 text-sm text-primary-foreground/80">
-              <li><Link href="#about" className="hover:text-primary-foreground transition-colors">About Us</Link></li>
-              <li><Link href="#events" className="hover:text-primary-foreground transition-colors">Events</Link></li>
-              <li><Link href="#schedule" className="hover:text-primary-foreground transition-colors">Schedule</Link></li>
-              <li><Link href="#gallery" className="hover:text-primary-foreground transition-colors">Gallery</Link></li>
-              <li>
-                <button
-                  onClick={handleRegistrationClick}
-                  className="hover:text-primary-foreground transition-colors text-left"
-                  disabled={loading || !eventStatus?.isActive}
-                >
-                  {loading ? "Loading..." : eventStatus?.isActive ? "Register" : "Register (Closed)"}
-                </button>
-              </li>
-            </ul>
-          </div> */}
 
           {/* Contact Info */}
           <div className="mb-10">
             <h3 className="text-primary-foreground font-semibold text-base mb-3">Contact Us</h3>
-            <ul className="space-y-3 text-sm text-primary-foreground/80">
-              <li className="flex items-start justify-center gap-3">
-                <MapPin className="h-4 w-4 mt-0.5 shrink-0 text-primary-foreground/60" />
-                <span className="leading-relaxed text-left">
-                  KAY EM SPECTRA Vanagaram,
-                  Near Maduravoyal Bridge,
+            <ul className="space-y-3 text-sm inline-block text-left mx-auto">
+              <li className="flex items-start gap-3">
+                <MapPin className="h-4 w-4 mt-0.5 shrink-0 " />
+                <span className="leading-relaxed">
+                  KAY EM SPECTRA Vanagaram, Near Maduravoyal Bridge,
                   Chennai
                 </span>
               </li>
-              <li className="flex items-center justify-center gap-3">
-                <Mail className="h-4 w-4 shrink-0 text-primary-foreground/60" />
+              <li className="flex items-center gap-3 text-sm">
+                <Mail className="h-4 w-4 shrink-0" />
                 <span>info@rafah.co.in</span>
               </li>
-              {/* <li className="flex items-center justify-center gap-3">
-                <Phone className="h-4 w-4 shrink-0 text-primary-foreground/60" />
-                <span></span>
-              </li> */}
             </ul>
           </div>
 
           <Separator className="bg-primary-foreground/10 mb-8" />
 
           {/* Bottom Bar */}
-          <div className="flex flex-col items-center justify-center gap-6 text-sm text-primary-foreground/80">
-            <span>&copy; 2026 | SBBS. All rights reserved.</span>
-            <div className="flex items-center gap-4">
-              <Link href="#" className="h-10 w-10 rounded-full bg-primary-foreground/10 flex items-center justify-center hover:bg-primary-foreground hover:text-primary transition-all duration-300">
-                <Instagram className="h-5 w-5" />
-              </Link>
-              <Link href="#" className="h-10 w-10 rounded-full bg-primary-foreground/10 flex items-center justify-center hover:bg-primary-foreground hover:text-primary transition-all duration-300">
-                <Facebook className="h-5 w-5" />
-              </Link>
-              <Link href="#" className="h-10 w-10 rounded-full bg-primary-foreground/10 flex items-center justify-center hover:bg-primary-foreground hover:text-primary transition-all duration-300">
-                <Twitter className="h-5 w-5" />
-              </Link>
-              <Link href="#" className="h-10 w-10 rounded-full bg-primary-foreground/10 flex items-center justify-center hover:bg-primary-foreground hover:text-primary transition-all duration-300">
-                <Mail className="h-5 w-5" />
-              </Link>
-            </div>
+          <div className="flex flex-col items-center justify-center gap-6 text-sm">
+            <Link href={"https://sbbs.co.in/"}>&copy; 2026 | SBBS. All rights reserved.</Link>
           </div>
 
         </div>

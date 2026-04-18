@@ -101,13 +101,8 @@ export function ParticipantsTable<TData, TValue>({
             })
         }
 
-        // Morning Food Filter
-        if (showMorningFoodOnly) {
-            processedData = processedData.filter((item) => (item as unknown as IParticipant).isMorningFood === true)
-        }
-
         return processedData
-    }, [data, dateRange, showMorningFoodOnly, locationFilter])
+    }, [data, dateRange, locationFilter])
 
     const tableColumns = React.useMemo(() => {
         if (userRole !== 'super-admin') return columns;
@@ -156,14 +151,10 @@ export function ParticipantsTable<TData, TValue>({
     // Export to CSV function
     const downloadCSV = () => {
         const headers = [
-            "Name", "Mobile", "Location",
-            "Reg Guests",
-            "Food Guests", "MorningFood",
-            "RegisteredAt",
-            "Check-in Status",
-            "Member Present",
-            "Actual Guests (In)",
-            "Check-in Time"
+            "Name", "Mobile", "Email", "Business", "Location",
+            "Amount", "Secondary Members", "Payment",
+            "Payment Status", "Approval Status", "Status",
+            "Registered At"
         ]
 
         const csvContent = "data:text/csv;charset=utf-8,"
@@ -174,20 +165,21 @@ export function ParticipantsTable<TData, TValue>({
                 const actualGuests = row.checkIn?.actualGuests || 0
 
                 const regGuests = row.ageGroups?.guest || 0
-                const foodGuests = row.foodPreference?.guest || 0
+                const secondaryMembersCount = row.secondaryMembers?.length || 0
 
                 return [
                     `"${row.name || ''}"`,
                     `"${row.mobileNumber}"`,
+                    `"${row.email || ''}"`,
+                    `"${row.businessName || ''}"`,
                     `"${row.location || ''}"`,
-                    regGuests,
-                    foodGuests,
-                    row.isMorningFood ? "Yes" : "No",
-                    `"${new Date(row.createdAt).toLocaleDateString()}"`,
-                    isCheckedIn ? "Checked In" : "Pending",
-                    isCheckedIn ? (memberPresent ? "Yes" : "No") : "-",
-                    isCheckedIn ? actualGuests : "-",
-                    isCheckedIn && row.checkIn?.timestamp ? `"${new Date(row.checkIn.timestamp).toLocaleString()}"` : "-"
+                    `"${row.totalAmount || 0}"`,
+                    secondaryMembersCount,
+                    `"${row.paymentMethod || ''}"`,
+                    `"${row.paymentStatus || ''}"`,
+                    `"${row.approvalStatus || ''}"`,
+                    row.isRegistered ? "Registered" : "Pending",
+                    `"${new Date(row.createdAt).toLocaleDateString()}"`
                 ].join(",")
             }).join("\n");
 
@@ -236,13 +228,11 @@ export function ParticipantsTable<TData, TValue>({
                 row.mobileNumber || "",
                 row.location || "-",
                 row.ageGroups?.guest || 0,
-                row.foodPreference?.guest || 0,
-                row.isMorningFood ? "Yes" : "No",
                 new Date(row.createdAt).toLocaleDateString()
             ])
 
             autoTable(doc, {
-                head: [['Name', 'Mobile', 'Loc', 'Guests', 'Food', 'Morn', 'Reg Date']],
+                head: [['Name', 'Mobile', 'Loc', 'Guests', 'Reg Date']],
                 body: tableBody,
                 startY: 40,
                 styles: {

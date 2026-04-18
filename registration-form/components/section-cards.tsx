@@ -17,8 +17,6 @@ interface SectionCardsProps {
     rejectedRegistrations: number
     cashPayments: number
     onlinePayments: number
-    foodGuestCount: number
-    morningFoodCount: number
     totalMembers?: number
   }
 }
@@ -82,34 +80,6 @@ export function SectionCards({ stats }: SectionCardsProps) {
           </div>
         </CardFooter>
       </Card>
-
-      {/* <Card className="@container/card">
-        <CardHeader>
-          <CardDescription>Food Guests</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            {stats.foodGuestCount}
-          </CardTitle>
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
-            <IconSoup className="size-4 text-primary" /> Total Food Opted
-          </div>
-        </CardFooter>
-      </Card> */}
-
-      {/* <Card className="@container/card">
-        <CardHeader>
-          <CardDescription>Morning Breakfast</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            {stats.morningFoodCount}
-          </CardTitle>
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
-            <IconCoffee className="size-4 text-orange-500" /> Opted In
-          </div>
-        </CardFooter>
-      </Card> */}
     </div>
   )
 }

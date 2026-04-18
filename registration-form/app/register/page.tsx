@@ -176,7 +176,17 @@ export default function RegisterPage() {
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
       <div className="flex flex-col gap-4 p-6 md:p-10">
-        <div className="flex justify-center gap-2 md:justify-start">
+        <div className="flex items-center gap-5 md:justify-start">
+          {/* Mobile Back Button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => router.back()}
+            className="md:hidden"
+          >
+            <ArrowLeft className="h-5 w-5" />
+            <span className="sr-only">Back</span>
+          </Button>
           <Link href="/" className="flex items-center gap-2 font-medium">
             <div className="foreground flex items-center justify-center rounded-md">
              <Image src="/assets/logo.png" alt="RIFAH" width={40} height={40} className="w-10 h-10" />
