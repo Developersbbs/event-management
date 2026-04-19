@@ -128,17 +128,28 @@ export async function registerParticipant(data: RegisterParticipantData) {
 
         const now = new Date()
 
-        // FIND ACTIVE EVENT
-        const activeEvent = await Event.findOne({
-            isActive: true,
-            startDate: { $lte: now },
-            endDate: { $gte: now }
-        })
+        // DEBUG: Log current time for event validation
+        console.log("=== EVENT VALIDATION DEBUG ===")
+        console.log("NOW (UTC):", now.toISOString())
+        console.log("NOW (Local):", now.toLocaleString())
+
+        // FIND EVENT - For admin quick-create, find any event regardless of date
+        // This allows admins to register participants for any event in the system
+        const activeEvent = await Event.findOne({})
+
+        console.log("ACTIVE EVENT:", activeEvent ? {
+            _id: activeEvent._id,
+            eventName: activeEvent.eventName,
+            startDate: activeEvent.startDate,
+            endDate: activeEvent.endDate,
+            isActive: activeEvent.isActive
+        } : "NOT FOUND")
 
         if (!activeEvent) {
+            console.log("ERROR: No event found in database")
             return {
                 success: false,
-                error: "No active event found. Please contact administrator."
+                error: "No event found in the system. Please create an event first."
             }
         }
 
@@ -187,8 +198,15 @@ export async function registerParticipant(data: RegisterParticipantData) {
         let paymentStatus = "pending"
         let approvalStatus = "pending"
 
+        // Check if this is admin-created participant
+        const createdBy = (data as any).createdBy
+        const isAdmin = createdBy && (createdBy.role === 'admin' || createdBy.role === 'super-admin')
+
         if (paymentMethod === "online") {
             paymentStatus = "completed"
+            approvalStatus = "approved"
+        } else if (isAdmin) {
+            // Admin-created participants are automatically approved
             approvalStatus = "approved"
         }
 
@@ -255,6 +273,16 @@ export async function registerParticipant(data: RegisterParticipantData) {
         const totalAmount = totalBaseAmount + totalTaxAmount
 
         // Create participant with validated and sanitized data
+        // Add approval logs only for admin-approved registrations
+        const approvalLogs = isAdmin ? [
+            {
+                role: createdBy.role === 'super-admin' ? 'super-admin' : 'admin',
+                status: 'approved',
+                approvedBy: createdBy._id,
+                timestamp: new Date(),
+            }
+        ] : []
+
         const participant = await Participant.create({
             mobileNumber: sanitizeInput(mobileNumber),
             name: sanitizeInput(name),
@@ -281,7 +309,8 @@ export async function registerParticipant(data: RegisterParticipantData) {
             primaryAmount,
             gstNumber: gstNumber ? sanitizeInput(gstNumber) : undefined,
             isMember,
-            secondaryMembers: formattedSecondaryMembersWithTax
+            secondaryMembers: formattedSecondaryMembersWithTax,
+            approvalLogs: approvalLogs
         })
 
         // Update event counts atomically

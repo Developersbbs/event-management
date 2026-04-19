@@ -7,29 +7,38 @@ import * as z from "zod"
 import { checkRegistration } from "@/app/actions/check-registration"
 import { registerParticipant } from "@/app/actions/register-participant"
 import { getActiveEvent } from "@/app/actions/get-active-event"
+import { usePhoneAuth } from "@/hooks/use-phone-auth"
+import { useDebounce } from "@/hooks/use-debounce"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator } from "@/components/ui/input-otp"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Phone, Info, CheckCircle2, Loader2, AlertCircle, UserPlus, Edit, Trash2, X, Check, Receipt } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 enum Step {
     PHONE_INPUT = 0,
-    ALREADY_REGISTERED = 1,
-    PERSONAL_DETAILS = 2,
-    EVENT_DETAILS = 3,
-    SUCCESS = 4,
+    OTP_VERIFICATION = 1,
+    ALREADY_REGISTERED = 2,
+    PERSONAL_DETAILS = 3,
+    EVENT_DETAILS = 4,
+    SUCCESS = 5,
 }
 
 const phoneSchema = z.object({
     phoneNumber: z.string().regex(/^\+?[1-9]\d{1,14}$/, "Please enter a valid phone number")
+})
+
+const otpSchema = z.object({
+    otp: z.string().length(6, "OTP must be 6 digits")
 })
 
 const personalDetailsSchema = z.object({
@@ -51,11 +60,36 @@ const TAMIL_NADU_DISTRICTS = [
     "Tiruvallur", "Tiruvannamalai", "Tiruvarur", "Vellore", "Viluppuram", "Virudhunagar"
 ]
 
-export function QuickCreateForm() {
+interface QuickCreateFormProps {
+    createdBy?: {
+        _id: string
+        role: string
+        email?: string
+        name?: string
+    }
+}
+
+export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
     const [step, setStep] = useState<Step>(Step.PHONE_INPUT)
+    const { sendOtp, verifyOtp, loading: authLoading, error: authError } = usePhoneAuth()
     const [isCheckingDb, setIsCheckingDb] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [dbError, setDbError] = useState<string | null>(null)
+
+    // Firebase reCAPTCHA container
+    useEffect(() => {
+        const recaptchaContainer = document.createElement('div')
+        recaptchaContainer.id = 'recaptcha-container'
+        recaptchaContainer.style.display = 'none'
+        document.body.appendChild(recaptchaContainer)
+
+        return () => {
+            const container = document.getElementById('recaptcha-container')
+            if (container) {
+                document.body.removeChild(container)
+            }
+        }
+    }, [])
 
     // Registration Data State
     const [verifiedPhone, setVerifiedPhone] = useState("")
@@ -72,6 +106,15 @@ export function QuickCreateForm() {
         ticketType: "",
         paymentMethod: "cash",
     })
+    const [gstNumber, setGstNumber] = useState("")
+    const [gstValidation, setGstValidation] = useState<{ isValid: boolean | null, isLoading: boolean, gstName: string | null, error: string | null }>({
+        isValid: null,
+        isLoading: false,
+        gstName: null,
+        error: null
+    })
+    const [termsAccepted, setTermsAccepted] = useState(false)
+    const debouncedGstNumber = useDebounce(gstNumber, 800)
     const [secondaryMembers, setSecondaryMembers] = useState<{ name: string; mobileNumber: string; email: string; businessName: string; businessCategory: string; location: string; isMember?: boolean; showCustomLocation?: boolean; customLocation?: string }[]>([])
     const [currentMember, setCurrentMember] = useState<{ name: string; mobileNumber: string; email: string; businessName: string; businessCategory: string; location: string; isMember?: boolean; showCustomLocation?: boolean; customLocation?: string }>({ name: '', mobileNumber: '', email: '', businessName: '', businessCategory: '', location: '', isMember: false, showCustomLocation: false, customLocation: '' })
     const [showAddMemberForm, setShowAddMemberForm] = useState(false)
@@ -95,6 +138,7 @@ export function QuickCreateForm() {
 
     // Forms
     const phoneForm = useForm<z.infer<typeof phoneSchema>>({ resolver: zodResolver(phoneSchema), defaultValues: { phoneNumber: "+91" } })
+    const otpForm = useForm<z.infer<typeof otpSchema>>({ resolver: zodResolver(otpSchema), defaultValues: { otp: "" } })
     const personalForm = useForm<z.infer<typeof personalDetailsSchema>>({
         resolver: zodResolver(personalDetailsSchema),
         defaultValues: { 
@@ -149,9 +193,64 @@ export function QuickCreateForm() {
         return ticket?.price || 0
     }, [activeEvent, eventData.ticketType])
 
-    const totalAmount = useMemo(() => {
-        return totalMembers * pricePerPerson
-    }, [totalMembers, pricePerPerson])
+    const taxCalculation = useMemo(() => {
+        const baseAmount = totalMembers * pricePerPerson
+        const taxRate = (activeEvent as any)?.taxRate || 0
+        const taxAmount = Math.round((baseAmount * taxRate) / 100)
+        const totalAmount = baseAmount + taxAmount
+        return {
+            baseAmount,
+            taxRate,
+            taxAmount,
+            totalAmount
+        }
+    }, [totalMembers, pricePerPerson, activeEvent])
+
+    // GST validation
+    useEffect(() => {
+        const validateGst = async () => {
+            if (!debouncedGstNumber || debouncedGstNumber.length < 15) {
+                setGstValidation({
+                    isValid: null,
+                    isLoading: false,
+                    gstName: null,
+                    error: null
+                })
+                return
+            }
+
+            setGstValidation(prev => ({ ...prev, isLoading: true, error: null }))
+
+            try {
+                const response = await fetch("/api/payment/verify-gst", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        gstNumber: debouncedGstNumber,
+                        eventId: activeEvent?._id
+                    }),
+                })
+
+                const data = await response.json()
+
+                setGstValidation({
+                    isValid: data.valid,
+                    isLoading: false,
+                    gstName: data.gstName || null,
+                    error: data.error || null
+                })
+            } catch {
+                setGstValidation({
+                    isValid: false,
+                    isLoading: false,
+                    gstName: null,
+                    error: "Failed to validate GST number"
+                })
+            }
+        }
+
+        validateGst()
+    }, [debouncedGstNumber, activeEvent?._id])
 
     // Fetch active event on mount
     useEffect(() => {
@@ -186,24 +285,42 @@ export function QuickCreateForm() {
     // --- Handlers ---
 
     const onPhoneSubmit = async (data: z.infer<typeof phoneSchema>) => {
-        setIsCheckingDb(true)
-        setDbError(null)
-        try {
-            const ph = data.phoneNumber
-            const result = await checkRegistration(ph)
-            if (result.exists && result.participant) {
-                setExistingParticipant(result.participant)
-                setStep(Step.ALREADY_REGISTERED)
-            } else if (result.error) {
-                setDbError(result.error)
-            } else {
-                setVerifiedPhone(ph)
-                setStep(Step.PERSONAL_DETAILS)
+        const success = await sendOtp(data.phoneNumber)
+        if (success) {
+            otpForm.reset({ otp: "" })
+            setStep(Step.OTP_VERIFICATION)
+            // Auto-focus the first OTP slot after a short delay
+            setTimeout(() => {
+                const firstSlot = document.querySelector('[data-slot="input-otp-slot"] input')
+                if (firstSlot) {
+                    (firstSlot as HTMLInputElement).focus()
+                }
+            }, 100)
+        }
+    }
+
+    const onOtpSubmit = async (data: z.infer<typeof otpSchema>) => {
+        const user = await verifyOtp(data.otp)
+        if (user) {
+            setIsCheckingDb(true)
+            setDbError(null)
+            try {
+                const ph = phoneForm.getValues("phoneNumber")
+                const result = await checkRegistration(ph)
+                if (result.exists && result.participant) {
+                    setExistingParticipant(result.participant)
+                    setStep(Step.ALREADY_REGISTERED)
+                } else if (result.error) {
+                    setDbError(result.error)
+                } else {
+                    setVerifiedPhone(ph)
+                    setStep(Step.PERSONAL_DETAILS)
+                }
+            } catch {
+                setDbError("System error checking registration.")
+            } finally {
+                setIsCheckingDb(false)
             }
-        } catch {
-            setDbError("System error checking registration.")
-        } finally {
-            setIsCheckingDb(false)
         }
     }
 
@@ -214,9 +331,10 @@ export function QuickCreateForm() {
 
     const onFinalSubmit = async () => {
         setIsSubmitting(true)
+        setDbError(null)
         try {
             const filteredSecondaryMembers = secondaryMembers.filter(m => m.name.trim() !== '')
-            
+
             const payload = {
                 mobileNumber: verifiedPhone,
                 name: personalData.name,
@@ -228,7 +346,20 @@ export function QuickCreateForm() {
                 ticketType: eventData.ticketType || "General",
                 paymentMethod: eventData.paymentMethod,
                 ageGuest: 0,
-                secondaryMembers: filteredSecondaryMembers
+                secondaryMembers: filteredSecondaryMembers,
+                gstNumber: gstNumber.trim() || undefined,
+                termsAccepted: termsAccepted,
+                termsAcceptedAt: new Date(),
+                totalAmount: taxCalculation.totalAmount,
+                taxRate: taxCalculation.taxRate,
+                taxAmount: taxCalculation.taxAmount,
+                baseAmount: taxCalculation.baseAmount,
+                createdBy: createdBy ? {
+                    _id: createdBy._id,
+                    role: createdBy.role,
+                    email: createdBy.email,
+                    name: createdBy.name
+                } : undefined
             }
 
             const result = await registerParticipant(payload)
@@ -248,7 +379,7 @@ export function QuickCreateForm() {
 
     const renderStepsIndicator = () => (
         <div className="flex justify-center gap-2 mb-8">
-            {[Step.PHONE_INPUT, Step.PERSONAL_DETAILS, Step.EVENT_DETAILS].map((s, i) => {
+            {[Step.PERSONAL_DETAILS, Step.EVENT_DETAILS].map((s, i) => {
                 const isActive = step === s
                 const isCompleted = step > s
                 return (
@@ -259,8 +390,8 @@ export function QuickCreateForm() {
         </div>
     )
 
-    // --- Step 1: Input (No OTP) ---
-    if (step === Step.PHONE_INPUT) { // Consolidated input & already registered handling wrapper not needed here
+    // --- Step 1: Phone Input ---
+    if (step === Step.PHONE_INPUT) {
         return (
             <div className="flex flex-col gap-6 w-full max-w-sm mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div className="flex flex-col items-center gap-4 text-center">
@@ -269,7 +400,7 @@ export function QuickCreateForm() {
                     </div>
                     <h1 className="text-2xl font-bold">Quick Create</h1>
                     <p className="text-sm text-muted-foreground">
-                        Enter guest mobile number to begin.
+                        Verify your mobile number to begin.
                     </p>
                 </div>
 
@@ -287,59 +418,105 @@ export function QuickCreateForm() {
                                 <FormMessage />
                             </FormItem>
                         )} />
-                        {dbError && <Alert variant="destructive"><AlertCircle className="h-4 w-4" /><AlertTitle>Error</AlertTitle><AlertDescription>{dbError}</AlertDescription></Alert>}
-                        <Button type="submit" className="w-full" disabled={isCheckingDb}>{isCheckingDb ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : "Enter Number"}</Button>
+                        {authError && <Alert variant="destructive"><AlertCircle className="h-4 w-4" /><AlertTitle>Error</AlertTitle><AlertDescription>{authError}</AlertDescription></Alert>}
+                        <Button type="submit" className="w-full" disabled={authLoading}>{authLoading ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : "Send OTP"}</Button>
                     </form>
                 </Form>
             </div>
         )
     }
 
-    // --- Step 2: Already Registered Alert ---
-    if (step === Step.ALREADY_REGISTERED) {
+    // --- Step 2: OTP Verification ---
+    if (step === Step.OTP_VERIFICATION) {
         return (
-            <div className="flex flex-col gap-6 w-full max-w-sm mx-auto">
-                <Alert className="border-yellow-500/50 bg-yellow-500/10 text-yellow-600 dark:text-yellow-400">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>Already Registered</AlertTitle>
-                    <AlertDescription>
-                        {existingParticipant?.name ? `User ${existingParticipant.name} is` : "This number is"} already registered.
-                    </AlertDescription>
-                    <div className="mt-4 flex gap-2">
-                        <Button
-                            onClick={() => {
-                                setVerifiedPhone(phoneForm.getValues("phoneNumber"))
-                                setPersonalData({
-                                    name: existingParticipant?.name || "",
-                                    email: existingParticipant?.email || "",
-                                    businessName: existingParticipant?.businessName || "",
-                                    businessCategory: existingParticipant?.businessCategory || "",
-                                    location: existingParticipant?.location || ""
-                                })
-                                setEventData({
-                                    ticketType: existingParticipant?.ticketType || "",
-                                    paymentMethod: existingParticipant?.paymentMethod || "cash",
-                                })
-                                personalForm.reset({
-                                    name: existingParticipant?.name || "",
-                                    email: existingParticipant?.email || "",
-                                    businessName: existingParticipant?.businessName || "",
-                                    businessCategory: existingParticipant?.businessCategory || "",
-                                    location: existingParticipant?.location || ""
-                                })
-                                setStep(Step.PERSONAL_DETAILS)
-                            }}
-                        >
-                            Edit
-                        </Button>
-                        <Button variant="outline" onClick={() => setStep(Step.PHONE_INPUT)}>Use Different Number</Button>
+            <div className="flex flex-col gap-6 w-full max-w-sm mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="flex flex-col items-center gap-4 text-center">
+                    <div className="p-3 bg-primary/10 rounded-full text-primary">
+                        <Phone className="h-6 w-6" />
                     </div>
-                </Alert>
+                    <h1 className="text-2xl font-bold">Quick Create</h1>
+                    <p className="text-sm text-muted-foreground">
+                        Enter the 6-digit code sent to you.
+                    </p>
+                </div>
+
+                <Form {...otpForm} key="otp-form">
+                    <form onSubmit={otpForm.handleSubmit(onOtpSubmit)} className="space-y-6">
+                        <FormField control={otpForm.control} name="otp" render={({ field }) => (
+                            <FormItem>
+                                <FormLabel className="sr-only">OTP</FormLabel>
+                                <FormControl>
+                                    <div className="flex justify-center">
+                                        <InputOTP maxLength={6} {...field}>
+                                            <InputOTPGroup>
+                                                <InputOTPSlot index={0} className="w-12 h-12 text-lg" />
+                                                <InputOTPSlot index={1} className="w-12 h-12 text-lg" />
+                                                <InputOTPSlot index={2} className="w-12 h-12 text-lg" />
+                                            </InputOTPGroup>
+                                            <InputOTPSeparator />
+                                            <InputOTPGroup>
+                                                <InputOTPSlot index={3} className="w-12 h-12 text-lg" />
+                                                <InputOTPSlot index={4} className="w-12 h-12 text-lg" />
+                                                <InputOTPSlot index={5} className="w-12 h-12 text-lg" />
+                                            </InputOTPGroup>
+                                        </InputOTP>
+                                    </div>
+                                </FormControl>
+                                <FormMessage className="text-center" />
+                            </FormItem>
+                        )} />
+                        {authError && <Alert variant="destructive"><AlertTitle>Error</AlertTitle><AlertDescription>{authError}</AlertDescription></Alert>}
+                        {dbError && <Alert variant="destructive"><AlertCircle className="h-4 w-4" /><AlertTitle>Error</AlertTitle><AlertDescription>{dbError}</AlertDescription></Alert>}
+                        <Button type="submit" className="w-full" disabled={authLoading || isCheckingDb}>{authLoading || isCheckingDb ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : "Verify"}</Button>
+                        <Button variant="ghost" type="button" className="w-full" onClick={() => setStep(Step.PHONE_INPUT)}>Change Phone</Button>
+                    </form>
+                </Form>
             </div>
         )
     }
 
-    // --- Step 3: Personal Details ---
+    // --- Step 3: Already Registered Alert ---
+    if (step === Step.ALREADY_REGISTERED) {
+        return (
+            <div className="flex flex-col gap-6 w-full max-w-sm mx-auto">
+                <Alert>
+                    <Info className="h-4 w-4" />
+                    <AlertTitle>Already Registered</AlertTitle>
+                    <AlertDescription>
+                        This number is already registered.
+                    </AlertDescription>
+                </Alert>
+                <div className="flex flex-col gap-2">
+                    <Button variant="outline" onClick={() => {
+                        setPersonalData({
+                            name: existingParticipant?.name || "",
+                            email: existingParticipant?.email || "",
+                            businessName: existingParticipant?.businessName || "",
+                            businessCategory: existingParticipant?.businessCategory || "",
+                            location: existingParticipant?.location || ""
+                        })
+                        setEventData({
+                            ticketType: existingParticipant?.ticketType || "",
+                            paymentMethod: existingParticipant?.paymentMethod || "cash",
+                        })
+                        personalForm.reset({
+                            name: existingParticipant?.name || "",
+                            email: existingParticipant?.email || "",
+                            businessName: existingParticipant?.businessName || "",
+                            businessCategory: existingParticipant?.businessCategory || "",
+                            location: existingParticipant?.location || ""
+                        })
+                        setStep(Step.PERSONAL_DETAILS)
+                    }}>
+                        Edit
+                    </Button>
+                    <Button variant="outline" onClick={() => setStep(Step.PHONE_INPUT)}>Use Different Number</Button>
+                </div>
+            </div>
+        )
+    }
+
+    // --- Step 4: Personal Details ---
     if (step === Step.PERSONAL_DETAILS) {
         return (
             <Card className="w-full max-w-lg mx-auto animate-in fade-in zoom-in-95 duration-300">
@@ -745,37 +922,142 @@ export function QuickCreateForm() {
                             <Receipt className="h-5 w-5 text-primary" />
                             <h3 className="font-semibold">Payment Method</h3>
                         </div>
-                        <Select value={eventData.paymentMethod} onValueChange={(value) => setEventData(prev => ({ ...prev, paymentMethod: value }))}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select payment method" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="cash">Cash</SelectItem>
-                                <SelectItem value="online">Online</SelectItem>
-                            </SelectContent>
-                        </Select>
+                        <div className="grid grid-cols-2 gap-4">
+                            <Button
+                                type="button"
+                                variant={eventData.paymentMethod === 'cash' ? 'default' : 'outline'}
+                                className="w-full h-14"
+                                onClick={() => setEventData(prev => ({ ...prev, paymentMethod: 'cash' }))}
+                            >
+                                <div className="flex flex-col items-center">
+                                    <span className="font-semibold">Cash</span>
+                                    <span className="text-xs opacity-70">Pay at venue</span>
+                                </div>
+                            </Button>
+                            <Button
+                                type="button"
+                                variant={eventData.paymentMethod === 'online' ? 'default' : 'outline'}
+                                className="w-full h-14"
+                                onClick={() => setEventData(prev => ({ ...prev, paymentMethod: 'online' }))}
+                            >
+                                <div className="flex flex-col items-center">
+                                    <span className="font-semibold">Online</span>
+                                    <span className="text-xs opacity-70">Pay now</span>
+                                </div>
+                            </Button>
+                        </div>
                     </div>
+
+                    {/* GST Number Input with Real-time Validation */}
+                    {taxCalculation.taxRate > 0 && (
+                        <div className="space-y-2">
+                            <Label htmlFor="gstNumber" className="text-sm">GST Number (Optional)</Label>
+                            <div className="relative">
+                                <Input
+                                    id="gstNumber"
+                                    type="text"
+                                    placeholder="Enter GST Number (e.g., 22ABCDE1234F1Z5)"
+                                    value={gstNumber}
+                                    onChange={(e) => setGstNumber(e.target.value.toUpperCase())}
+                                    className={cn(
+                                        "w-full pr-10",
+                                        gstValidation.isValid === true && "border-green-500 focus-visible:ring-green-500",
+                                        gstValidation.isValid === false && "border-red-500 focus-visible:ring-red-500"
+                                    )}
+                                    disabled={gstValidation.isLoading}
+                                />
+                                {/* Validation Status Icon */}
+                                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                    {gstValidation.isLoading ? (
+                                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                                    ) : gstValidation.isValid === true ? (
+                                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                                    ) : gstValidation.isValid === false ? (
+                                        <AlertCircle className="h-4 w-4 text-red-500" />
+                                    ) : null}
+                                </div>
+                            </div>
+                            {gstValidation.gstName && (
+                                <p className="text-xs text-green-600 dark:text-green-400 font-medium">
+                                    ✓ Valid GST - {gstValidation.gstName}
+                                </p>
+                            )}
+                            {gstValidation.error && (
+                                <p className="text-xs text-red-600 dark:text-red-400">
+                                    ✗ {gstValidation.error}
+                                </p>
+                            )}
+                            <p className="text-xs text-muted-foreground">
+                                GST will be applied at {taxCalculation.taxRate}%
+                            </p>
+                        </div>
+                    )}
 
                     {/* Pricing Summary */}
                     {eventData.ticketType && (
                         <div className="border rounded-lg p-4 bg-muted/30">
                             <h4 className="font-semibold mb-3">Pricing Summary</h4>
                             <div className="space-y-2 text-sm">
-                                <div className="flex justify-between">
-                                    <span>Primary Member:</span>
-                                    <span>₹{pricePerPerson}</span>
+                                <div className="flex justify-between items-center">
+                                    <span>Ticket Price:</span>
+                                    <span className="font-medium">₹{pricePerPerson}</span>
                                 </div>
-                                {secondaryMembers.length > 0 && (
-                                    <div className="flex justify-between">
-                                        <span>Additional Members ({secondaryMembers.length}):</span>
-                                        <span>₹{pricePerPerson * secondaryMembers.length}</span>
-                                    </div>
+                                {taxCalculation.taxRate > 0 && (
+                                    <>
+                                        <div className="flex justify-between items-center">
+                                            <span>Tax Amount ({taxCalculation.taxRate}%):</span>
+                                            <span className="font-medium">₹{Math.round((pricePerPerson * taxCalculation.taxRate) / 100)}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center font-semibold">
+                                            <span>Total:</span>
+                                            <span className="font-bold">₹{pricePerPerson + Math.round((pricePerPerson * taxCalculation.taxRate) / 100)}</span>
+                                        </div>
+                                    </>
                                 )}
-                                <Separator />
-                                <div className="flex justify-between font-bold text-base">
-                                    <span>Total Amount:</span>
-                                    <span className="text-primary">₹{totalAmount}</span>
+                            </div>
+
+                            {/* Secondary Members */}
+                            {secondaryMembers.length > 0 && (
+                                <div className="space-y-2 mt-3">
+                                    <div className="font-semibold text-sm mb-2">Secondary Members ({secondaryMembers.length})</div>
+                                    {secondaryMembers.map((member, index) => (
+                                        <div key={index} className="bg-white rounded p-3 space-y-2 border">
+                                            <div className="flex justify-between items-center text-sm">
+                                                <span className="font-medium">{member.name || `Member ${index + 1}`}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center text-sm">
+                                                <span>Ticket Price:</span>
+                                                <span className="font-medium">₹{pricePerPerson}</span>
+                                            </div>
+                                            {taxCalculation.taxRate > 0 && (
+                                                <>
+                                                    <div className="flex justify-between items-center text-sm">
+                                                        <span>Tax Amount ({taxCalculation.taxRate}%):</span>
+                                                        <span className="font-medium">₹{Math.round((pricePerPerson * taxCalculation.taxRate) / 100)}</span>
+                                                    </div>
+                                                    <div className="flex justify-between items-center text-sm font-semibold">
+                                                        <span>Total:</span>
+                                                        <span className="font-bold">₹{pricePerPerson + Math.round((pricePerPerson * taxCalculation.taxRate) / 100)}</span>
+                                                    </div>
+                                                </>
+                                            )}
+                                        </div>
+                                    ))}
                                 </div>
+                            )}
+
+                            {/* Final Total */}
+                            <div className="bg-green-50 rounded p-3 mt-3">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-green-700 font-bold text-lg">Grand Total ({totalMembers} members):</span>
+                                    <span className="font-bold text-xl text-green-800">₹{taxCalculation.totalAmount}</span>
+                                </div>
+                                <p className="text-xs text-green-600 mt-1">
+                                    {taxCalculation.taxRate > 0
+                                        ? `₹{taxCalculation.baseAmount} + ₹{taxCalculation.taxAmount} (GST)`
+                                        : `₹{taxCalculation.baseAmount} (No GST)`
+                                    }
+                                </p>
                             </div>
                         </div>
                     )}
@@ -793,9 +1075,30 @@ export function QuickCreateForm() {
                 </CardContent>
                 <CardFooter className="flex justify-between">
                     <Button variant="ghost" onClick={() => setStep(Step.PERSONAL_DETAILS)}>Back</Button>
-                    <Button onClick={onFinalSubmit} disabled={isSubmitting}>
-                        {isSubmitting ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : "Complete Registration"}
-                    </Button>
+                    <div className="flex flex-col gap-3">
+                        {/* Terms & Conditions Checkbox - Only for Online Payment */}
+                        {eventData.paymentMethod === 'online' && (
+                            <div className="flex items-start gap-2">
+                                <input
+                                    type="checkbox"
+                                    id="terms"
+                                    checked={termsAccepted}
+                                    onChange={(e) => setTermsAccepted(e.target.checked)}
+                                    className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                />
+                                <label htmlFor="terms" className="text-xs text-muted-foreground leading-tight">
+                                    I agree to the <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Terms & Conditions</a> for event registration and payment processing.
+                                </label>
+                            </div>
+                        )}
+
+                        <Button
+                            onClick={onFinalSubmit}
+                            disabled={isSubmitting || !eventData.ticketType || !activeEvent || (eventData.paymentMethod === 'online' && !termsAccepted)}
+                        >
+                            {isSubmitting ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : "Complete Registration"}
+                        </Button>
+                    </div>
                 </CardFooter>
             </Card>
         )
@@ -819,7 +1122,7 @@ export function QuickCreateForm() {
                         <div className="flex justify-between"><span>Secondary Members:</span><span className="font-medium">{secondaryMembers.length}</span></div>
                         <div className="flex justify-between"><span>Total Members:</span><span className="font-medium">{totalMembers}</span></div>
                         <div className="flex justify-between"><span>Ticket Type:</span><span className="font-medium">{eventData.ticketType}</span></div>
-                        <div className="flex justify-between"><span>Total Amount:</span><span className="font-bold text-primary">₹{totalAmount}</span></div>
+                        <div className="flex justify-between"><span>Total Amount:</span><span className="font-bold text-primary">₹{taxCalculation.totalAmount}</span></div>
                     </div>
                     <Button className="w-full" onClick={() => {
                         setStep(Step.PHONE_INPUT)

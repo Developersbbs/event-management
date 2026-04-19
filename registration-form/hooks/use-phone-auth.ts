@@ -11,10 +11,16 @@ export function usePhoneAuth() {
     const auth = getAuth(app)
     auth.useDeviceLanguage()
 
-    useEffect(() => {
-        // Initialize RecaptchaVerifier on mount
-        if (!window.recaptchaVerifier) {
-            try {
+    const sendOtp = async (phoneNumber: string) => {
+        setLoading(true)
+        setError(null)
+        try {
+            // Lazy initialize RecaptchaVerifier
+            if (!window.recaptchaVerifier) {
+                const container = document.getElementById("recaptcha-container")
+                if (!container) {
+                    throw new Error("Recaptcha container not found")
+                }
                 window.recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
                     size: "invisible",
                     callback: () => {
@@ -24,18 +30,6 @@ export function usePhoneAuth() {
                         setError("Recaptcha expired. Please try again.")
                     }
                 })
-            } catch (err) {
-                console.error("Recaptcha initialization failed", err)
-            }
-        }
-    }, [auth])
-
-    const sendOtp = async (phoneNumber: string) => {
-        setLoading(true)
-        setError(null)
-        try {
-            if (!window.recaptchaVerifier) {
-                throw new Error("Recaptcha not initialized")
             }
 
             const confirmation = await signInWithPhoneNumber(auth, phoneNumber, window.recaptchaVerifier)
