@@ -307,7 +307,7 @@ export default function DashboardPage() {
                                         </Badge>
                                     </TableCell>
                                     <TableCell>
-                                        {record.checkedIn ? (
+                                        {record.checkedIn && record.approvalStatus === 'approved' ? (
                                             <CheckCircle2 className="h-4 w-4 text-green-600" />
                                         ) : (
                                             <span className="text-gray-400">○</span>

@@ -19,15 +19,17 @@ export async function GET() {
                 Type: "Primary",
                 Phone: p.mobileNumber,
                 Email: p.email || "",
-                CheckedIn: p.checkIn?.isCheckedIn ? "Yes" : "No",
+                CheckedIn: p.checkIn?.memberPresent ? "Yes" : "No",
                 EventDate: p.eventDate || "",
                 Location: p.location || "",
                 PrimaryMember: "",
                 PrimaryPhone: "",
-                BaseAmount: p.primaryAmount?.baseAmount || 0,
-                TaxAmount: p.primaryAmount?.taxAmount || 0,
-                TotalAmount: p.primaryAmount?.totalAmount || 0,
-                TaxRate: p.taxRate || 0
+                BaseAmount: p.baseAmount || 0,
+                TaxAmount: p.taxAmount || 0,
+                TotalAmount: p.totalAmount || 0,
+                TaxRate: p.taxRate || 0,
+                PaymentMethod: p.paymentMethod || "",
+                PaymentStatus: p.paymentStatus || ""
             })
 
             // secondary
@@ -46,7 +48,9 @@ export async function GET() {
                     BaseAmount: m.baseAmount || 0,
                     TaxAmount: m.taxAmount || 0,
                     TotalAmount: m.totalAmount || 0,
-                    TaxRate: p.taxRate || 0
+                    TaxRate: p.taxRate || 0,
+                    PaymentMethod: p.paymentMethod || "",
+                    PaymentStatus: p.paymentStatus || ""
                 })
             })
         })

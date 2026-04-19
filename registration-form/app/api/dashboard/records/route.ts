@@ -14,11 +14,11 @@ export async function GET(request: Request) {
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const query: any = { isRegistered: true }
-        
+
         if (filter === 'checked-in') {
-            query["checkIn.isCheckedIn"] = true
+            query["checkIn.memberPresent"] = true
         } else if (filter === 'not-checked-in') {
-            query["checkIn.isCheckedIn"] = false
+            query["checkIn.memberPresent"] = false
         }
 
         if (search) {
@@ -52,7 +52,7 @@ export async function GET(request: Request) {
                     name: p.name,
                     phone: p.mobileNumber,
                     email: p.email || "",
-                    checkedIn: p.checkIn?.isCheckedIn || false,
+                    checkedIn: p.checkIn?.memberPresent || false,
                     eventDate: p.eventDate || "",
                     location: p.location || "",
                     primaryMember: "",

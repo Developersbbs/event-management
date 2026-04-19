@@ -320,6 +320,17 @@ export function RegisterForm() {
 
       console.log("Razorpay key configured, opening checkout...")
 
+      // Calculate per-person amounts for secondary members
+      const perPersonTax = Math.round((pricePerPerson * taxCalculation.taxRate) / 100)
+      const perPersonTotal = pricePerPerson + perPersonTax
+
+      const secondaryMembersWithTax = secondaryMembers.map(member => ({
+        ...member,
+        baseAmount: pricePerPerson,
+        taxAmount: perPersonTax,
+        totalAmount: perPersonTotal
+      }))
+
       // Prepare registration data to pass to verification
       const registrationData = {
         mobileNumber: verifiedPhone,
@@ -338,7 +349,7 @@ export function RegisterForm() {
         taxAmount: taxCalculation.taxAmount,
         baseAmount: taxCalculation.baseAmount,
         gstNumber: gstNumber || undefined,
-        secondaryMembers,
+        secondaryMembers: secondaryMembersWithTax,
         termsAccepted: termsAccepted,
         termsAcceptedAt: new Date(),
       }
