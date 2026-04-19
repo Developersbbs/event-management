@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
+import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -17,14 +17,11 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Loader2, Plus, Minus, Users, Utensils, AlertCircle } from "lucide-react"
+import { Loader2, Users, CheckCircle2, XCircle, AlertCircle, CreditCard, Shield } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Separator } from "@/components/ui/separator"
-// import { toast } from "sonner"
+import { Badge } from "@/components/ui/badge"
 import { IParticipant } from "@/lib/types"
-// Assuming sonner or toast is available? If not, simple alert or callback. 
-// I'll stick to props based callback or internal state.
 
 const personalDetailsSchema = z.object({
     name: z.string().min(2, "Name must be at least 2 characters"),
@@ -43,12 +40,6 @@ export function EditParticipantDialog({ participant, open, onOpenChange, onSucce
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [dbError, setDbError] = useState<string | null>(null)
 
-    // Event Data State
-    const [eventData, setEventData] = useState({
-        guestCount: 0,
-        ageGuest: 0,
-    })
-
     const form = useForm<z.infer<typeof personalDetailsSchema>>({
         resolver: zodResolver(personalDetailsSchema),
         defaultValues: {
@@ -58,46 +49,14 @@ export function EditParticipantDialog({ participant, open, onOpenChange, onSucce
         }
     })
 
-    // Reset state when participant changes (if dialog re-opens with different user)
-    useEffect(() => {
-        if (open && participant) {
-            setEventData({
-                guestCount: 0,
-                ageGuest: 0,
-            })
-            form.reset({
-                name: participant.name,
-                location: participant.location,
-                mobileNumber: participant.mobileNumber,
-            })
-            setDbError(null)
-        }
-    }, [open, participant, form])
-
-    // --- Derived State (Pricing) ---
-    const totalMembers = useMemo(() => {
-        return 1 + (participant.secondaryMembers?.length || 0)
-    }, [participant.secondaryMembers])
-
-
-    // --- Handlers ---
-
-
     const onSubmit = async (data: z.infer<typeof personalDetailsSchema>) => {
         setIsSubmitting(true)
         setDbError(null)
         try {
-            const payload = {
-                ...data,
-                guestCount: 0,
-                ageGroups: { guest: 0 },
-            }
-
-            const result = await updateParticipant(participant._id, payload)
+            const result = await updateParticipant(participant._id, data)
             if (result.success) {
                 onOpenChange(false)
                 if (onSuccess) onSuccess()
-                // Optional: Toast success
             } else {
                 setDbError(result.error || "Update failed.")
             }
@@ -108,81 +67,213 @@ export function EditParticipantDialog({ participant, open, onOpenChange, onSucce
         }
     }
 
+    const totalMembers = 1 + (participant.secondaryMembers?.length || 0)
+    const isCheckedIn = participant.checkIn?.isCheckedIn
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+            <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                    <DialogTitle>Edit Participant</DialogTitle>
+                    <DialogTitle>Participant Details</DialogTitle>
                     <DialogDescription>
-                        Make changes to the participant details here. Click save when you&apos;re done.
+                        View and edit participant information.
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="grid gap-4 py-4">
+                <div className="space-y-6 py-4">
                     <Form {...form}>
-                        <form id="edit-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                        <form id="edit-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
 
-                            {/* Personal Details */}
+                            {/* SECTION 1: Primary Member */}
                             <div className="space-y-4">
-                                <h3 className="text-sm font-medium text-muted-foreground">Personal Details</h3>
-                                <FormField control={form.control} name="name" render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Full Name</FormLabel>
-                                        <FormControl><Input placeholder="Name" {...field} /></FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )} />
-                                <FormField control={form.control} name="mobileNumber" render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Mobile Number</FormLabel>
-                                        <FormControl><Input placeholder="+91..." {...field} /></FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )} />
-                                <FormField control={form.control} name="location" render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Location</FormLabel>
-                                        <FormControl><Input placeholder="Enter your location (e.g. Covai, Trichy)" {...field} /></FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )} />
+                                <div className="flex items-center gap-2">
+                                    <Users className="h-4 w-4 text-primary" />
+                                    <h3 className="font-semibold text-lg">Primary Member</h3>
+                                </div>
+                                <div className="space-y-3">
+                                    <FormField control={form.control} name="name" render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Full Name</FormLabel>
+                                            <FormControl><Input placeholder="Name" {...field} /></FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )} />
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <Label className="text-sm">Mobile Number</Label>
+                                            <Input value={participant.mobileNumber} disabled />
+                                        </div>
+                                        <div>
+                                            <Label className="text-sm">Email</Label>
+                                            <Input value={participant.email || "N/A"} disabled />
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <Label className="text-sm">Business Name</Label>
+                                            <Input value={participant.businessName || "N/A"} disabled />
+                                        </div>
+                                        <div>
+                                            <Label className="text-sm">Business Category</Label>
+                                            <Input value={participant.businessCategory || "N/A"} disabled />
+                                        </div>
+                                    </div>
+                                    <FormField control={form.control} name="location" render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Location</FormLabel>
+                                            <FormControl><Input placeholder="Location" {...field} /></FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )} />
+                                </div>
                             </div>
 
                             <Separator />
 
-                            {/* Event Details */}
+                            {/* SECTION 2: Secondary Members */}
                             <div className="space-y-4">
                                 <div className="flex items-center gap-2">
                                     <Users className="h-4 w-4 text-primary" />
-                                    <h3 className="text-sm font-medium text-muted-foreground">Guest Count</h3>
+                                    <h3 className="font-semibold text-lg">Secondary Members ({participant.secondaryMembers?.length || 0})</h3>
                                 </div>
-                                <div className="flex items-center gap-4">
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="icon"
-                                        className="h-8 w-8"
-                                        onClick={() => setEventData(prev => ({ ...prev, guestCount: Math.max(0, prev.guestCount - 1) }))}
-                                        disabled={true}
-                                    >
-                                        <Minus className="h-4 w-4" />
-                                    </Button>
-                                    <span className="text-xl font-semibold w-8 text-center">0</span>
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="icon"
-                                        className="h-8 w-8"
-                                        disabled={true}
-                                    >
-                                        <Plus className="h-4 w-4" />
-                                    </Button>
-                                    <span className="text-xs text-muted-foreground">
-                                        Total Participation: {totalMembers}
-                                    </span>
+                                {participant.secondaryMembers && participant.secondaryMembers.length > 0 ? (
+                                    <div className="space-y-3">
+                                        {participant.secondaryMembers.map((member, index) => (
+                                            <div key={index} className="border rounded-lg p-3 bg-muted/30">
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <span className="font-medium">Member {index + 1}</span>
+                                                    <Badge variant={member.isCheckedIn ? "default" : "secondary"} className={member.isCheckedIn ? "bg-green-600" : ""}>
+                                                        {member.isCheckedIn ? "✅ Checked-in" : "❌ Not Checked"}
+                                                    </Badge>
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-2 text-sm">
+                                                    <div>
+                                                        <span className="text-muted-foreground">Name: </span>
+                                                        {member.name}
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-muted-foreground">Mobile: </span>
+                                                        {member.mobileNumber || "N/A"}
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-muted-foreground">Location: </span>
+                                                        {member.location || "N/A"}
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-muted-foreground">Is Member: </span>
+                                                        {member.isMember ? "Yes" : "No"}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className="text-sm text-muted-foreground">No secondary members added.</p>
+                                )}
+                            </div>
+
+                            <Separator />
+
+                            {/* SECTION 3: Payment Details */}
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-2">
+                                    <CreditCard className="h-4 w-4 text-primary" />
+                                    <h3 className="font-semibold text-lg">Payment Details</h3>
+                                </div>
+                                <div className="border rounded-lg p-4 bg-muted/30 space-y-2">
+                                    <div className="flex justify-between text-sm">
+                                        <span>Ticket Price:</span>
+                                        <span className="font-medium">₹{participant.ticketPrice || 0}</span>
+                                    </div>
+                                    {(participant.taxRate || 0) > 0 && (
+                                        <>
+                                            <div className="flex justify-between text-sm">
+                                                <span>Tax Amount ({participant.taxRate}%):</span>
+                                                <span className="font-medium">₹{participant.taxAmount || 0}</span>
+                                            </div>
+                                            <div className="flex justify-between text-sm font-semibold">
+                                                <span>Total Amount:</span>
+                                                <span className="font-bold">₹{participant.totalAmount || 0}</span>
+                                            </div>
+                                        </>
+                                    )}
+                                    <Separator />
+                                    <div className="flex justify-between text-sm">
+                                        <span>Payment Method:</span>
+                                        <Badge variant={participant.paymentMethod === "online" ? "default" : "secondary"}>
+                                            {participant.paymentMethod === "online" ? "Online" : "Cash"}
+                                        </Badge>
+                                    </div>
+                                    <div className="flex justify-between text-sm">
+                                        <span>Payment Status:</span>
+                                        <Badge
+                                            variant={participant.paymentStatus === "completed" ? "default" : "secondary"}
+                                            className={participant.paymentStatus === "completed" ? "bg-green-600" : ""}
+                                        >
+                                            {participant.paymentStatus === "completed" ? "Paid" : "Pending"}
+                                        </Badge>
+                                    </div>
                                 </div>
                             </div>
 
+                            <Separator />
+
+                            {/* SECTION 4: Approval Status */}
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-2">
+                                    <Shield className="h-4 w-4 text-primary" />
+                                    <h3 className="font-semibold text-lg">Approval</h3>
+                                </div>
+                                <div className="border rounded-lg p-4 bg-muted/30 space-y-2">
+                                    <div className="flex justify-between text-sm">
+                                        <span>Approval Status:</span>
+                                        <Badge
+                                            variant={participant.approvalStatus === "approved" ? "default" : participant.approvalStatus === "rejected" ? "destructive" : "secondary"}
+                                            className={participant.approvalStatus === "approved" ? "bg-green-600" : ""}
+                                        >
+                                            {participant.approvalStatus === "approved" ? "Approved" : participant.approvalStatus === "rejected" ? "Rejected" : "Pending"}
+                                        </Badge>
+                                    </div>
+                                    {participant.approvedBy && (
+                                        <div className="flex justify-between text-sm">
+                                            <span>Approved By:</span>
+                                            <span className="font-medium">{participant.approvedRole || "Admin"}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            <Separator />
+
+                            {/* SECTION 5: Check-in Status */}
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-2">
+                                    <CheckCircle2 className="h-4 w-4 text-primary" />
+                                    <h3 className="font-semibold text-lg">Check-in Status</h3>
+                                </div>
+                                <div className="border rounded-lg p-4 bg-muted/30 space-y-3">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm">Primary Member:</span>
+                                        <Badge variant={isCheckedIn ? "default" : "secondary"} className={isCheckedIn ? "bg-green-600" : ""}>
+                                            {isCheckedIn ? "✅ Checked-in" : "❌ Not Checked"}
+                                        </Badge>
+                                    </div>
+                                    {participant.secondaryMembers && participant.secondaryMembers.length > 0 && (
+                                        <>
+                                            <Separator />
+                                            <div className="text-sm font-medium">Secondary Members:</div>
+                                            {participant.secondaryMembers.map((member, index) => (
+                                                <div key={index} className="flex justify-between items-center text-sm">
+                                                    <span>{member.name || `Member ${index + 1}`}:</span>
+                                                    <Badge variant={member.isCheckedIn ? "default" : "secondary"} className={member.isCheckedIn ? "bg-green-600" : ""}>
+                                                        {member.isCheckedIn ? "✅" : "❌"}
+                                                    </Badge>
+                                                </div>
+                                            ))}
+                                        </>
+                                    )}
+                                </div>
+                            </div>
 
                             {dbError && <Alert variant="destructive"><AlertCircle className="h-4 w-4" /><AlertTitle>Error</AlertTitle><AlertDescription>{dbError}</AlertDescription></Alert>}
 

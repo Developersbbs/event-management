@@ -248,7 +248,7 @@ const ParticipantSchema = new mongoose.Schema({
             },
             role: {
                 type: String,
-                enum: ["admin", "super-admin"]
+                enum: ["system", "admin", "super-admin"]
             },
             status: {
                 type: String,

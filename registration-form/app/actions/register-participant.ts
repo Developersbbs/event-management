@@ -210,6 +210,16 @@ export async function registerParticipant(data: RegisterParticipantData) {
             approvalStatus = "approved"
         }
 
+        // For online payments, auto-approve and add approval log with system role
+        if (paymentMethod === "online" && approvalStatus === "approved") {
+            approvalLogs.push({
+                role: "system",
+                status: "approved",
+                approvedBy: null,
+                timestamp: new Date()
+            })
+        }
+
         // Build secondary members array with defaults and sanitization
         const formattedSecondaryMembers = secondaryMembers
             .filter(member => member.name && member.name.trim() !== '') // Only include members with names

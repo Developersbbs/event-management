@@ -4,18 +4,18 @@ import dbConnect from "@/lib/db"
 import Participant from "@/models/Participant"
 import { getCurrentUser } from "@/lib/auth"
 
-export async function approveRegistration(participantId: string) {
+export async function approveRegistration(participantId: string, markPaid?: boolean) {
     try {
         await dbConnect()
-        
+
         const user = await getCurrentUser()
-        
+
         if (!user || (user.role !== "admin" && user.role !== "super-admin")) {
             return { success: false, error: "Unauthorized" }
         }
 
         const participant = await Participant.findById(participantId)
-        
+
         if (!participant) {
             return { success: false, error: "Participant not found" }
         }
@@ -24,8 +24,8 @@ export async function approveRegistration(participantId: string) {
             return { success: false, error: "Registration already processed" }
         }
 
-        // Approve the registration
-        await Participant.findByIdAndUpdate(participantId, {
+        // Build update object
+        const updateData: any = {
             $set: {
                 approvalStatus: "approved",
                 approvedBy: user._id,
@@ -41,7 +41,15 @@ export async function approveRegistration(participantId: string) {
                     timestamp: new Date()
                 }
             }
-        })
+        }
+
+        // If markPaid flag is set (for cash payments), also mark payment as completed
+        if (markPaid) {
+            updateData.$set.paymentStatus = "completed"
+        }
+
+        // Approve the registration
+        await Participant.findByIdAndUpdate(participantId, updateData)
 
         return { success: true, message: "Registration approved successfully" }
 

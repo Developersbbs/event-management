@@ -82,42 +82,8 @@ export const columns: ColumnDef<Participant>[] = [
         header: "Payment Status",
         cell: ({ row }) => {
             const status = row.getValue("paymentStatus") as string
-            const paymentMethod = row.getValue("paymentMethod") as string
-            
-            const handleMarkAsPaid = async () => {
-                try {
-                    const response = await fetch("/api/payment/mark-paid", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ id: row.original._id })
-                    })
-                    
-                    if (response.ok) {
-                        window.location.reload()
-                    } else {
-                        const { error } = await response.json()
-                        alert(error || "Failed to mark as paid")
-                    }
-                } catch {
-                    alert("Error marking as paid")
-                }
-            }
-            
-            // Show Mark as Paid button for cash payments with pending status
-            if (paymentMethod === "cash" && status === "pending") {
-                return (
-                    <Button
-                        size="sm"
-                        onClick={handleMarkAsPaid}
-                        className="bg-orange-700 hover:bg-orange-800"
-                    >
-                        Mark as Paid
-                    </Button>
-                )
-            }
-            
             return (
-                <Badge 
+                <Badge
                     variant={status === "completed" ? "default" : status === "failed" ? "destructive" : "secondary"}
                     className={
                         status === "completed" ? "bg-green-600 hover:bg-green-700" :
@@ -147,7 +113,7 @@ export const columns: ColumnDef<Participant>[] = [
     {
         id: "checkInStatus",
         accessorFn: (row) => row.checkIn?.isCheckedIn,
-        header: "Status",
+        header: "Check-in",
         cell: ({ row }) => {
             const isCheckedIn = row.original.checkIn?.isCheckedIn
             return isCheckedIn ?
@@ -161,36 +127,40 @@ export const columns: ColumnDef<Participant>[] = [
         cell: ({ row }) => {
             const approvalStatus = row.getValue("approvalStatus") as string
             const paymentMethod = row.getValue("paymentMethod") as string
-            
-            const handleApprove = async () => {
+            const paymentStatus = row.getValue("paymentStatus") as string
+
+            const handleApproveEntry = async () => {
                 try {
                     const response = await fetch("/api/approve-registration", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ participantId: row.original._id })
+                        body: JSON.stringify({
+                            participantId: row.original._id,
+                            markPaid: paymentMethod === "cash" && paymentStatus === "pending"
+                        })
                     })
-                    
+
                     if (response.ok) {
                         window.location.reload()
                     } else {
                         const { error } = await response.json()
-                        alert(error || "Failed to approve")
+                        alert(error || "Failed to approve entry")
                     }
                 } catch {
-                    alert("Error approving registration")
+                    alert("Error approving entry")
                 }
             }
 
             const handleReject = async () => {
                 const reason = prompt("Please enter rejection reason (optional):")
-                
+
                 try {
                     const response = await fetch("/api/reject-registration", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ participantId: row.original._id, reason })
                     })
-                    
+
                     if (response.ok) {
                         window.location.reload()
                     } else {
@@ -201,18 +171,26 @@ export const columns: ColumnDef<Participant>[] = [
                     alert("Error rejecting registration")
                 }
             }
-            
+
+            // Determine button text based on payment method and status
+            const getButtonText = () => {
+                if (paymentMethod === "cash" && paymentStatus === "pending") {
+                    return "Approve & Mark Paid"
+                }
+                return "Approve Entry"
+            }
+
             return (
                 <div className="flex gap-2">
-                    {approvalStatus === "pending" && paymentMethod === "cash" && (
+                    {approvalStatus === "pending" && (
                         <div className="flex gap-1">
                             <Button
                                 size="sm"
-                                onClick={handleApprove}
-                                className="bg-green-600 hover:bg-green-700"
+                                onClick={handleApproveEntry}
+                                className="bg-green-600 rounded-full hover:bg-green-700"
                             >
-                                <CheckCircle className="w-3 h-3 mr-1" />
-                                Approve
+                                <CheckCircle className="w-2 h-2 mr-1" />
+                                {getButtonText()}
                             </Button>
                             <Button
                                 size="sm"
