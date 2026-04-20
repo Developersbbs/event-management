@@ -121,19 +121,6 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
     const [primaryCustomLocation, setPrimaryCustomLocation] = useState("")
     const [showPrimaryCustomInput, setShowPrimaryCustomInput] = useState(false)
     const [secondaryLocationOpen, setSecondaryLocationOpen] = useState(false)
-    const [existingParticipant, setExistingParticipant] = useState<{
-        name?: string;
-        isRegistered: boolean;
-        email?: string;
-        businessName?: string;
-        businessCategory?: string;
-        location?: string;
-        guestCount?: number;
-        ageGroups?: { guest: number };
-        foodPreference?: { guest: number };
-        ticketType?: string;
-        paymentMethod?: string;
-    } | null>(null)
 
     // Forms
     const phoneForm = useForm<z.infer<typeof phoneSchema>>({ resolver: zodResolver(phoneSchema), defaultValues: { phoneNumber: "+91" } })
@@ -308,7 +295,6 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
                 const ph = phoneForm.getValues("phoneNumber")
                 const result = await checkRegistration(ph)
                 if (result.exists && result.participant) {
-                    setExistingParticipant(result.participant)
                     setStep(Step.ALREADY_REGISTERED)
                 } else if (result.error) {
                     setDbError(result.error)

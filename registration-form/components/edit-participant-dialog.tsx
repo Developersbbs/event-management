@@ -19,7 +19,6 @@ import {
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Loader2, AlertCircle } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Badge } from "@/components/ui/badge"
 import { IParticipant } from "@/lib/types"
 
 const personalDetailsSchema = z.object({
@@ -94,8 +93,6 @@ export function EditParticipantDialog({ participant, open, onOpenChange, onSucce
             setIsSubmitting(false)
         }
     }
-
-    const isCheckedIn = participant.checkIn?.isCheckedIn
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>

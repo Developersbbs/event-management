@@ -7,7 +7,6 @@ import {
   IconDashboard,
   IconUsers,
   IconCalendarEvent,
-  IconWorld,
   IconDatabase,
   IconListDetails,
   IconHistory,

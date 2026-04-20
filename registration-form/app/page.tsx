@@ -2,14 +2,12 @@
 
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Calendar, MapPin, Menu, ArrowRight, CheckCircle2, Clock, Mail, Rocket, GraduationCap, TrendingUp } from "lucide-react"
+import { Calendar, MapPin, CheckCircle2, Clock, Mail, Rocket, GraduationCap, TrendingUp } from "lucide-react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import { useState, useEffect } from "react"
-import { Users, Search, Globe, BookOpen, Shield, Handshake } from "lucide-react";
+import { Users } from "lucide-react";
 
 
 interface EventStatus {
@@ -544,7 +542,7 @@ export default function PongalLandingPage() {
               ].map((item, i) => (
                 <div
                   key={i}
-                  className={`group relative flex flex-col gap-3 p-6 rounded-2xl border ${item.border} ${item.bg} hover:shadow-md hover:border-red-200 transition-all duration-300`}
+                  className={`group relative flex flex-col gap-3 p-6 rounded-2xl border ${item.border} hover:shadow-md hover:border-red-200 transition-all duration-300`}
                 >
                   <div className="flex items-center gap-3">
                     <div className="h-10 w-10 rounded-xl bg-white border border-red-100 shadow-sm flex items-center justify-center shrink-0">
