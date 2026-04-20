@@ -143,16 +143,16 @@ export default function PongalLandingPage() {
             <SheetContent side="right" className="w-[280px] sm:w-[320px] p-0">
               <div className="flex flex-col h-full"> */}
 
-                {/* Sheet Header */}
-                {/* <div className="px-6 py-5 border-b border-border/50">
+          {/* Sheet Header */}
+          {/* <div className="px-6 py-5 border-b border-border/50">
                   <div className="flex items-center gap-2">
                     <Image src="/assets/logo.png" alt="RIFAH" width={28} height={28} className="h-7 w-auto" />
                     <span className="font-semibold text-sm tracking-wide">RIFAH ANNUAL SUMMIT</span>
                   </div>
                 </div> */}
 
-                {/* Nav Links */}
-                {/* <nav className="flex flex-col px-4 py-6 gap-1 flex-1">
+          {/* Nav Links */}
+          {/* <nav className="flex flex-col px-4 py-6 gap-1 flex-1">
                   {[
                     { href: "#about", label: "About" },
                     { href: "#events", label: "Events" },
@@ -170,8 +170,8 @@ export default function PongalLandingPage() {
                   ))}
                 </nav> */}
 
-                {/* Bottom CTA */}
-                {/* <div className="px-6 py-6 border-t border-border/50">
+          {/* Bottom CTA */}
+          {/* <div className="px-6 py-6 border-t border-border/50">
                   <Button
                     onClick={handleRegistrationClick}
                     className="w-full h-11 text-sm font-semibold bg-red-800 rounded-full hover:bg-red-800"
@@ -196,31 +196,108 @@ export default function PongalLandingPage() {
 
       <main>
         {/* Hero Section */}
-        <section className="relative pt-24 pb-20 md:pt-20 md:pb-48 overflow-hidden bg-primary/7 bg-[url('/assets/herobg.png')] bg-cover bg-center bg-no-repeat">
+        <section className="relative min-h-screen md:min-h-[90vh] overflow-hidden flex items-center justify-center bg-[#8B0000]">
 
-          <div className="container mx-auto px-4 sm:px-6 flex flex-col items-center text-center relative z-10">
+          {/* Background image */}
+          <div className="absolute inset-0 z-0">
+            <Image
+              src="/assets/hero-bg.jpeg"
+              alt="background"
+              fill
+              className="object-cover object-center opacity-100"
+              priority
+            />
+            {/* Dark overlay for text readability */}
+            <div className="absolute inset-0 bg-[#7a0000]/40" />
+          </div>
 
-            <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tighter mb-6 bg-gradient-to-b from-foreground to-foreground/70 bg-clip-text text-transparent text-white leading-[1.1] py-2 w-full max-w-5xl">
-              Building Connections{" "}
-              Creating Opportunities{" "}
-              Driving Business Growth
+          {/* Decorative gold corner accents */}
+          <div className="absolute top-6 left-6 z-10 opacity-40">
+            <div className="w-12 h-12 border-t-2 border-l-2 border-[#f5d78e] rounded-tl-lg" />
+          </div>
+          <div className="absolute top-6 right-6 z-10 opacity-40">
+            <div className="w-12 h-12 border-t-2 border-r-2 border-[#f5d78e] rounded-tr-lg" />
+          </div>
+          <div className="absolute bottom-6 left-6 z-10 opacity-40">
+            <div className="w-12 h-12 border-b-2 border-l-2 border-[#f5d78e] rounded-bl-lg" />
+          </div>
+          <div className="absolute bottom-6 right-6 z-10 opacity-40">
+            <div className="w-12 h-12 border-b-2 border-r-2 border-[#f5d78e] rounded-br-lg" />
+          </div>
+
+          {/* Content */}
+          <div className="container mx-auto px-4 sm:px-6 flex flex-col items-center text-center relative z-10 py-16 md:py-20">
+
+            {/* Logo */}
+            <div className="mb-6 sm:mb-8 drop-shadow-2xl">
+              <Image
+                src="/assets/logo.png"
+                alt="RIFAH"
+                width={200}
+                height={200}
+                className="h-[180px] sm:h-[220px] md:h-[260px] w-auto mx-auto"
+                priority
+              />
+            </div>
+
+            {/* Title */}
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-wide text-[#f5d78e] mb-2 uppercase drop-shadow-lg">
+              RIFAH ANNUAL SUMMIT
             </h1>
 
-            <p className="text-sm sm:text-base md:text-lg lg:text-xl text-white max-w-xl md:max-w-2xl mb-5 leading-relaxed px-2">
+            {/* 2026 with star decorators */}
+            <div className="flex items-center justify-center gap-3 sm:gap-4 mb-4 sm:mb-5">
+              {/* Left decorator */}
+              <div className="flex items-center gap-1.5">
+                <div className="h-px w-8 sm:w-14 md:w-20 bg-[#f5d78e]/70" />
+                <span className="text-[#f5d78e] text-xs">✦</span>
+                <span className="text-[#f5d78e] text-xs">✦</span>
+                <span className="text-[#f5d78e] text-xs">✦</span>
+              </div>
+
+              <span className="text-4xl sm:text-5xl md:text-6xl font-black text-[#f5d78e] drop-shadow-lg tracking-wider">
+                2026
+              </span>
+
+              {/* Right decorator */}
+              <div className="flex items-center gap-1.5">
+                <span className="text-[#f5d78e] text-xs">✦</span>
+                <span className="text-[#f5d78e] text-xs">✦</span>
+                <span className="text-[#f5d78e] text-xs">✦</span>
+                <div className="h-px w-8 sm:w-14 md:w-20 bg-[#f5d78e]/70" />
+              </div>
+            </div>
+
+            {/* Subtitle */}
+            <p className="text-base sm:text-lg md:text-xl font-bold text-white mb-2  px-2 max-w-xl md:max-w-2xl">
+              Joining hands to build a visionary Tamil Nadu
+            </p>
+            <p className="text-base sm:text-lg md:text-xl font-bold text-white mb-6  px-2 max-w-xl md:max-w-2xl">
+              and a sustainable India
+            </p>
+
+            {/* Gold divider */}
+            <div className="flex items-center gap-3 mb-6 sm:mb-8 w-full max-w-xs sm:max-w-sm">
+              <div className="flex-1 h-px bg-gradient-to-r from-transparent to-[#f5d78e]/80" />
+              <span className="text-[#f5d78e] text-sm">✦</span>
+              <div className="flex-1 h-px bg-gradient-to-l from-transparent to-[#f5d78e]/80" />
+            </div>
+
+            {/* Supporting text */}
+            {/* <p className="text-sm sm:text-base text-white/80 max-w-xl md:max-w-2xl mb-2 leading-relaxed px-2">
               Join 400+ entrepreneurs, professionals, and business leaders for a day of
               networking, collaboration, and growth.
             </p>
-
-            <p className="text-sm sm:text-base text-white max-w-xl md:max-w-2xl mb-8 leading-relaxed px-2 opacity-80">
+            <p className="text-xs sm:text-sm text-white/60 max-w-xl md:max-w-2xl mb-8 leading-relaxed px-2">
               A one-day business summit designed to connect ideas, people, and
               opportunities — all under one roof.
-            </p>
+            </p> */}
 
             {/* Event Meta Info */}
             {!loading && eventStatus?.event && (
-              <div className="flex flex-col sm:flex-row flex-wrap justify-center items-center gap-3 sm:gap-5 lg:gap-8 mt-6 md:mt-10 text-xs sm:text-sm text-white w-full px-2 mb-6">
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-primary shrink-0" />
+              <div className="flex flex-col sm:flex-row flex-wrap justify-center items-center gap-3 sm:gap-5 lg:gap-8 text-xs sm:text-sm text-white w-full px-2 mb-8">
+                <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20">
+                  <Calendar className="h-4 w-4 text-[#f5d78e] shrink-0" />
                   <span>
                     {new Date(eventStatus.event.eventDate).toLocaleDateString("en-IN", {
                       weekday: "long",
@@ -231,10 +308,8 @@ export default function PongalLandingPage() {
                   </span>
                 </div>
 
-                <div className="hidden sm:block h-4 w-px bg-white/30" />
-
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-primary shrink-0" />
+                <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20">
+                  <Clock className="h-4 w-4 text-[#f5d78e] shrink-0" />
                   <span>
                     {new Date(eventStatus.event.startTime).toLocaleTimeString("en-IN", {
                       hour: "2-digit",
@@ -250,10 +325,8 @@ export default function PongalLandingPage() {
                   </span>
                 </div>
 
-                <div className="hidden sm:block h-4 w-px bg-white/30" />
-
-                <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-primary shrink-0" />
+                <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20">
+                  <MapPin className="h-4 w-4 text-[#f5d78e] shrink-0" />
                   <span className="max-w-[220px] sm:max-w-none leading-snug">
                     {eventStatus.event.venue?.city ||
                       eventStatus.event.venue?.name ||
@@ -263,30 +336,18 @@ export default function PongalLandingPage() {
               </div>
             )}
 
-            {/* Event Status Alert */}
-            {/* {!loading && eventStatus && !eventStatus.isActive && (
-              <div className="mt-4 mb-6 w-full max-w-sm mx-auto">
-                <div className="flex items-start gap-2 p-3 bg-muted/50 rounded-lg border">
-                  <AlertCircle className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-                  <p className="text-xs sm:text-sm text-muted-foreground text-left">
-                    {eventStatus.message}
-                  </p>
-                </div>
-              </div>
-            )} */}
-
             {/* CTA Button */}
-            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto mt-2 sm:mt-4 px-4 sm:px-0">
+            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto px-4 sm:px-0">
               <Button
                 onClick={handleRegistrationClick}
                 size="lg"
-                className="w-full sm:w-auto rounded-full text-sm sm:text-base h-12 sm:px-8 bg-red-800 hover:bg-red-800 shadow-lg shadow-red-600/30"
+                className="w-full sm:w-auto rounded-full text-sm sm:text-base h-12 sm:px-10 bg-[#f5d78e] hover:bg-[#e8c870] text-[#7a0000] font-bold shadow-lg shadow-black/30 border-0"
                 disabled={loading || !eventStatus?.isActive}
               >
                 {loading
                   ? "Loading..."
                   : eventStatus?.isActive
-                    ? "Register now"
+                    ? "Register Now"
                     : "Registration Closed"}
               </Button>
             </div>
@@ -681,7 +742,7 @@ export default function PongalLandingPage() {
                         "/assets/slider-1.png",
                         "/assets/slider-2.png",
                         "/assets/slider-3.png",
-                        "/assets/slider-4.jpeg",
+                        "/assets/slider-5.jpeg",
                       ].map((src, i) => (
                         <div
                           key={`${dupIdx}-${i}`}

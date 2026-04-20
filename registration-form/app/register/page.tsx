@@ -117,7 +117,7 @@ export default function RegisterPage() {
         </div>
         <div className="bg-muted relative hidden lg:block">
           <Image
-            src="/assets/register-banner.jpeg"
+            src="/assets/register-bg.jpeg"
             alt="Image"
             fill
             className="object-cover dark:brightness-[0.2] dark:grayscale"
@@ -163,7 +163,7 @@ export default function RegisterPage() {
         </div>
         <div className="bg-muted relative hidden lg:block">
           <Image
-            src="/assets/register-banner.jpeg"
+            src="/assets/register-bg.jpeg"
             alt="Image"
             fill
             className="object-cover dark:brightness-[0.2] dark:grayscale"
@@ -202,7 +202,7 @@ export default function RegisterPage() {
       </div>
       <div className="bg-muted relative hidden lg:block">
         <Image
-          src="/assets/register-banner.jpeg"
+          src="/assets/register-bg.jpeg"
           alt="Image"
           fill
           className="object-cover dark:brightness-[0.2] dark:grayscale"

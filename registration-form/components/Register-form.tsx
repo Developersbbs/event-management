@@ -543,7 +543,7 @@ export function RegisterForm() {
                 </FormItem>
               )} />
               {authError && <Alert variant="destructive"><AlertCircle className="h-4 w-4" /><AlertTitle>Error</AlertTitle><AlertDescription>{authError}</AlertDescription></Alert>}
-              <Button type="submit" className="w-full" disabled={authLoading}>{authLoading ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : "Send OTP"}</Button>
+              <Button type="submit" className="w-full bg-red-800 hover:bg-red-900" disabled={authLoading}>{authLoading ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : "Send OTP"}</Button>
             </form>
           </Form>
         )}
