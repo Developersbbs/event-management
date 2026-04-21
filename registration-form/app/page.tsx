@@ -874,60 +874,62 @@ export default function PongalLandingPage() {
       </main>
 
       {/* Footer */}
-      <footer className="text-primary-foreground py-10 border-t border-primary-foreground/10 bg-[url('/assets/herobg.png')] bg-cover bg-center bg-no-repeat">
-        <div className="container mx-auto px-6 text-center">
+      <footer className="text-primary-foreground py-10 border-t border-primary-foreground/10 bg-[url('/assets/hero-bg.jpeg')] bg-cover bg-center bg-no-repeat">
+        <div className="container mx-auto px-4 sm:px-6">
 
           {/* Brand */}
-          <div className="mb-8">
-            <div className="flex items-center justify-center gap-2 text-primary-foreground mb-4">
-              <Image src="/assets/logo.png" alt="RIFAH" width={48} height={48} className="h-7 sm:h-12 w-auto" />
-              <span className="text-xl font-bold tracking-tight">RIFAH ANNUAL SUMMIT</span>
+          <div className="flex flex-col items-center text-center mb-8">
+            <div className="flex items-center justify-center gap-2 text-primary-foreground mb-3">
+              <Image src="/assets/logo.png" alt="RIFAH" width={48} height={48} className="h-8 sm:h-10 w-auto" />
+              <span className="text-base sm:text-xl font-bold tracking-tight">RIFAH ANNUAL SUMMIT</span>
             </div>
-            {/* <p className="text-sm">
-              RIFAH Chamber of Commerce and Industry is dedicated to building an ethical business
-              ecosystem that empowers entrepreneurs, fosters collaboration, and drives
-              sustainable growth across communities and industries in India.
-            </p> */}
           </div>
 
           {/* Contact Info */}
-          <div className="mb-10">
-            <h3 className="text-primary-foreground font-semibold text-base mb-3">Contact Us</h3>
-            <ul className="space-y-3 text-sm inline-block text-left mx-auto">
+          <div className="mb-8 text-center">
+            <h3 className=" font-semibold text-sm uppercase tracking-widest mb-4 opacity-70">
+              Contact Us
+            </h3>
+            <ul className="space-y-3 text-sm inline-block text-left mx-auto max-w-xs sm:max-w-none">
               <li className="flex items-start gap-3">
-                <MapPin className="h-4 w-4 mt-0.5 shrink-0 " />
-                <span className="leading-relaxed">
-                  KAY EM SPECTRA Vanagaram, Near Maduravoyal Bridge,
-                  Chennai
+                <MapPin className="h-4 w-4 mt-0.5 shrink-0" />
+                <span className="leading-relaxed text-xs sm:text-sm">
+                  KAY EM SPECTRA Vanagaram, Near Maduravoyal Bridge, Chennai
                 </span>
               </li>
-              <li className="flex items-center gap-3 text-sm">
+              <li className="flex items-center gap-3">
                 <Mail className="h-4 w-4 shrink-0" />
-                <a href="mailto:info@rifah.org">info@rifah.org</a>
+                <a href="mailto:info@rifah.org" className="text-xs sm:text-sm hover:underline">
+                  info@rifah.org
+                </a>
               </li>
             </ul>
           </div>
 
-          <Separator className="bg-primary-foreground/10 mb-8" />
+          <Separator className="bg-primary-foreground/10 mb-6" />
 
           {/* Bottom Bar */}
-          <div className="flex flex-col items-center justify-center gap-6 text-sm">
-            <div className="flex flex-wrap items-center justify-center gap-4">
+          <div className="flex flex-col items-center justify-center gap-4 text-xs sm:text-sm text-center">
+
+            {/* Nav links */}
+            <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2">
               <Link href="/about" className="hover:underline">About</Link>
-              <span>•</span>
+              <span className="opacity-40">•</span>
               <Link href="/contact" className="hover:underline">Contact</Link>
-              <span>•</span>
+              <span className="opacity-40">•</span>
               <Link href="/terms-conditions" className="hover:underline">Terms & Conditions</Link>
-              <span>•</span>
+              <span className="opacity-40">•</span>
               <Link href="/privacy-policy" className="hover:underline">Privacy Policy</Link>
             </div>
-            <p className="text-sm ">
+
+            {/* Copyright */}
+            <p className="opacity-80 leading-relaxed">
               © 2026 Rifah. All Rights Reserved & Developed by{" "}
               <Link
                 href="https://sbbs.co.in/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-medium hover:underline"
+                className="font-semibold hover:underline"
               >
                 SBBS
               </Link>
