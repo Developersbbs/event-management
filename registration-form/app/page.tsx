@@ -732,19 +732,19 @@ export default function PongalLandingPage() {
                 <div className="pointer-events-none absolute inset-y-0 right-0 w-20 sm:w-32 z-10 bg-gradient-to-l from-white to-transparent" />
 
                 {/* Scrolling track */}
-                <div className="flex animate-sponsor-scroll gap-8 sm:gap-12 w-max">
+                <div className="flex animate-sponsor-scroll w-max">
                   {[...Array(2)].map((_, dupIdx) => (
-                    <div key={dupIdx} className="flex gap-8 sm:gap-12 items-center">
+                    <div key={dupIdx} className="flex   items-center">
                       {[
                         "/assets/slider-1.png",
                         "/assets/slider-2.png",
                         "/assets/slider-3.png",
-                        "/assets/slider-8.jpeg",
+                        "/assets/slider-9.jpeg",
                         "/assets/slider-7.jpeg",
                       ].map((src, i) => (
                         <div
                           key={`${dupIdx}-${i}`}
-                          className="relative flex-shrink-0 h-24 sm:h-28 md:h-32 w-40 sm:w-52 md:w-56 rounded-2xl border border-gray-100 bg-white shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden flex items-center justify-center p-4 sm:p-5"
+                          className="relative flex-shrink-0 h-24 sm:h-28 md:h-38 w-40 sm:w-52 md:w-60  duration-300 overflow-hidden flex items-center justify-center p-4 sm:p-5"
                         >
                           <Image
                             src={src}
