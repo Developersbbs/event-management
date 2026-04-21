@@ -416,7 +416,7 @@ export default function PongalLandingPage() {
               <div className="md:row-start-1 md:col-start-1 space-y-2">
                 <h2 className="text-3xl md:text-4xl font-bold">
                   RIFAH Presence Across
-                  <span className="text-red-700"> States and <br />Tamil Nadu</span>
+                  <span className="text-red-700"> States and <span className="hidden sm:inline"><br /></span>Tamil Nadu</span>
                 </h2>
                 <p className="leading-relaxed">
                   RIFAH has established a strong and expanding network across multiple states, connecting businesses nationwide.
@@ -497,11 +497,11 @@ export default function PongalLandingPage() {
                 Who Should Attend
               </span> */}
               <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
-                Why You Should Attend This Summit
+                Who should attend the Rifah Annual Summit?
               </h2>
-              <p className="text-muted-foreground leading-relaxed">
-                Four powerful reasons that make RIFAH Annual Summit 2026 the event you cannot afford to miss.
-              </p>
+              {/* <p className="text-muted-foreground leading-relaxed">
+                Four powerful reasons to be part of the RIFAH Annual Summit 2026.
+              </p> */}
             </div>
 
             {/* Audience Cards */}
@@ -645,8 +645,7 @@ export default function PongalLandingPage() {
                 Sponsor the RIFAH Annual Summit 2026
               </h2>
               <p className="leading-relaxed">
-                A unique opportunity for brands to directly connect with a highly relevant audience
-                of entrepreneurs and decision-makers.
+                This summit offers a unique opportunity for brands to directly connect with a highly relevant audience of entrepreneurs and decision-makers.
               </p>
             </div>
 
@@ -723,34 +722,35 @@ export default function PongalLandingPage() {
                 <span className="inline-block text-xs font-semibold uppercase tracking-widest text-red-700 border border-red-300/30 bg-red-50/50 px-4 py-1.5 rounded-full mb-3">
                   Our Sponsors
                 </span>
-                {/* <h3 className="text-2xl font-bold">Brands That Trust RIFAH</h3> */}
+                <h3 className="text-2xl font-bold mt-2">Brands That Trust RIFAH</h3>
               </div>
 
               {/* Slider wrapper */}
-              <div className="relative overflow-hidden rounded-2xl border border-border/40 bg-card py-6 px-2">
+              <div className="relative overflow-hidden rounded-2xl border border-border/40 bg-white py-8 px-2">
                 {/* Fade edges */}
-                <div className="pointer-events-none absolute inset-y-0 left-0 w-16 sm:w-24 z-10 bg-gradient-to-r from-card to-transparent" />
-                <div className="pointer-events-none absolute inset-y-0 right-0 w-16 sm:w-24 z-10 bg-gradient-to-l from-card to-transparent" />
+                <div className="pointer-events-none absolute inset-y-0 left-0 w-20 sm:w-32 z-10 bg-gradient-to-r from-white to-transparent" />
+                <div className="pointer-events-none absolute inset-y-0 right-0 w-20 sm:w-32 z-10 bg-gradient-to-l from-white to-transparent" />
 
-                {/* Scrolling track — duplicated for seamless loop */}
-                <div className="flex animate-sponsor-scroll gap-6 sm:gap-10 w-max">
+                {/* Scrolling track */}
+                <div className="flex animate-sponsor-scroll gap-8 sm:gap-12 w-max">
                   {[...Array(2)].map((_, dupIdx) => (
-                    <div key={dupIdx} className="flex gap-6 sm:gap-10 items-center">
+                    <div key={dupIdx} className="flex gap-8 sm:gap-12 items-center">
                       {[
                         "/assets/slider-1.png",
                         "/assets/slider-2.png",
                         "/assets/slider-3.png",
-                        "/assets/slider-5.jpeg",
+                        "/assets/slider-8.jpeg",
+                        "/assets/slider-7.jpeg",
                       ].map((src, i) => (
                         <div
                           key={`${dupIdx}-${i}`}
-                          className="relative flex-shrink-0 h-16 sm:h-20 w-32 sm:w-44 rounded-xl border border-border/40 bg-white/70 shadow-sm overflow-hidden flex items-center justify-center px-4"
+                          className="relative flex-shrink-0 h-24 sm:h-28 md:h-32 w-40 sm:w-52 md:w-56 rounded-2xl border border-gray-100 bg-white shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden flex items-center justify-center p-4 sm:p-5"
                         >
                           <Image
                             src={src}
                             alt={`Sponsor ${i + 1}`}
                             fill
-                            className="object-contain p-3"
+                            className="object-contain p-4 sm:p-5"
                           />
                         </div>
                       ))}
@@ -758,6 +758,7 @@ export default function PongalLandingPage() {
                   ))}
                 </div>
               </div>
+
             </div>
 
             {/* Key Benefits */}
@@ -783,17 +784,22 @@ export default function PongalLandingPage() {
               </div>
             </div>
 
+
             {/* CTA Banner */}
             <div className="rounded-xl bg-[#7a1a1a] px-6 py-10 text-center">
               <h3 className="text-xl font-bold text-[#f5d78e] mb-2">
-                Ready to sponsor RIFAH Annual Summit 2026?
+                Want to display your brand in the Summit?
               </h3>
               <p className="text-sm text-[#e8c485] mb-6 opacity-90">
-                Secure your sponsorship slot before they fill up.
+                Limited Slots available
               </p>
-              <Link href="/register" className="rounded-full p-3 bg-[#f5d78e] sm:px-8 shadow-lg shadow-red-700/30">
-                Register Now
-              </Link>
+
+              <a
+                href="tel:9176947207"
+                className="rounded-full p-3 bg-[#f5d78e] sm:px-8 shadow-lg shadow-red-700/30"
+              >
+                For Sponsorships contact: 9176947207
+              </a>
             </div>
 
           </div>
@@ -837,10 +843,10 @@ export default function PongalLandingPage() {
               </div> */}
 
               {/* Divider */}
-              <hr className="border-border/40 mb-8" />
+              {/* <hr className="border-border/40 mb-8" /> */}
 
               {/* Summit Block */}
-              <div className="bg-muted rounded-xl px-6 py-6 max-w-xl mx-auto mb-8">
+              {/* <div className="bg-muted rounded-xl px-6 py-6 max-w-xl mx-auto mb-8">
                 <p className="text-xs font-medium tracking-widest uppercase text-muted-foreground mb-1">
                   Annual Summit 2026
                 </p>
@@ -853,13 +859,13 @@ export default function PongalLandingPage() {
                 </p>
 
                 <div className="mt-10">
-                  {/* CTA Button */}
+                 
                   <Link href="/register" className="rounded-full text-sm sm:text-base bg-red-800 p-3 text-white font-medium h-12 px-8 gap-2 shadow-none">
                     Register Now
-                    {/* <span aria-hidden="true">→</span> */}
+                    
                   </Link>
                 </div>
-              </div>
+              </div> */}
 
 
             </div>
@@ -877,11 +883,11 @@ export default function PongalLandingPage() {
               <Image src="/assets/logo.png" alt="RIFAH" width={48} height={48} className="h-7 sm:h-12 w-auto" />
               <span className="text-xl font-bold tracking-tight">RIFAH ANNUAL SUMMIT</span>
             </div>
-            <p className="text-sm">
+            {/* <p className="text-sm">
               RIFAH Chamber of Commerce and Industry is dedicated to building an ethical business
               ecosystem that empowers entrepreneurs, fosters collaboration, and drives
               sustainable growth across communities and industries in India.
-            </p>
+            </p> */}
           </div>
 
           {/* Contact Info */}
@@ -897,7 +903,7 @@ export default function PongalLandingPage() {
               </li>
               <li className="flex items-center gap-3 text-sm">
                 <Mail className="h-4 w-4 shrink-0" />
-                <span>info@rafah.co.in</span>
+                <a href="mailto:info@rifah.org">info@rifah.org</a>
               </li>
             </ul>
           </div>
@@ -906,7 +912,27 @@ export default function PongalLandingPage() {
 
           {/* Bottom Bar */}
           <div className="flex flex-col items-center justify-center gap-6 text-sm">
-            <Link href={"https://sbbs.co.in/"}>&copy; 2026 | SBBS. All rights reserved.</Link>
+            <div className="flex flex-wrap items-center justify-center gap-4">
+              <Link href="/about" className="hover:underline">About</Link>
+              <span>•</span>
+              <Link href="/contact" className="hover:underline">Contact</Link>
+              <span>•</span>
+              <Link href="/terms-conditions" className="hover:underline">Terms & Conditions</Link>
+              <span>•</span>
+              <Link href="/privacy-policy" className="hover:underline">Privacy Policy</Link>
+            </div>
+            <p className="text-sm ">
+              © 2026 Rifah. All Rights Reserved & Developed by{" "}
+              <Link
+                href="https://sbbs.co.in/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium hover:underline"
+              >
+                SBBS
+              </Link>
+              .
+            </p>
           </div>
 
         </div>
