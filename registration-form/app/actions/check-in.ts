@@ -234,7 +234,15 @@ export async function performCheckIn(id: string, data: CheckInData) {
 export async function getCheckInStats() {
     await dbConnect()
     try {
-        const participants = await Participant.find({ isRegistered: true, approvalStatus: 'approved' }).lean()
+        // Include participants who are approved AND either: paid (cash/online completed) or online payment method
+        const participants = await Participant.find({
+            isRegistered: true,
+            approvalStatus: 'approved',
+            $or: [
+                { paymentStatus: 'completed' },
+                { paymentMethod: 'online' }
+            ]
+        }).lean()
 
         let registeredMembers = 0
         let registeredParticipants = 0
@@ -278,7 +286,14 @@ export async function getCheckInStats() {
 export async function getParticipantsByStatus(status: 'all' | 'checked-in' | 'pending', page: number = 1, limit: number = 20, query: string = "") {
     await dbConnect()
     try {
-        const dbQuery: Record<string, unknown> = { approvalStatus: "approved", paymentStatus: "completed" }
+        // Show approved participants who have completed payment (cash) or used online payment
+        const dbQuery: Record<string, unknown> = {
+            approvalStatus: "approved",
+            $or: [
+                { paymentStatus: "completed" },
+                { paymentMethod: "online" }
+            ]
+        }
 
         if (status === 'checked-in') {
             dbQuery["checkIn.isCheckedIn"] = true

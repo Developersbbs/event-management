@@ -290,6 +290,16 @@ export function RegisterForm() {
 
       // Build registration data for post-payment creation
       const filteredSecondaryMembers = secondaryMembers.filter(m => m.name.trim() !== '')
+      // Per-member tax breakdown
+      const perPersonTax = Math.round((pricePerPerson * taxCalculation.taxRate) / 100)
+      const perPersonTotal = pricePerPerson + perPersonTax
+      const secondaryMembersWithTax = filteredSecondaryMembers.map(member => ({
+        ...member,
+        baseAmount: pricePerPerson,
+        taxAmount: perPersonTax,
+        totalAmount: perPersonTotal
+      }))
+
       const paymentRegistrationData = {
         mobileNumber: verifiedPhone,
         name: personalData.name,
@@ -297,17 +307,25 @@ export function RegisterForm() {
         businessName: personalData.businessName,
         businessCategory: personalData.businessCategory,
         location: personalData.location,
-        guestCount: 0,
+        gender: personalData.gender,
+        guestCount: filteredSecondaryMembers.length,
+        memberCount: 1 + filteredSecondaryMembers.length,
         ticketType: eventData.ticketType,
-        paymentMethod: eventData.paymentMethod,
-        ageGuest: 0,
-        secondaryMembers: filteredSecondaryMembers,
+        paymentMethod: 'online',
+        paymentStatus: 'completed',
+        ticketPrice: pricePerPerson,
+        totalAmount: taxCalculation.totalAmount,
+        taxRate: taxCalculation.taxRate,
+        taxAmount: taxCalculation.taxAmount,
+        baseAmount: taxCalculation.baseAmount,
+        secondaryMembers: secondaryMembersWithTax,
         gstNumber: gstNumber.trim() || undefined,
         termsAccepted: termsAccepted,
         termsAcceptedAt: new Date(),
         eventId: activeEvent?._id,
         eventDate: activeEvent?.eventDate,
-        memberCount: 1 + filteredSecondaryMembers.length,
+        isRegistered: true,
+        approvalStatus: 'approved',
       }
 
       // Create Razorpay order without participant ID
@@ -351,28 +369,37 @@ export function RegisterForm() {
         order_id: order.id,
 
         handler: async function (response: { razorpay_payment_id: string; razorpay_order_id: string; razorpay_signature: string }) {
-          console.log("Payment successful:", response)
-          // Verify payment and create participant
-          const verifyRes = await fetch("/api/payment/verify", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              ...response,
-              registrationData: paymentRegistrationData,
-            }),
-          })
+          console.log("Payment successful, saving to DB:", response)
+          try {
+            const verifyRes = await fetch("/api/payment/verify", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                ...response,
+                registrationData: paymentRegistrationData,
+              }),
+            })
 
-          const verifyData = await verifyRes.json()
+            const verifyData = await verifyRes.json()
+            console.log("Verify response:", verifyData)
 
-          if (verifyData.success) {
-            // Store invoice link if available
-            if (verifyData.invoiceUrl) {
-              setInvoiceLink(verifyData.invoiceUrl)
+            if (verifyData.success) {
+              if (verifyData.invoiceUrl) {
+                setInvoiceLink(verifyData.invoiceUrl)
+              }
+              setStep(Step.SUCCESS)
+            } else {
+              console.error("Payment verification failed:", verifyData.error)
+              setDbError(
+                `Payment was successful but registration saving failed: ${verifyData.error || "Unknown error"}. Please contact support with payment ID: ${response.razorpay_payment_id}`
+              )
+              setIsSubmitting(false)
             }
-            setStep(Step.SUCCESS)
-          } else {
-            console.error("Payment verification failed:", verifyData.error)
-            setDbError(verifyData.error || "Payment verification failed")
+          } catch (err) {
+            console.error("Error calling verify endpoint:", err)
+            setDbError(
+              `Payment was successful but registration saving failed. Please contact support with payment ID: ${response.razorpay_payment_id}`
+            )
             setIsSubmitting(false)
           }
         },

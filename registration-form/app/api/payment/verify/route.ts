@@ -40,39 +40,75 @@ export async function POST(req: Request) {
     }
 
     // ✅ Create participant after successful payment
-    const participant = await Participant.create({
-      ...registrationData,
-      paymentStatus: "completed",
-      paymentMethod: "online",
-      paymentId: razorpay_payment_id,
-      approvalStatus: "approved",
-      isRegistered: true,
-      eventId: registrationData.eventId,
-      eventDate: registrationData.eventDate,
-    })
+    let participant
+    try {
+      participant = await Participant.create({
+        ...registrationData,
+        paymentStatus: "completed",
+        paymentMethod: "online",
+        paymentId: razorpay_payment_id,
+        approvalStatus: "approved",
+        isRegistered: true,
+      })
+    } catch (createError: any) {
+      console.error("Failed to create participant in DB:", createError)
 
-    // Update event counts
-    const activeEvent = await Event.findById(registrationData.eventId)
-    if (activeEvent) {
-      const selectedTicket = activeEvent.ticketsPrice.find(
-        (t: { name: string; price: number }) => t.name === registrationData.ticketType
-      )
-      if (selectedTicket) {
-        selectedTicket.soldCount += registrationData.memberCount
-        await activeEvent.save()
+      // Handle duplicate mobileNumber (unique index violation)
+      if (createError.code === 11000) {
+        // Participant already exists — update payment info instead
+        const existing = await Participant.findOneAndUpdate(
+          { mobileNumber: registrationData.mobileNumber },
+          {
+            $set: {
+              paymentStatus: "completed",
+              paymentMethod: "online",
+              paymentId: razorpay_payment_id,
+              approvalStatus: "approved",
+              isRegistered: true,
+              razorpayOrderId: razorpay_order_id,
+            },
+          },
+          { new: true }
+        )
+        if (existing) {
+          console.log("Updated existing participant with payment info:", existing._id)
+          return Response.json({ success: true, participantId: existing._id.toString() })
+        }
       }
 
-      await Event.findByIdAndUpdate(
-        registrationData.eventId,
-        { $inc: { registeredCount: registrationData.memberCount } }
+      return Response.json(
+        { success: false, error: createError.message || "Failed to save registration" },
+        { status: 500 }
       )
     }
 
+    // Update event counts
+    try {
+      const activeEvent = await Event.findById(registrationData.eventId)
+      if (activeEvent) {
+        const selectedTicket = activeEvent.ticketsPrice.find(
+          (t: { name: string; price: number }) => t.name === registrationData.ticketType
+        )
+        if (selectedTicket) {
+          selectedTicket.soldCount = (selectedTicket.soldCount || 0) + (registrationData.memberCount || 1)
+          await activeEvent.save()
+        }
+        await Event.findByIdAndUpdate(
+          registrationData.eventId,
+          { $inc: { registeredCount: registrationData.memberCount || 1 } }
+        )
+      }
+    } catch (eventError) {
+      console.error("Failed to update event counts (non-fatal):", eventError)
+      // Non-fatal — participant is already saved, just log the error
+    }
+
+    console.log("Participant saved successfully:", participant._id)
     return Response.json({ success: true, participantId: participant._id.toString() })
-  } catch (error) {
-    console.error("Error verifying payment:", error)
+  } catch (error: any) {
+    console.error("Error in payment verify route:", error)
     return Response.json(
-      { success: false, error: "Failed to verify payment" },
+      { success: false, error: error.message || "Failed to verify payment" },
       { status: 500 }
     )
   }
