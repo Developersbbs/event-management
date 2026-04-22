@@ -130,7 +130,7 @@ export async function createUser(prevState: unknown, formData: FormData) {
             })
 
             const appUrl = process.env.NODE_ENV === "production"
-                ? "https://event-management-yd8m.vercel.app/ || https://rifahtn.com/"
+                ? "https://rifahtn.com/"
                 : "http://localhost:3000"
             const inviteUrl = `${appUrl}/setup-account?token=${inviteToken}`
 
