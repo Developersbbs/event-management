@@ -642,7 +642,7 @@ export default function PongalLandingPage() {
             {/* Header */}
             <div className="text-center max-w-2xl mx-auto mb-14">
               <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
-                Sponsor the RIFAH Annual Summit 2026
+                Sponsorship options at RIFAH 2026
               </h2>
               <p className="leading-relaxed">
                 This summit offers a unique opportunity for brands to directly connect with a highly relevant audience of entrepreneurs and decision-makers.
@@ -719,10 +719,10 @@ export default function PongalLandingPage() {
             {/* ── Sponsor Image Slider ── */}
             <div className="mb-14">
               <div className="text-center mb-8">
-                <span className="inline-block text-xs font-semibold uppercase tracking-widest text-red-700 border border-red-300/30 bg-red-50/50 px-4 py-1.5 rounded-full mb-3">
+                <span className="inline-block text-lg font-bold uppercase tracking-widest text-red-700 border border-red-300/30 bg-red-50/50 px-8 py-2 rounded-full mb-3">
                   Our Sponsors
                 </span>
-                <h3 className="text-2xl font-bold mt-2">Brands That Trust RIFAH</h3>
+                {/* <h3 className="text-2xl font-bold mt-2">Brands That Trust RIFAH</h3> */}
               </div>
 
               {/* Slider wrapper */}
