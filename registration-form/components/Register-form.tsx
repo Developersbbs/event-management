@@ -87,7 +87,7 @@ export function RegisterForm() {
   })
   const [eventData, setEventData] = useState({
     ticketType: "",
-    paymentMethod: "cash",
+    paymentMethod: "online",
   })
   const [gstNumber, setGstNumber] = useState("")
   const [invoiceLink, setInvoiceLink] = useState<string | null>(null)
@@ -1242,52 +1242,18 @@ export function RegisterForm() {
 
           <Separator />
 
-          {/* Payment Method */}
+          {/* Payment Method - Online Only */}
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <Receipt className="h-5 w-5 text-primary" />
               <h3 className="font-semibold">Payment Method</h3>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <Button
-                type="button"
-                variant={eventData.paymentMethod === 'cash' ? 'default' : 'outline'}
-                className="w-full h-14"
-                onClick={() => setEventData(prev => ({ ...prev, paymentMethod: 'cash' }))}
-              >
-                <div className="flex flex-col items-center">
-                  <span className="font-semibold">Cash</span>
-                  <span className="text-xs opacity-80">Admin Approval</span>
-                </div>
-              </Button>
-              <Button
-                type="button"
-                variant={eventData.paymentMethod === 'online' ? 'default' : 'outline'}
-                className="w-full h-14"
-                onClick={() => setEventData(prev => ({ ...prev, paymentMethod: 'online' }))}
-              >
-                <div className="flex flex-col items-center">
-                  <span className="font-semibold">Online</span>
-                  <span className="text-xs opacity-80">Pay Now</span>
-                </div>
-              </Button>
-            </div>
-            {eventData.paymentMethod === 'cash' && (
-              <Alert className="border-blue-200 bg-blue-50">
-                <Info className="h-4 w-4 text-blue-600" />
-                <AlertDescription className="text-blue-700 text-sm">
-                  Cash payment requires admin approval. Please pay at the venue.
-                </AlertDescription>
-              </Alert>
-            )}
-            {eventData.paymentMethod === 'online' && (
-              <Alert className="border-green-200 bg-green-50">
-                <Info className="h-4 w-4 text-green-600" />
-                <AlertDescription className="text-green-700 text-sm">
-                  Secure online payment via Razorpay. You&apos;ll be redirected to complete payment.
-                </AlertDescription>
-              </Alert>
-            )}
+            <Alert className="border-green-200 bg-green-50">
+              <Info className="h-4 w-4 text-green-600" />
+              <AlertDescription className="text-green-700 text-sm">
+                Secure online payment via Razorpay. You&apos;ll be redirected to complete payment.
+              </AlertDescription>
+            </Alert>
           </div>
 
           {/* FOOD PREFERENCE - Commented out */}
