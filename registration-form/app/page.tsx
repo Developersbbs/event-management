@@ -742,6 +742,8 @@ export default function PongalLandingPage() {
                         "/assets/slider-9.jpeg",
                         "/assets/slider-7.jpeg",
                         "/assets/slider-10.jpeg",
+                        "/assets/slider11.jpeg",
+                        "/assets/slider12.jpeg",
                       ].map((src, i) => (
                         <div
                           key={`${dupIdx}-${i}`}
