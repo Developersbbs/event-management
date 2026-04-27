@@ -734,16 +734,16 @@ export default function PongalLandingPage() {
                 {/* Scrolling track */}
                 <div className="flex animate-sponsor-scroll w-max">
                   {[...Array(2)].map((_, dupIdx) => (
-                    <div key={dupIdx} className="flex   items-center">
+                    <div key={dupIdx} className="flex items-center">
                       {[
                         "/assets/slider-1.png",
                         "/assets/slider-2.png",
                         "/assets/slider-3.png",
                         "/assets/slider-9.jpeg",
-                        "/assets/slider-7.jpeg",
                         "/assets/slider-10.jpeg",
                         "/assets/slider11.jpeg",
                         "/assets/slider12.jpeg",
+                        "/assets/slider-13.jpeg",
                       ].map((src, i) => (
                         <div
                           key={`${dupIdx}-${i}`}
