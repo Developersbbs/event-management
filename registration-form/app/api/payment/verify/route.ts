@@ -2,6 +2,7 @@ import crypto from "crypto"
 import Participant from "@/models/Participant"
 import Event from "@/models/Event"
 import mongoose from "mongoose"
+import { generateInvoiceFile } from "../generate-invoice/route"
 
 export async function POST(req: Request) {
   try {
@@ -72,7 +73,30 @@ export async function POST(req: Request) {
         )
         if (existing) {
           console.log("Updated existing participant with payment info:", existing._id)
-          return Response.json({ success: true, participantId: existing._id.toString() })
+          
+          let invoiceUrl = ""
+          try {
+            const invoiceData = {
+              name: registrationData.name,
+              email: registrationData.email,
+              mobileNumber: registrationData.mobileNumber,
+              businessName: registrationData.businessName,
+              gstNumber: registrationData.gstNumber,
+              ticketType: registrationData.ticketType,
+              baseAmount: registrationData.baseAmount || 0,
+              taxAmount: registrationData.taxAmount || 0,
+              totalAmount: registrationData.totalAmount || 0,
+              taxRate: registrationData.taxRate || 0,
+              paymentId: razorpay_payment_id,
+              memberCount: registrationData.memberCount || 1,
+              location: registrationData.location
+            }
+            invoiceUrl = await generateInvoiceFile(invoiceData)
+          } catch (invoiceError) {
+            console.error("Failed to generate invoice HTML file (non-fatal):", invoiceError)
+          }
+
+          return Response.json({ success: true, participantId: existing._id.toString(), invoiceUrl })
         }
       }
 
@@ -104,8 +128,31 @@ export async function POST(req: Request) {
       // Non-fatal — participant is already saved, just log the error
     }
 
+    // Generate Invoice HTML file for online payment
+    let invoiceUrl = ""
+    try {
+      const invoiceData = {
+        name: registrationData.name,
+        email: registrationData.email,
+        mobileNumber: registrationData.mobileNumber,
+        businessName: registrationData.businessName,
+        gstNumber: registrationData.gstNumber,
+        ticketType: registrationData.ticketType,
+        baseAmount: registrationData.baseAmount || 0,
+        taxAmount: registrationData.taxAmount || 0,
+        totalAmount: registrationData.totalAmount || 0,
+        taxRate: registrationData.taxRate || 0,
+        paymentId: razorpay_payment_id,
+        memberCount: registrationData.memberCount || 1,
+        location: registrationData.location
+      }
+      invoiceUrl = await generateInvoiceFile(invoiceData)
+    } catch (invoiceError) {
+      console.error("Failed to generate invoice HTML file (non-fatal):", invoiceError)
+    }
+
     console.log("Participant saved successfully:", participant._id)
-    return Response.json({ success: true, participantId: participant._id.toString() })
+    return Response.json({ success: true, participantId: participant._id.toString(), invoiceUrl })
   } catch (error: unknown) {
     console.error("Error in payment verify route:", error)
     const errorMessage = error instanceof Error ? error.message : "Failed to verify payment"

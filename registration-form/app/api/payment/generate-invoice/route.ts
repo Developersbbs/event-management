@@ -33,11 +33,11 @@ export async function POST(req: NextRequest) {
     }
 
     // Generate unique filename
-    const filename = `invoice_${invoiceData.paymentId}_${Date.now()}.txt`
+    const filename = `invoice_${invoiceData.paymentId}_${Date.now()}.html`
     const filepath = join(invoicesDir, filename)
 
-    // Generate invoice content
-    const invoiceContent = generateInvoiceText(invoiceData)
+    // Generate HTML content
+    const invoiceContent = generateHtmlInvoice(invoiceData)
 
     // Write invoice file
     await writeFile(filepath, invoiceContent, "utf-8")
@@ -65,76 +65,149 @@ export async function POST(req: NextRequest) {
   }
 }
 
-function generateInvoiceText(data: InvoiceData): string {
+export async function generateInvoiceFile(invoiceData: InvoiceData): Promise<string> {
+  const invoicesDir = join(process.cwd(), "public", "invoices")
+  if (!existsSync(invoicesDir)) {
+    await mkdir(invoicesDir, { recursive: true })
+  }
+
+  const filename = `invoice_${invoiceData.paymentId}_${Date.now()}.html`
+  const filepath = join(invoicesDir, filename)
+
+  const invoiceContent = generateHtmlInvoice(invoiceData)
+  await writeFile(filepath, invoiceContent, "utf-8")
+
+  return `/invoices/${filename}`
+}
+
+function generateHtmlInvoice(data: InvoiceData): string {
   const date = new Date().toLocaleDateString("en-IN", {
     day: "2-digit",
     month: "short",
     year: "numeric"
   })
 
-  let invoice = `
-════════════════════════════════════════════════════════════════
-                    RIFAH ANNUAL SUMMIT 2026
-════════════════════════════════════════════════════════════════
-
-INVOICE
-
-Date: ${date}
-Invoice ID: ${data.paymentId}
-
-────────────────────────────────────────────────────────────────
-BILLING DETAILS
-────────────────────────────────────────────────────────────────
-
-Name: ${data.name}
-Mobile: ${data.mobileNumber}
-${data.email ? `Email: ${data.email}` : ''}
-${data.businessName ? `Business: ${data.businessName}` : ''}
-${data.ticketType ? `Ticket Type: ${data.ticketType}` : ''}
-${data.memberCount ? `Total Members: ${data.memberCount}` : ''}
-
-────────────────────────────────────────────────────────────────
-PAYMENT DETAILS
-────────────────────────────────────────────────────────────────
-
-Base Amount: ₹${data.baseAmount.toLocaleString()}
-GST (${data.taxRate}%): ₹${data.taxAmount.toLocaleString()}
-────────────────────────────────────────────────────────────────
-TOTAL: ₹${data.totalAmount.toLocaleString()}
-────────────────────────────────────────────────────────────────
-
-Payment ID: ${data.paymentId}
-Payment Status: Completed
-
-`
-
-  // Add GST section if GST number provided
-  if (data.gstNumber) {
-    invoice += `
-────────────────────────────────────────────────────────────────
-GST DETAILS
-────────────────────────────────────────────────────────────────
-
-GST Number: ${data.gstNumber.toUpperCase()}
-${data.gstName ? `Business Name (as per GST): ${data.gstName}` : ''}
-
-`
+  const gstNumber = data.gstNumber || ""
+  const taxAmount = data.taxAmount || 0
+  const sellerStateCode = "33"
+  
+  let cgst = 0
+  let sgst = 0
+  let igst = 0
+  let taxType = "INTRA" // Default for B2C
+  
+  if (gstNumber) {
+    const buyerStateCode = gstNumber.substring(0, 2)
+    if (buyerStateCode === sellerStateCode) {
+      taxType = "INTRA"
+      cgst = taxAmount / 2
+      sgst = taxAmount / 2
+    } else {
+      taxType = "INTER"
+      igst = taxAmount
+    }
+  } else {
+    // If no GST number provided, we default to INTRA
+    cgst = taxAmount / 2
+    sgst = taxAmount / 2
   }
 
-  invoice += `
-────────────────────────────────────────────────────────────────
-TERMS & CONDITIONS
-────────────────────────────────────────────────────────────────
+  const locationDisplay = data.businessName ? data.businessName : "Business Name"
+  
+  const taxRows = taxType === 'INTER' 
+    ? '<tr><td>IGST (' + data.taxRate + '%):</td><td class="text-right">₹' + igst.toFixed(2) + '</td></tr>'
+    : '<tr><td>CGST (' + ((data.taxRate || 0) / 2) + '%):</td><td class="text-right">₹' + cgst.toFixed(2) + '</td></tr>' +
+      '<tr><td>SGST (' + ((data.taxRate || 0) / 2) + '%):</td><td class="text-right">₹' + sgst.toFixed(2) + '</td></tr>';
 
-1. Registration fees are non-transferable and non-refundable.
-2. GST is applicable as per government regulations.
-3. This invoice is generated automatically upon successful payment.
-4. For any queries, please contact the event organizer.
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tax Invoice - ${data.paymentId}</title>
+  <style>
+    body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 40px; color: #333; line-height: 1.6; }
+    .invoice-box { max-width: 800px; margin: auto; padding: 30px; border: 1px solid #eee; box-shadow: 0 0 10px rgba(0, 0, 0, 0.15); font-size: 15px; }
+    .header { text-align: center; margin-bottom: 40px; border-bottom: 2px solid #eee; padding-bottom: 20px; }
+    .header h1 { margin: 0; color: #c45a2d; font-size: 26px; text-transform: uppercase; }
+    .header h2 { margin: 10px 0 0; font-size: 18px; color: #555; }
+    .invoice-details { display: flex; justify-content: space-between; margin-bottom: 30px; font-weight: bold; }
+    .from-to-box { display: flex; justify-content: space-between; margin-bottom: 40px; }
+    .box { width: 45%; }
+    .box-title { font-weight: bold; margin-bottom: 10px; color: #555; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+    th { background: #f8f8f8; font-weight: bold; }
+    .text-right { text-align: right; }
+    .totals-table { width: 50%; margin-left: auto; margin-top: 20px; border: none; }
+    .totals-table td { padding: 8px 12px; border: none; }
+    .total-row td { border-top: 2px solid #eee; font-weight: bold; font-size: 18px; }
+    .footer { margin-top: 50px; text-align: center; color: #777; font-size: 13px; border-top: 1px solid #eee; padding-top: 20px; }
+    @media print {
+      body { padding: 0; }
+      .invoice-box { box-shadow: none; border: none; }
+      .no-print { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="invoice-box">
+    <div class="header">
+      <h1>RIFAH ANNUAL SUMMIT 2026</h1>
+      <h2>TAX INVOICE</h2>
+    </div>
 
-════════════════════════════════════════════════════════════════
-                    Thank you for your registration!
-════════════════════════════════════════════════════════════════
-`
+    <div class="invoice-details">
+      <div>Invoice Date: ${date}</div>
+      <div>Payment ID: ${data.paymentId}</div>
+    </div>
 
-  return invoice
+    <div class="from-to-box">
+      <div class="box">
+        <div class="box-title">FROM:</div>
+        <strong>XYZ Events Pvt Ltd</strong><br>
+        Chennai<br>
+        GSTIN: 33XXXXX1234X1ZX
+      </div>
+      <div class="box">
+        <div class="box-title">TO:</div>
+        <strong>${data.name}</strong><br>
+        ${locationDisplay}<br>
+        GSTIN: ${gstNumber ? gstNumber.toUpperCase() : 'N/A'}<br>
+        Mobile: ${data.mobileNumber}
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Description</th>
+          <th class="text-right">Taxable Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Event Registration (${data.ticketType || 'Standard'}) - ${data.memberCount || 1} Member(s)</td>
+          <td class="text-right">₹${(data.baseAmount || 0).toFixed(2)}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <table class="totals-table">
+      <tbody>
+        ${taxRows}
+        <tr class="total-row">
+          <td>TOTAL:</td>
+          <td class="text-right">₹${(data.totalAmount || 0).toFixed(2)}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="footer">
+      <p>Note: ITC claimable invoice. Registration fees are non-transferable and non-refundable.</p>
+      <button class="no-print" onclick="window.print()" style="margin-top:20px; padding: 10px 20px; background: #c45a2d; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px;">Print / Save as PDF</button>
+    </div>
+  </div>
+</body>
+</html>`
 }
