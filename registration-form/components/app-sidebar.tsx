@@ -10,6 +10,7 @@ import {
   IconDatabase,
   IconListDetails,
   IconHistory,
+  IconReceipt,
 } from "@tabler/icons-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -60,6 +61,11 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
       title: "Check-in",
       url: "/admin/checkin",
       icon: IconListDetails,
+    },
+    {
+      title: "Inward Bills",
+      url: "/admin/inward-bills",
+      icon: IconReceipt,
     },
     ...(user?.role === 'super-admin' ? [
       {
