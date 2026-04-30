@@ -2,12 +2,13 @@
 
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { Calendar, MapPin, CheckCircle2, Clock, Mail, Rocket, GraduationCap, TrendingUp } from "lucide-react"
+import { Calendar, MapPin, CheckCircle2, Clock, Mail, Rocket, GraduationCap, TrendingUp, ArrowRight } from "lucide-react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import { useState, useEffect } from "react"
 import { Users } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 
 interface EventStatus {
@@ -104,6 +105,70 @@ export default function PongalLandingPage() {
       router.push('/register')
     }
   }
+
+  const speakers = [
+    {
+      id: 1,
+      name: "Dr Ajmal Dastagir",
+      role: "Managing Director-Silk Trail Global Exports Pvt Ltd | Advisor - Ministry of MSME, Govt of India | Chairman (India) - UN - Sustainable Development Council",
+      image: "/assets/speaker-1.jpeg"
+    },
+    {
+      id: 2,
+      name: "Moulana Khaleel Ahmed Muneeri",
+      role: "Chief Mentor - FACE (Federation of All Economic Chambers)",
+      image: "/assets/speaker-2.jpeg"
+    },
+    {
+      id: 3,
+      name: "Ahmed Buhari",
+      role: "Founder President - Coastal Energen Pvt Ltd | President - United Economic Forum",
+      image: "/assets/speaker-3.jpeg"
+    },
+    {
+      id: 4,
+      name: "Syed Nawaz",
+      role: "Founder - Faywalk Fashions",
+      image: "/assets/speaker-4.jpeg"
+    },
+    {
+      id: 5,
+      name: "Datuk Wira Shahul Dawood",
+      role: "Managing Director & Group CEO of Green Packet Berhad, Malaysia",
+      image: "/assets/speaker-5.png"
+    },
+    {
+      id: 6,
+      name: "YBhg. Dato Hj Abdul Hamid PV",
+      role: "President - Malaysian Indian Muslim Chamber of Commerce & Industry.",
+      image: "/assets/speaker-6.jpeg"
+    },
+    {
+      id: 7,
+      name: "Muhammed Umar Mukthar",
+      role: "Founder & CEO - GoButtons | Chairman - Rifah Annual Summit 2026",
+      image: "/assets/speaker-7.jpeg"
+    },
+    {
+      id: 8,
+      name: "Younus Sait",
+      role: "Managing Director-Sait Fashions | President TN - Rifah chamber of commerce and industries",
+      image: "/assets/speaker-8.jpeg"
+    },
+    {
+      id: 9,
+      name: "Ba.Ramesh",
+      role: "Joint Managing Director Thangamayil Jewelery Limited",
+      image: "/assets/spearker-9.jpeg"
+    },
+    {
+      id: 10,
+      name: "MR. M.A. MOHAMMAD HANIFA",
+      role: "Chairman - Creative Communication Chennai (CCC)",
+      image: "/assets/speaker-10.jpeg"
+    }
+  ]
+
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-primary selection:text-primary-foreground font-sans">
       {/* Navbar */}
@@ -408,7 +473,7 @@ export default function PongalLandingPage() {
         </section> */}
 
         {/* Introduction / About */}
-        <section id="about" className="py-12 sm:py-24 bg-secondary/30">
+        <section id="about" className="py-12 sm:py-24 ">
           <div className="container mx-auto px-4">
             <div className="flex flex-col md:grid md:grid-cols-2 gap-12 lg:gap-20 items-center">
 
@@ -484,6 +549,143 @@ export default function PongalLandingPage() {
               </div>
 
             </div>
+          </div>
+        </section>
+
+
+
+
+        {/* Our Speakers - Visionary Leaders */}
+        <section id="speakers" className="py-16 sm:py-24 bg-secondary/30">
+          <div className="container mx-auto px-4">
+
+            {/* Title */}
+            <div className="text-center mb-12">
+              <h2 className=" text-2xl sm:text-6xl font-black tracking-wider leading-none">
+                <span className="text-red-700">The</span> VISIONARY<span className="text-red-700">LEADERS</span>
+              </h2>
+
+            </div>
+
+            {/* Cards Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-10 max-w-7xl mx-auto">
+              {speakers.map((speaker) => (
+                <div
+                  key={speaker.id}
+                  className="group relative flex flex-col"
+                  style={{
+                    background: "linear-gradient(145deg, #1a0000, #2d0000)",
+                    border: "1px solid rgba(234,179,8,0.3)",
+                    borderRadius: "12px",
+                    overflow: "hidden",
+                    transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                  }}
+                  onMouseEnter={e => {
+                    (e.currentTarget as HTMLDivElement).style.transform = "translateY(-6px)"
+                      ; (e.currentTarget as HTMLDivElement).style.boxShadow = "0 20px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(234,179,8,0.6)"
+                  }}
+                  onMouseLeave={e => {
+                    (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)"
+                      ; (e.currentTarget as HTMLDivElement).style.boxShadow = "none"
+                  }}
+                >
+                  {/* Gold top accent line */}
+                  <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-yellow-500 to-transparent" />
+
+                  {/* Image */}
+                  <div className="relative w-full aspect-[6/7] sm:aspect-[4/5] overflow-hidden">
+                    <Image
+                      src={speaker.image}
+                      alt={speaker.name}
+                      fill
+                      className="object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                    />
+                    {/* Bottom fade */}
+                    <div
+                      className="absolute bottom-0 left-0 right-0 h-2/5"
+                      style={{ background: "linear-gradient(to top, #1a0000 0%, transparent 100%)" }}
+                    />
+                  </div>
+
+                  {/* Info */}
+                  <div className="p-3 flex flex-col gap-2 flex-1">
+                    {/* Name */}
+                    <h3 className="text-[#f5d78e] text-[13px] sm:text-[14px] font-semibold text-center leading-snug">
+                      {speaker.name}
+                    </h3>
+
+                    {/* Divider */}
+                    <div className="h-px w-8 bg-yellow-500/40 mx-auto" />
+
+                    {/* Roles */}
+                    <div className="flex flex-col items-center gap-1">
+                      {speaker.role.split("|").map((line, i) => (
+                        <p
+                          key={i}
+                          className="text-white text-center font-bold text-[6px] sm:text-[11px]"
+                        >
+                          {line.trim()}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Gold bottom accent line */}
+                  <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-yellow-500 to-transparent" />
+                </div>
+              ))}
+            </div>
+
+            {/* Stats Bar */}
+            <div
+              className="flex flex-row items-stretch mt-14 rounded-xl overflow-hidden"
+              style={{ background: "#f5d78e", border: "2px solid #b8860b" }}
+            >
+              {[
+                { value: "18+ STATES", label: "ACROSS INDIA" },
+                { value: "10+ CHAPTERS", label: "IN TAMILNADU," },
+                { value: "500+", label: "ENTREPRENEUR" },
+              ].map((stat, i) => (
+                <div
+                  key={i}
+                  className="flex-1 flex flex-col items-center justify-center py-5 px-2 text-center relative"
+                >
+                  {/* Dark red separator — not on first item */}
+                  {i !== 0 && (
+                    <div
+                      className="absolute left-0 top-[15%] bottom-[15%] w-[2px]"
+                      style={{ background: "#7a0000" }}
+                    />
+                  )}
+
+                  {/* Big bold value */}
+                  <p
+                    className="font-black tracking-wide leading-none"
+                    style={{
+                      fontSize: "clamp(18px, 3.5vw, 32px)",
+                      color: "#7a0000",
+                      fontWeight: 900,
+                      letterSpacing: "0.05em",
+                    }}
+                  >
+                    {stat.value}
+                  </p>
+
+                  {/* Small label */}
+                  <p
+                    className="font-bold tracking-widest mt-1"
+                    style={{
+                      fontSize: "clamp(9px, 1.5vw, 12px)",
+                      color: "#7a0000",
+                      letterSpacing: "0.15em",
+                    }}
+                  >
+                    {stat.label}
+                  </p>
+                </div>
+              ))}
+            </div>
+
           </div>
         </section>
 
