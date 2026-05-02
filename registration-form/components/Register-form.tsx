@@ -2,6 +2,8 @@
 
 import { useState, useMemo, useEffect } from "react"
 import { useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
+import "@/lib/i18n"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { cn } from "@/lib/utils"
@@ -61,6 +63,7 @@ const personalDetailsSchema = z.object({
 })
 
 export function RegisterForm() {
+  const { t } = useTranslation()
   const [step, setStep] = useState<Step>(Step.PHONE_INPUT)
   const { sendOtp, verifyOtp, loading: authLoading, error: authError } = usePhoneAuth()
   const [isCheckingDb, setIsCheckingDb] = useState(false)
@@ -539,10 +542,10 @@ export function RegisterForm() {
           <div className="p-3 bg-primary/10 rounded-full text-primary">
             <Phone className="h-6 w-6" />
           </div>
-          <h1 className="text-2xl font-bold">Verification</h1>
+          <h1 className="text-2xl font-bold">{t("Verification")}</h1>
           <p className="text-sm text-muted-foreground">
-            {step === Step.PHONE_INPUT ? "Verify your mobile number to begin." :
-              step === Step.OTP_VERIFICATION ? "Enter the 6-digit code sent to you." : "Checking status..."}
+            {step === Step.PHONE_INPUT ? t("Verify your mobile number to begin.") :
+              step === Step.OTP_VERIFICATION ? t("Enter the 6-digit code sent to you.") : t("Checking status...")}
           </p>
         </div>
 
@@ -551,7 +554,7 @@ export function RegisterForm() {
             <form onSubmit={phoneForm.handleSubmit(onPhoneSubmit)} className="space-y-4">
               <FormField control={phoneForm.control} name="phoneNumber" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Mobile Number</FormLabel>
+                  <FormLabel>{t("Mobile Number")}</FormLabel>
                   <FormControl>
                     <div className="relative">
                       <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -562,7 +565,7 @@ export function RegisterForm() {
                 </FormItem>
               )} />
               {authError && <Alert variant="destructive"><AlertCircle className="h-4 w-4" /><AlertTitle>Error</AlertTitle><AlertDescription>{authError}</AlertDescription></Alert>}
-              <Button type="submit" className="w-full bg-red-800 hover:bg-red-900" disabled={authLoading}>{authLoading ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : "Send OTP"}</Button>
+              <Button type="submit" className="w-full bg-red-800 hover:bg-red-900" disabled={authLoading}>{authLoading ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : t("Send OTP")}</Button>
             </form>
           </Form>
         )}
@@ -603,10 +606,10 @@ export function RegisterForm() {
         {step === Step.ALREADY_REGISTERED && (
           <Alert className="border-yellow-500/50 bg-yellow-500/10 text-yellow-600 dark:text-yellow-400">
             <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Welcome Back!</AlertTitle>
+            <AlertTitle>{t("Welcome Back!")}</AlertTitle>
             <AlertDescription>
-              {existingParticipant?.name ? `Hello ${existingParticipant.name}, ` : ""}
-              This number is already registered.
+              {existingParticipant?.name ? `${t("Hello")} ${existingParticipant.name}, ` : ""}
+              {t("This number is already registered.")}
             </AlertDescription>
             <div className="mt-4 flex gap-2">
               {/* Edit Registration button commented out */}
@@ -636,7 +639,7 @@ export function RegisterForm() {
               >
                 Edit Registration
               </Button> */}
-              <Button variant="outline" onClick={() => setStep(Step.PHONE_INPUT)}>Use Different Number</Button>
+              <Button variant="outline" onClick={() => setStep(Step.PHONE_INPUT)}>{t("Use Different Number")}</Button>
             </div>
           </Alert>
         )}
@@ -650,7 +653,7 @@ export function RegisterForm() {
       <Card className="w-full max-w-lg mx-auto animate-in fade-in zoom-in-95 duration-300">
         <CardHeader>
           {renderStepsIndicator()}
-          <CardTitle>Personal Details</CardTitle>
+          <CardTitle>{t("Personal Details")}</CardTitle>
           {/* <CardDescription>Tell us a bit about yourself.</CardDescription> */}
         </CardHeader>
         <CardContent>
@@ -658,25 +661,25 @@ export function RegisterForm() {
             <form onSubmit={personalForm.handleSubmit(onPersonalSubmit)} className="space-y-4">
               <FormField control={personalForm.control} name="name" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Full Name</FormLabel>
-                  <FormControl><Input placeholder="Enter your name" {...field} /></FormControl>
+                  <FormLabel>{t("Full Name")}</FormLabel>
+                  <FormControl><Input placeholder={t("Enter your name")} {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
 
               <FormField control={personalForm.control} name="email" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl><Input type="email" placeholder="Enter your email" {...field} /></FormControl>
+                  <FormLabel>{t("Email")}</FormLabel>
+                  <FormControl><Input type="email" placeholder={t("Enter your email")} {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
 
               <FormField control={personalForm.control} name="businessName" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Business Name</FormLabel>
+                  <FormLabel>{t("Business Name")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter your business name" {...field} />
+                    <Input placeholder={t("Enter your business name")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -684,9 +687,9 @@ export function RegisterForm() {
 
               <FormField control={personalForm.control} name="businessCategory" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Business Category</FormLabel>
+                  <FormLabel>{t("Business Category")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter your business category" {...field} />
+                    <Input placeholder={t("Enter your business category")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -694,7 +697,7 @@ export function RegisterForm() {
 
               <FormField control={personalForm.control} name="location" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Location</FormLabel>
+                  <FormLabel>{t("Location")}</FormLabel>
                   <Popover open={primaryLocationOpen} onOpenChange={setPrimaryLocationOpen}>
                     <PopoverTrigger asChild>
                       <FormControl>
@@ -706,15 +709,15 @@ export function RegisterForm() {
                             !field.value && "text-muted-foreground"
                           )}
                         >
-                          {showPrimaryCustomInput ? primaryCustomLocation || "Enter custom location" : field.value || "Select district"}
+                          {showPrimaryCustomInput ? primaryCustomLocation || t("Enter custom location") : t(field.value) || t("Select district")}
                           <Check className="ml-2 h-4 w-4 opacity-50" />
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
                     <PopoverContent className="w-full p-0 max-h-[350px] overflow-y-auto" align="start">
                       <Command>
-                        <CommandInput placeholder="Search district..." />
-                        <CommandEmpty>No district found.</CommandEmpty>
+                        <CommandInput placeholder={t("Search district...")} />
+                        <CommandEmpty>{t("No district found.")}</CommandEmpty>
                         <CommandGroup>
                           {TAMIL_NADU_DISTRICTS.map((district) => (
                             <CommandItem
@@ -728,7 +731,7 @@ export function RegisterForm() {
                                   field.value === district ? "opacity-100" : "opacity-0"
                                 )}
                               />
-                              {district}
+                              {t(district)}
                             </CommandItem>
                           ))}
                           <CommandItem
@@ -741,7 +744,7 @@ export function RegisterForm() {
                                 showPrimaryCustomInput ? "opacity-100" : "opacity-0"
                               )}
                             />
-                            Other (enter manually)
+                            {t("Other (enter manually)")}
                           </CommandItem>
                         </CommandGroup>
                       </Command>
@@ -749,7 +752,7 @@ export function RegisterForm() {
                   </Popover>
                   {showPrimaryCustomInput && (
                     <Input
-                      placeholder="Enter your location"
+                      placeholder={t("Enter location")}
                       value={primaryCustomLocation}
                       onChange={(e) => {
                         setPrimaryCustomLocation(e.target.value)
@@ -764,18 +767,17 @@ export function RegisterForm() {
 
               <FormField control={personalForm.control} name="gender" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Gender (Optional)</FormLabel>
+                  <FormLabel>{t("Gender (Optional)")}</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select gender" />
+                        <SelectValue placeholder={t("Select gender")} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="male">Male</SelectItem>
-                      <SelectItem value="female">Female</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                      {/* <SelectItem value="prefer-not-to-say">Prefer not to say</SelectItem> */}
+                      <SelectItem value="male">{t("Male")}</SelectItem>
+                      <SelectItem value="female">{t("Female")}</SelectItem>
+                      <SelectItem value="other">{t("Other")}</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -784,8 +786,8 @@ export function RegisterForm() {
 
 
               <div className="flex gap-3">
-                <Button type="button" variant="outline" className="flex-1" onClick={() => setStep(Step.OTP_VERIFICATION)}>Back</Button>
-                <Button type="submit" className="flex-1">Next: Event Details</Button>
+                <Button type="button" variant="outline" className="flex-1" onClick={() => setStep(Step.OTP_VERIFICATION)}>{t("Back")}</Button>
+                <Button type="submit" className="flex-1">{t("Next: Event Details")}</Button>
               </div>
             </form>
           </Form>
@@ -801,8 +803,8 @@ export function RegisterForm() {
       <Card className="w-full max-h-[calc(100vh-8rem)] overflow-y-auto mx-auto animate-in fade-in zoom-in-95 duration-300">
         <CardHeader>
           {renderStepsIndicator()}
-          <CardTitle>Event Details</CardTitle>
-          <CardDescription>Customize your participation.</CardDescription>
+          <CardTitle>{t("Event Details")}</CardTitle>
+          <CardDescription>{t("Customize your participation.")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Active Event Error Alert */}
@@ -836,10 +838,10 @@ export function RegisterForm() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <UserPlus className="h-5 w-5 text-primary" />
-                <h3 className="font-semibold">Additional Members</h3>
+                <h3 className="font-semibold">{t("Additional Members")}</h3>
               </div>
               <span className="text-xs text-muted-foreground">
-                {secondaryMembers.length} members added
+                {secondaryMembers.length} {t("members added")}
               </span>
             </div>
               
@@ -847,7 +849,7 @@ export function RegisterForm() {
               {secondaryMembers.map((member, index) => (
                 <div key={index} className="border rounded-lg p-4 space-y-3 bg-muted/30">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-muted-foreground">Member {index + 1}</span>
+                    <span className="text-sm font-medium text-muted-foreground">{t("Member")} {index + 1}</span>
                     <div className="flex gap-1">
                       <Button
                         type="button"
@@ -874,11 +876,11 @@ export function RegisterForm() {
                     </div>
                   </div>
                   <div className="text-sm space-y-1">
-                    <p><span className="font-medium">Name:</span> {member.name}</p>
-                    {member.mobileNumber && <p><span className="font-medium">Mobile:</span> {member.mobileNumber}</p>}
-                    {member.email && <p><span className="font-medium">Email:</span> {member.email}</p>}
-                    {member.businessName && <p><span className="font-medium">Business:</span> {member.businessName}</p>}
-                    {member.location && <p><span className="font-medium">Location:</span> {member.location}</p>}
+                    <p><span className="font-medium">{t("Name")}:</span> {member.name}</p>
+                    {member.mobileNumber && <p><span className="font-medium">{t("Mobile")}:</span> {member.mobileNumber}</p>}
+                    {member.email && <p><span className="font-medium">{t("Email")}:</span> {member.email}</p>}
+                    {member.businessName && <p><span className="font-medium">{t("Business Name")}:</span> {member.businessName}</p>}
+                    {member.location && <p><span className="font-medium">{t("Location")}:</span> {t(member.location)}</p>}
                   </div>
                 </div>
               ))}
@@ -887,7 +889,7 @@ export function RegisterForm() {
               {showAddMemberForm && (
                 <div className="border rounded-lg p-4 space-y-3 bg-primary/5">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Add Member {secondaryMembers.length + 1}</span>
+                    <span className="text-sm font-medium">{t("Add Member")} {secondaryMembers.length + 1}</span>
                     <Button
                       type="button"
                       variant="ghost"
@@ -903,16 +905,16 @@ export function RegisterForm() {
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="space-y-2">
-                      <Label className="text-xs">Name *</Label>
+                      <Label className="text-xs">{t("Name")} *</Label>
                       <Input
-                        placeholder="Full name"
+                        placeholder={t("Full name")}
                         value={currentMember.name}
                         onChange={(e) => setCurrentMember(prev => ({ ...prev, name: e.target.value }))}
                         className="h-9"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-xs">Mobile</Label>
+                      <Label className="text-xs">{t("Mobile")}</Label>
                       <Input
                         placeholder="+91..."
                         value={currentMember.mobileNumber}
@@ -921,7 +923,7 @@ export function RegisterForm() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-xs">Email</Label>
+                      <Label className="text-xs">{t("Email")}</Label>
                       <Input
                         type="email"
                         placeholder="email@example.com"
@@ -931,9 +933,9 @@ export function RegisterForm() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-xs">Business Name</Label>
+                      <Label className="text-xs">{t("Business Name")}</Label>
                       <Input
-                        placeholder="Business name"
+                        placeholder={t("Business name")}
                         value={currentMember.businessName}
                         onChange={(e) => setCurrentMember(prev => ({ ...prev, businessName: e.target.value }))}
                         className="h-9"
@@ -949,7 +951,7 @@ export function RegisterForm() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-xs">Location</Label>
+                      <Label className="text-xs">{t("Location")}</Label>
                       <Popover
                         open={currentMember.showCustomLocation ? false : undefined}
                         onOpenChange={() => {
@@ -972,14 +974,14 @@ export function RegisterForm() {
                               }
                             }}
                           >
-                            {currentMember.showCustomLocation ? currentMember.customLocation || "Enter custom location" : currentMember.location || "Select district"}
+                            {currentMember.showCustomLocation ? currentMember.customLocation || t("Enter custom location") : t(currentMember.location) || t("Select district")}
                             <Check className="ml-2 h-4 w-4 opacity-50" />
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-full p-0 max-h-[350px] overflow-y-auto" align="start">
                           <Command>
-                            <CommandInput placeholder="Search district..." />
-                            <CommandEmpty>No district found.</CommandEmpty>
+                            <CommandInput placeholder={t("Search district...")} />
+                            <CommandEmpty>{t("No district found.")}</CommandEmpty>
                             <CommandGroup>
                               {TAMIL_NADU_DISTRICTS.map((district) => (
                                 <CommandItem
@@ -995,7 +997,7 @@ export function RegisterForm() {
                                       currentMember.location === district ? "opacity-100" : "opacity-0"
                                     )}
                                   />
-                                  {district}
+                                  {t(district)}
                                 </CommandItem>
                               ))}
                               <CommandItem
@@ -1010,7 +1012,7 @@ export function RegisterForm() {
                                     currentMember.showCustomLocation ? "opacity-100" : "opacity-0"
                                   )}
                                 />
-                                Other (enter manually)
+                                {t("Other (enter manually)")}
                               </CommandItem>
                             </CommandGroup>
                           </Command>
@@ -1018,7 +1020,7 @@ export function RegisterForm() {
                       </Popover>
                       {currentMember.showCustomLocation && (
                         <Input
-                          placeholder="Enter location"
+                          placeholder={t("Enter location")}
                           value={currentMember.customLocation || ''}
                           onChange={(e) => {
                             setCurrentMember(prev => ({ ...prev, customLocation: e.target.value, location: e.target.value }))
@@ -1028,7 +1030,7 @@ export function RegisterForm() {
                       )}
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-xs">Gender (Optional)</Label>
+                      <Label className="text-xs">{t("Gender (Optional)")}</Label>
                       <Select
                         value={currentMember.gender}
                         onValueChange={(value) => setCurrentMember(prev => ({ ...prev, gender: value }))}
@@ -1075,7 +1077,7 @@ export function RegisterForm() {
                     }}
                   >
                     <Check className="h-4 w-4 mr-2" />
-                    Add Member
+                    {t("Add Member")}
                   </Button>
                 </div>
               )}
@@ -1088,7 +1090,7 @@ export function RegisterForm() {
                   onClick={() => setShowAddMemberForm(true)}
                 >
                   <UserPlus className="h-4 w-4 mr-2" />
-                  Add Member
+                  {t("Add Member")}
                 </Button>
               )}
           </div>
@@ -1098,7 +1100,7 @@ export function RegisterForm() {
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <Receipt className="h-5 w-5 text-primary" />
-              <h3 className="font-semibold">Ticket Type</h3>
+              <h3 className="font-semibold">{t("Ticket Type")}</h3>
             </div>
             {/* Show the default selected ticket (no dropdown) */}
             {activeEvent?.ticketsPrice?.[0] && (
@@ -1116,25 +1118,25 @@ export function RegisterForm() {
             {eventData.ticketType && pricePerPerson > 0 && (
               <div className="bg-muted/50 rounded-lg p-4 space-y-3">
                 <div className="text-center mb-3">
-                  <h4 className="font-semibold text-lg">Pricing Summary</h4>
-                  <p className="text-xs text-muted-foreground">Total amount for all members</p>
+                  <h4 className="font-semibold text-lg">{t("Pricing Summary")}</h4>
+                  <p className="text-xs text-muted-foreground">{t("Total amount for all members")}</p>
                 </div>
 
                 {/* Primary Member */}
                 <div className="bg-white rounded p-3 space-y-2 border">
-                  <div className="font-semibold text-sm mb-2">Primary Member</div>
+                  <div className="font-semibold text-sm mb-2">{t("Primary Member")}</div>
                   <div className="flex justify-between items-center text-sm">
-                    <span>Ticket Price:</span>
+                    <span>{t("Ticket Price")}:</span>
                     <span className="font-medium">₹{pricePerPerson}</span>
                   </div>
                   {taxCalculation.taxRate > 0 && (
                     <>
                       <div className="flex justify-between items-center text-sm">
-                        <span>Tax Amount ({taxCalculation.taxRate}%):</span>
+                        <span>{t("Tax Amount")} ({taxCalculation.taxRate}%):</span>
                         <span className="font-medium">₹{Math.round((pricePerPerson * taxCalculation.taxRate) / 100)}</span>
                       </div>
                       <div className="flex justify-between items-center text-sm font-semibold">
-                        <span>Total:</span>
+                        <span>{t("Total")}:</span>
                         <span className="font-bold">₹{pricePerPerson + Math.round((pricePerPerson * taxCalculation.taxRate) / 100)}</span>
                       </div>
                     </>
@@ -1174,13 +1176,13 @@ export function RegisterForm() {
                 {/* Final Total */}
                 <div className="bg-green-50 rounded p-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-green-700 font-bold text-lg">Grand Total ({totalMembers} members):</span>
+                    <span className="text-green-700 font-bold text-lg">{t("Grand Total")} ({totalMembers} {t("members added")}):</span>
                     <span className="font-bold text-xl text-green-800">₹{taxCalculation.totalAmount}</span>
                   </div>
                   <p className="text-xs text-green-600 mt-1">
                     {taxCalculation.taxRate > 0 
-                      ? `₹{taxCalculation.baseAmount} + ₹{taxCalculation.taxAmount} (GST)`
-                      : `₹{taxCalculation.baseAmount} (No GST)`
+                      ? `₹${taxCalculation.baseAmount} + ₹${taxCalculation.taxAmount} (GST)`
+                      : `₹${taxCalculation.baseAmount} (${t("No GST")})`
                     }
                   </p>
                 </div>
@@ -1229,13 +1231,13 @@ export function RegisterForm() {
               {gstValidation.isValid === true && (
                 <p className="text-xs text-green-600 flex items-center gap-1">
                   <Check className="h-3 w-3" />
-                  GST verified successfully
+                  {t("GST verified successfully")}
                   {gstValidation.gstName && ` - ${gstValidation.gstName}`}
                 </p>
               )}
 
               <p className="text-xs text-muted-foreground">
-                GST will be applied at {taxCalculation.taxRate}%
+                {t("GST will be applied at")} {taxCalculation.taxRate}%
               </p>
             </div>
           )}
@@ -1246,12 +1248,12 @@ export function RegisterForm() {
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <Receipt className="h-5 w-5 text-primary" />
-              <h3 className="font-semibold">Payment Method</h3>
+              <h3 className="font-semibold">{t("Payment Method")}</h3>
             </div>
             <Alert className="border-green-200 bg-green-50">
               <Info className="h-4 w-4 text-green-600" />
               <AlertDescription className="text-green-700 text-sm">
-                Secure online payment via Razorpay. You&apos;ll be redirected to complete payment.
+                {t("Secure online payment via Razorpay. You'll be redirected to complete payment.")}
               </AlertDescription>
             </Alert>
           </div>
@@ -1307,7 +1309,7 @@ export function RegisterForm() {
 
         </CardContent>
         <CardFooter className="flex justify-between">
-          <Button variant="ghost" onClick={() => setStep(Step.PERSONAL_DETAILS)}>Back</Button>
+          <Button variant="ghost" onClick={() => setStep(Step.PERSONAL_DETAILS)}>{t("Back")}</Button>
           <div className="flex flex-col gap-3">
             {/* Terms & Conditions Checkbox - Only for Online Payment */}
             {eventData.paymentMethod === 'online' && (
@@ -1329,7 +1331,7 @@ export function RegisterForm() {
               onClick={onFinalSubmit}
               disabled={isSubmitting || !eventData.ticketType || !activeEvent || (eventData.paymentMethod === 'online' && !termsAccepted)}
             >
-              {isSubmitting ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : "Complete Registration"}
+              {isSubmitting ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : t("Complete Registration")}
             </Button>
           </div>
         </CardFooter>
@@ -1346,16 +1348,17 @@ export function RegisterForm() {
             <CheckCircle2 className="h-10 w-10 text-green-600" />
           </div>
           <div className="space-y-2">
-            <h2 className="text-2xl font-bold text-foreground">Registration Confirmed!</h2>
-            <p className="text-muted-foreground">Thank you for registering. Your details have been saved.</p>
+            <h2 className="text-2xl font-bold text-foreground">{t("Registration Confirmed!")}</h2>
+            <p className="text-muted-foreground">{t("Thank you for registering. Your details have been saved.")}</p>
           </div>
           <div className="p-4 bg-muted rounded-lg text-left text-sm space-y-2">
-            <div className="flex justify-between"><span>Name:</span><span className="font-medium">{personalData.name}</span></div>
-            <div className="flex justify-between"><span>Mobile:</span><span className="font-medium">{verifiedPhone}</span></div>
-            <div className="flex justify-between"><span>Secondary Members:</span><span className="font-medium">{secondaryMembers.length}</span></div>
-            <div className="flex justify-between"><span>Total Members:</span><span className="font-medium">{totalMembers}</span></div>
-            <div className="flex justify-between"><span>Ticket Type:</span><span className="font-medium">{eventData.ticketType}</span></div>
-            <div className="flex justify-between"><span>Total Amount:</span><span className="font-bold text-primary">₹{taxCalculation.totalAmount}</span></div>
+            <div className="flex justify-between"><span>{t("Full Name")}:</span><span className="font-medium">{personalData.name}</span></div>
+            <div className="flex justify-between"><span>{t("Mobile Number")}:</span><span className="font-medium">{verifiedPhone}</span></div>
+            <div className="flex justify-between"><span>{t("Location")}:</span><span className="font-medium">{t(personalData.location)}</span></div>
+            <div className="flex justify-between"><span>{t("Additional Members")}:</span><span className="font-medium">{secondaryMembers.length}</span></div>
+            <div className="flex justify-between"><span>{t("Total Members")}:</span><span className="font-medium">{totalMembers}</span></div>
+            <div className="flex justify-between"><span>{t("Ticket Type")}:</span><span className="font-medium">{eventData.ticketType}</span></div>
+            <div className="flex justify-between"><span>{t("Total Amount")}:</span><span className="font-bold text-primary">₹{taxCalculation.totalAmount}</span></div>
             {/* FOOD PREFERENCE - Commented out */}
             {/* <div className="flex justify-between"><span>Morning Food:</span><span className="font-medium">{eventData.isMorningFood ? "Yes" : "No"}</span></div> */}
           </div>
@@ -1368,7 +1371,7 @@ export function RegisterForm() {
               onClick={() => window.open(invoiceLink, '_blank')}
             >
               <Receipt className="mr-2 h-4 w-4" />
-              Download Invoice
+              {t("Download Invoice")}
             </Button>
           )}
 
@@ -1376,7 +1379,7 @@ export function RegisterForm() {
             <p className="text-xs text-muted-foreground">Invoice will be generated shortly. If not visible, please contact support.</p>
           )} */}
 
-          <Button className="w-full" onClick={() => window.location.reload()}>Register Another</Button>
+          <Button className="w-full" onClick={() => window.location.reload()}>{t("Register Another")}</Button>
         </CardContent>
       </Card>
     )

@@ -8,6 +8,8 @@ import Link from "next/link"
 import Image from "next/image"
 import { useState, useEffect } from "react"
 import { Users } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 
 
@@ -34,6 +36,7 @@ interface EventStatus {
 
 export default function PongalLandingPage() {
   const router = useRouter()
+  const { t } = useTranslation()
   const [eventStatus, setEventStatus] = useState<EventStatus | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -188,6 +191,7 @@ export default function PongalLandingPage() {
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
+            <LanguageSwitcher />
             {/* <Link href="#about" className="hover:text-primary transition-colors">About</Link>
             <Link href="#events" className="hover:text-primary transition-colors">Events</Link>
             <Link href="#contact" className="hover:text-primary transition-colors">Contact</Link> */}
@@ -311,7 +315,7 @@ export default function PongalLandingPage() {
 
             {/* Title */}
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-wide text-[#f5d78e] mb-2 uppercase drop-shadow-lg">
-              RIFAH ANNUAL SUMMIT
+              {t("RIFAH ANNUAL SUMMIT")}
             </h1>
 
             {/* 2026 with star decorators */}
@@ -339,10 +343,10 @@ export default function PongalLandingPage() {
 
             {/* Subtitle */}
             <p className="text-base sm:text-lg md:text-xl font-bold text-white mb-2  px-2 max-w-xl md:max-w-2xl">
-              Joining hands to build a visionary Tamil Nadu
+              {t("Joining hands to build a visionary Tamil Nadu")}
             </p>
             <p className="text-base sm:text-lg md:text-xl font-bold text-white mb-6  px-2 max-w-xl md:max-w-2xl">
-              and a sustainable India
+              {t("and a sustainable India")}
             </p>
 
             {/* Gold divider */}
@@ -414,10 +418,10 @@ export default function PongalLandingPage() {
                 disabled={loading || !eventStatus?.isActive}
               >
                 {loading
-                  ? "Loading..."
+                  ? t("Loading...")
                   : eventStatus?.isActive
-                    ? "Register Now"
-                    : "Registration Closed"}
+                    ? t("Register Now")
+                    : t("Registration Closed")}
               </Button>
             </div>
 

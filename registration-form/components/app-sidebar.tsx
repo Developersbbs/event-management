@@ -14,6 +14,8 @@ import {
 
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
+import { useTranslation } from "react-i18next"
+import "@/lib/i18n"
 import {
   Sidebar,
   SidebarContent,
@@ -29,14 +31,15 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
 }
 
 export function AppSidebar({ user, ...props }: AppSidebarProps) {
+  const { t } = useTranslation()
   const navMain = [
     {
-      title: "Records",
+      title: t("Records"),
       url: "/admin",
       icon: IconDatabase,
     },
     {
-      title: "Dashboard",
+      title: t("Dashboard"),
       url: "/admin/dashboard",
       icon: IconDashboard,
     },
@@ -47,28 +50,28 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
     //   icon: IconPlus,
     // },
     {
-      title: "Location Stats",
+      title: t("Location Stats"),
       url: "/admin/locations",
       icon: IconChartBar,
     },
     {
-      title: "Events",
+      title: t("Events"),
       url: "/admin/events",
       icon: IconCalendarEvent,
     },
     {
-      title: "Check-in",
+      title: t("Check-in"),
       url: "/admin/checkin",
       icon: IconListDetails,
     },
     ...(user?.role === 'super-admin' ? [
       {
-        title: "Approval History",
+        title: t("Approval History"),
         url: "/admin/approval-history",
         icon: IconHistory,
       },
       {
-        title: "Users",
+        title: t("Users"),
         url: "/admin/users",
         icon: IconUsers,
       }
@@ -93,7 +96,7 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
               <div className="flex items-center gap-2">
                 {/* <Earth className="h-6 w-6 text-primary animate-spin-slow" /> */}
                 <Image src="/assets/logo.png" alt="RIFAH" width={38} height={38} className="h-7 w-7 sm:h-8 sm:w-8" />
-                <span className=" font-bold tracking-tight">RIFAH ANNUAL SUMMIT</span>
+                <span className=" font-bold tracking-tight">{t("RIFAH ANNUAL SUMMIT")}</span>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>

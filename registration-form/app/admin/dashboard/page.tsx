@@ -4,6 +4,8 @@ import * as React from "react"
 import { useMemo } from "react"
 import { Download, CheckCircle2, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useTranslation } from "react-i18next"
+import "@/lib/i18n"
 import { Input } from "@/components/ui/input"
 import {
     Table,
@@ -47,6 +49,7 @@ interface PaginationData {
 }
 
 export default function DashboardPage() {
+    const { t } = useTranslation()
     const [stats, setStats] = React.useState<DashboardStats | null>(null)
     const [records, setRecords] = React.useState<DashboardRecord[]>([])
     const [loading, setLoading] = React.useState(true)
@@ -124,7 +127,7 @@ export default function DashboardPage() {
     return (
         <div className="space-y-6 p-5">
             <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold">Dashboard</h1>
+                <h1 className="text-2xl font-bold">{t("Dashboard")}</h1>
                 <Button
                     onClick={downloadExcel}
                     disabled={downloading}
@@ -135,26 +138,26 @@ export default function DashboardPage() {
                     ) : (
                         <Download className="h-4 w-4" />
                     )}
-                    Export Excel
+                    {t("Export Excel")}
                 </Button>
             </div>
 
             {/* Stats Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="p-4 rounded-lg border bg-card text-card-foreground shadow-sm">
-                    <div className="text-sm text-muted-foreground">Total Registrations</div>
+                    <div className="text-sm text-muted-foreground">{t("Total Registrations")}</div>
                     <div className="text-2xl font-bold">{stats?.totalRegistrations || 0}</div>
                 </div>
                 <div className="p-4 rounded-lg border bg-card text-card-foreground shadow-sm">
-                    <div className="text-sm text-muted-foreground">Primary Members</div>
+                    <div className="text-sm text-muted-foreground">{t("Primary Members")}</div>
                     <div className="text-2xl font-bold">{stats?.primaryMembers || 0}</div>
                 </div>
                 <div className="p-4 rounded-lg border bg-card text-card-foreground shadow-sm">
-                    <div className="text-sm text-muted-foreground">Secondary Members</div>
+                    <div className="text-sm text-muted-foreground">{t("Secondary Members")}</div>
                     <div className="text-2xl font-bold">{stats?.secondaryMembers || 0}</div>
                 </div>
                 <div className="p-4 rounded-lg border bg-card text-card-foreground shadow-sm">
-                    <div className="text-sm text-muted-foreground">Checked-in People</div>
+                    <div className="text-sm text-muted-foreground">{t("Checked-in People")}</div>
                     <div className="text-2xl font-bold">{stats?.totalCheckedIn || 0}</div>
                 </div>
             </div>
@@ -168,9 +171,9 @@ export default function DashboardPage() {
                         setPage(1)
                     }}>
                         <TabsList>
-                            <TabsTrigger value="all">All</TabsTrigger>
-                            <TabsTrigger value="checked-in">Checked-in</TabsTrigger>
-                            <TabsTrigger value="not-checked-in">Not Checked-in</TabsTrigger>
+                            <TabsTrigger value="all">{t("All")}</TabsTrigger>
+                            <TabsTrigger value="checked-in">{t("Checked-in")}</TabsTrigger>
+                            <TabsTrigger value="not-checked-in">{t("Not Checked-in")}</TabsTrigger>
                         </TabsList>
                     </Tabs>
                     <Tabs value={type} onValueChange={(v) => {
@@ -179,15 +182,15 @@ export default function DashboardPage() {
                         setPage(1)
                     }}>
                         <TabsList>
-                            <TabsTrigger value="all">All Types</TabsTrigger>
-                            <TabsTrigger value="primary">Primary</TabsTrigger>
-                            <TabsTrigger value="secondary">Secondary</TabsTrigger>
+                            <TabsTrigger value="all">{t("All Types")}</TabsTrigger>
+                            <TabsTrigger value="primary">{t("Primary")}</TabsTrigger>
+                            <TabsTrigger value="secondary">{t("Secondary")}</TabsTrigger>
                         </TabsList>
                     </Tabs>
                 </div>
                 <div className="px-4 pb-4">
                     <Input
-                        placeholder="Search by name or phone..."
+                        placeholder={t("Search by name or phone...")}
                         value={search}
                         onChange={(e) => {
                             setSearch(e.target.value)
@@ -199,14 +202,14 @@ export default function DashboardPage() {
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Name</TableHead>
-                            <TableHead>Type</TableHead>
-                            <TableHead>Phone</TableHead>
-                            <TableHead>Email</TableHead>
-                            <TableHead>Primary Member</TableHead>
-                            <TableHead>Location</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Checked-in</TableHead>
+                            <TableHead>{t("Name")}</TableHead>
+                            <TableHead>{t("Type")}</TableHead>
+                            <TableHead>{t("Phone")}</TableHead>
+                            <TableHead>{t("Email")}</TableHead>
+                            <TableHead>{t("Primary Member")}</TableHead>
+                            <TableHead>{t("Location")}</TableHead>
+                            <TableHead>{t("Status")}</TableHead>
+                            <TableHead>{t("Checked-in")}</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -219,7 +222,7 @@ export default function DashboardPage() {
                         ) : records.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                                    No records found
+                                    {t("No records found")}
                                 </TableCell>
                             </TableRow>
                         ) : (
@@ -232,7 +235,7 @@ export default function DashboardPage() {
                                     </TableCell>
                                     <TableCell>
                                         <Badge variant={record.checkedIn ? "default" : "outline"} className={record.checkedIn ? "bg-green-600" : "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300"}>
-                                            {record.type}
+                                            {t(record.type)}
                                         </Badge>
                                     </TableCell>
                                     <TableCell>
@@ -248,7 +251,7 @@ export default function DashboardPage() {
                                                 <div className="text-muted-foreground">({record.primaryPhone})</div>
                                             </div>
                                         ) : (
-                                            <span className="text-muted-foreground text-xs">Self</span>
+                                            <span className="text-muted-foreground text-xs">{t("Self")}</span>
                                         )}
                                     </TableCell>
                                     <TableCell>{record.location || "-"}</TableCell>
@@ -262,7 +265,7 @@ export default function DashboardPage() {
                                             record.approvalStatus === "rejected" ? "bg-red-600" :
                                             "bg-yellow-600"
                                         }>
-                                            {record.approvalStatus || "pending"}
+                                            {t(record.approvalStatus || "pending")}
                                         </Badge>
                                     </TableCell>
                                     <TableCell>
@@ -280,7 +283,7 @@ export default function DashboardPage() {
                 {pagination && pagination.totalPages > 1 && (
                     <div className="flex items-center justify-between p-4 border-t">
                         <div className="text-sm text-muted-foreground">
-                            Showing {((page - 1) * pagination.limit) + 1} to {Math.min(page * pagination.limit, pagination.total)} of {pagination.total} records
+                            {t("Showing")} {((page - 1) * pagination.limit) + 1} {t("to")} {Math.min(page * pagination.limit, pagination.total)} {t("of")} {pagination.total} {t("records")}
                         </div>
                         <div className="flex items-center gap-2">
                             <Button
@@ -289,10 +292,10 @@ export default function DashboardPage() {
                                 onClick={() => setPage(p => Math.max(1, p - 1))}
                                 disabled={page === 1}
                             >
-                                Previous
+                                {t("Previous")}
                             </Button>
                             <span className="text-sm">
-                                Page {page} of {pagination.totalPages}
+                                {t("Page")} {page} {t("of")} {pagination.totalPages}
                             </span>
                             <Button
                                 variant="outline"
@@ -300,7 +303,7 @@ export default function DashboardPage() {
                                 onClick={() => setPage(p => Math.min(pagination.totalPages, p + 1))}
                                 disabled={page === pagination.totalPages}
                             >
-                                Next
+                                {t("Next")}
                             </Button>
                         </div>
                     </div>

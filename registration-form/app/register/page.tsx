@@ -8,6 +8,8 @@ import Link from "next/link"
 import Image from "next/image"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { useTranslation } from "react-i18next"
+import { LanguageSwitcher } from "@/components/LanguageSwitcher"
 
 interface EventStatus {
   isActive: boolean
@@ -31,6 +33,7 @@ interface EventStatus {
 
 export default function RegisterPage() {
   const router = useRouter()
+  const { t } = useTranslation()
   const [eventStatus, setEventStatus] = useState<EventStatus | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -146,7 +149,7 @@ export default function RegisterPage() {
                   <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
                     <AlertCircle className="h-6 w-6 text-muted-foreground" />
                   </div>
-                  <CardTitle className="text-2xl">Registration Closed</CardTitle>
+                  <CardTitle className="text-2xl">{t("Registration Closed")}</CardTitle>
                   <CardDescription>
                     {eventStatus?.message}
                   </CardDescription>
@@ -191,8 +194,11 @@ export default function RegisterPage() {
             <div className="foreground flex items-center justify-center rounded-md">
              <Image src="/assets/logo.png" alt="RIFAH" width={40} height={40} className="w-10 h-10" />
             </div>
-            RIFAH ANNUAL SUMMIT
+            {t("RIFAH ANNUAL SUMMIT")}
           </Link>
+          <div className="ml-auto">
+            <LanguageSwitcher />
+          </div>
         </div>
         <div className="flex flex-1 items-center justify-center">
           <div className="w-full max-w-xl">
