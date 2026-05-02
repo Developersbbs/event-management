@@ -1,6 +1,5 @@
 import nodemailer from "nodemailer"
 import SystemConfig from "@/models/SystemConfig"
-import User from "@/models/User"
 import dbConnect from "@/lib/db"
 import { IParticipant } from "@/lib/types"
 

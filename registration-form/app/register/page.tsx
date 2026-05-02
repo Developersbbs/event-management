@@ -98,7 +98,7 @@ export default function RegisterPage() {
     }
 
     fetchEventStatus()
-  }, [])
+  }, [t])
 
   if (loading) {
     return (
