@@ -16,6 +16,7 @@ export async function updateParticipant(id: string, data: Partial<IParticipant>)
             businessCategory,
             location,
             secondaryMembers,
+            registrationLanguage,
         } = data
 
         // Check if participant exists
@@ -34,6 +35,7 @@ export async function updateParticipant(id: string, data: Partial<IParticipant>)
         if (businessName !== undefined) existingParticipant.businessName = businessName
         if (businessCategory !== undefined) existingParticipant.businessCategory = businessCategory
         if (location !== undefined) existingParticipant.location = location
+        if (registrationLanguage !== undefined) existingParticipant.registrationLanguage = registrationLanguage
 
         // Allow editing secondary members' name, email, business name, business category, location only
         // Cannot add/remove secondary members, only edit existing ones

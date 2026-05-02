@@ -77,6 +77,7 @@ export interface IParticipant {
     gender?: string;
     rejectionReason?: string;
     approvalLogs?: IApprovalLog[];
+    registrationLanguage?: "en" | "ta";
 }
 
 export interface IEvent {

@@ -306,7 +306,6 @@ const resources = {
       "Next": "அடுத்தது",
       "Page": "பக்கம்",
       "Self": "சுய",
-      "Secondary": "கூடுதல்",
       "approved": "அங்கீகரிக்கப்பட்டது",
       "rejected": "நிராகரிக்கப்பட்டது",
       "pending": "நிலுவையில் உள்ளது",
@@ -317,7 +316,6 @@ const resources = {
       "Cash Payments": "ரொக்கப் பணம்",
       "Online Payments": "ஆன்லைன் பேமெண்ட்",
       "Total Members": "மொத்த உறுப்பினர்கள்",
-      "Total Amount": "மொத்தத் தொகை",
       "Payment Methods": "பணம் செலுத்தும் முறைகள்",
       "Cash": "ரொக்கம்",
       "Online": "ஆன்லைன்",
@@ -344,7 +342,6 @@ const resources = {
       "Startups and traditional businesses eager to upgrade with modern techniques rooted in Islamic business principles.": "இஸ்லாமிய வணிகக் கோட்பாடுகளில் வேரூன்றிய நவீன நுட்பங்களுடன் தங்களை மேம்படுத்திக்கொள்ள விரும்பும் ஸ்டார்ட்அப்கள் மற்றும் பாரம்பரிய வணிகங்கள்.",
       "Sponsorship Options at RAS 2026": "RAS 2026-ல் ஸ்பான்சர்ஷிப் வாய்ப்புகள்",
       "This summit offers a unique opportunity for brands to directly connect with a highly relevant audience of entrepreneurs and decision-makers.": "இந்த மாநாடு பிராண்டுகள் தொழில்முனைவோர் மற்றும் முடிவெடுப்பவர்களுடன் நேரடியாக இணைவதற்கான ஒரு தனித்துவமான வாய்ப்பை வழங்குகிறது.",
-      "Category": "வகை",
       "Title": "முதன்மை",
       "Platinum": "பிளாட்டினம்",
       "Gold": "தங்கம்",
@@ -439,17 +436,13 @@ const resources = {
       "Uttarakhand": "உத்தரகண்ட்",
       "Assam": "அஸ்ஸாம்",
       "Kerala": "கேரளா",
-      "Chennai": "சென்னை",
       "Trichy": "திருச்சி",
       "kumbakonam": "கும்பகோணம்",
-      "Theni": "தேனி",
       "krishnagiri": "கிருஷ்ணகிரி",
       "vaniyambadi": "வாணியம்பாடி",
       "Tirupattur": "திருப்பத்தூர்",
-      "Pudukkottai": "புதுக்கோட்டை",
       "Tirumangalam": "திருமங்கலம்",
       "Mannargudi": "மன்னார்குடி",
-      "Tenkasi": "தென்காசி"
     }
   }
 };

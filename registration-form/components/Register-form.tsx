@@ -63,7 +63,7 @@ const personalDetailsSchema = z.object({
 })
 
 export function RegisterForm() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [step, setStep] = useState<Step>(Step.PHONE_INPUT)
   const { sendOtp, verifyOtp, loading: authLoading, error: authError } = usePhoneAuth()
   const [isCheckingDb, setIsCheckingDb] = useState(false)
@@ -302,6 +302,7 @@ export function RegisterForm() {
       const perPersonTotal = pricePerPerson + perPersonTax
       const secondaryMembersWithTax = filteredSecondaryMembers.map(member => ({
         ...member,
+        location: i18n.language === 'ta' ? t(member.location || "") : member.location,
         baseAmount: pricePerPerson,
         taxAmount: perPersonTax,
         totalAmount: perPersonTotal
@@ -313,8 +314,9 @@ export function RegisterForm() {
         email: personalData.email,
         businessName: personalData.businessName,
         businessCategory: personalData.businessCategory,
-        location: personalData.location,
+        location: i18n.language === 'ta' ? t(personalData.location) : personalData.location,
         gender: personalData.gender,
+        registrationLanguage: i18n.language as "en" | "ta",
         guestCount: filteredSecondaryMembers.length,
         memberCount: 1 + filteredSecondaryMembers.length,
         ticketType: eventData.ticketType,
@@ -494,12 +496,16 @@ export function RegisterForm() {
         email: personalData.email,
         businessName: personalData.businessName,
         businessCategory: personalData.businessCategory,
-        location: personalData.location,
+        location: i18n.language === 'ta' ? t(personalData.location) : personalData.location,
         guestCount: 0,
+        registrationLanguage: i18n.language as "en" | "ta",
         ticketType: eventData.ticketType,
         paymentMethod: eventData.paymentMethod,
         ageGuest: 0,
-        secondaryMembers: filteredSecondaryMembers,
+        secondaryMembers: filteredSecondaryMembers.map(m => ({
+          ...m,
+          location: i18n.language === 'ta' ? t(m.location || "") : m.location
+        })),
         gstNumber: gstNumber.trim() || undefined,
         termsAccepted: termsAccepted,
         termsAcceptedAt: new Date(),

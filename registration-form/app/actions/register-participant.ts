@@ -37,6 +37,7 @@ interface RegisterParticipantData {
     isMember?: boolean
     secondaryMembers?: SecondaryMemberInput[]
     gstNumber?: string
+    registrationLanguage?: "en" | "ta"
 }
 
 export async function registerParticipant(data: RegisterParticipantData) {
@@ -56,7 +57,8 @@ export async function registerParticipant(data: RegisterParticipantData) {
             ticketType,
             isMember = false,
             secondaryMembers = [],
-            gstNumber
+            gstNumber,
+            registrationLanguage = "en"
         } = data
 
         const totalPeople = 1 + secondaryMembers.length
@@ -326,7 +328,8 @@ export async function registerParticipant(data: RegisterParticipantData) {
             gstNumber: gstNumber ? sanitizeInput(gstNumber) : undefined,
             isMember,
             secondaryMembers: formattedSecondaryMembersWithTax,
-            approvalLogs: approvalLogs
+            approvalLogs: approvalLogs,
+            registrationLanguage
         })
 
         // Update event counts atomically

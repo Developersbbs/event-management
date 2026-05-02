@@ -259,7 +259,12 @@ const ParticipantSchema = new mongoose.Schema({
                 default: Date.now
             }
         }
-    ]
+    ],
+    registrationLanguage: {
+        type: String,
+        enum: ["en", "ta"],
+        default: "en",
+    },
 
 }, { timestamps: true })
 
