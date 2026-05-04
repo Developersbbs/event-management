@@ -14,6 +14,13 @@ import { useDebounce } from "@/hooks/use-debounce"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+
+declare global {
+    interface Window {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        Razorpay: any;
+    }
+}
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator } from "@/components/ui/input-otp"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -72,7 +79,7 @@ interface QuickCreateFormProps {
 }
 
 export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
-    const { t } = useTranslation()
+    const { t, i18n } = useTranslation()
     const [step, setStep] = useState<Step>(Step.PHONE_INPUT)
     const { sendOtp, verifyOtp, loading: authLoading, error: authError } = usePhoneAuth()
     const [isCheckingDb, setIsCheckingDb] = useState(false)
@@ -108,7 +115,7 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
     })
     const [eventData, setEventData] = useState({
         ticketType: "",
-        paymentMethod: "cash",
+        paymentMethod: "online",
     })
     const [gstNumber, setGstNumber] = useState("")
     const [gstValidation, setGstValidation] = useState<{ isValid: boolean | null, isLoading: boolean, gstName: string | null, error: string | null }>({
@@ -119,13 +126,14 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
     })
     const [termsAccepted, setTermsAccepted] = useState(false)
     const debouncedGstNumber = useDebounce(gstNumber, 800)
-    const [secondaryMembers, setSecondaryMembers] = useState<{ name: string; mobileNumber: string; email: string; businessName: string; businessCategory: string; location: string; isMember?: boolean; showCustomLocation?: boolean; customLocation?: string }[]>([])
-    const [currentMember, setCurrentMember] = useState<{ name: string; mobileNumber: string; email: string; businessName: string; businessCategory: string; location: string; isMember?: boolean; showCustomLocation?: boolean; customLocation?: string }>({ name: '', mobileNumber: '', email: '', businessName: '', businessCategory: '', location: '', isMember: false, showCustomLocation: false, customLocation: '' })
+    const [secondaryMembers, setSecondaryMembers] = useState<{ name: string; mobileNumber: string; email: string; businessName: string; businessCategory: string; location: string; gender?: string; isMember?: boolean; showCustomLocation?: boolean; customLocation?: string }[]>([])
+    const [currentMember, setCurrentMember] = useState<{ name: string; mobileNumber: string; email: string; businessName: string; businessCategory: string; location: string; gender?: string; isMember?: boolean; showCustomLocation?: boolean; customLocation?: string }>({ name: '', mobileNumber: '', email: '', businessName: '', businessCategory: '', location: '', gender: '', isMember: false, showCustomLocation: false, customLocation: '' })
     const [showAddMemberForm, setShowAddMemberForm] = useState(false)
     const [primaryLocationOpen, setPrimaryLocationOpen] = useState(false)
     const [primaryCustomLocation, setPrimaryCustomLocation] = useState("")
     const [showPrimaryCustomInput, setShowPrimaryCustomInput] = useState(false)
     const [secondaryLocationOpen, setSecondaryLocationOpen] = useState(false)
+    const [invoiceLink, setInvoiceLink] = useState<string | null>(null)
 
     // Forms
     const phoneForm = useForm<z.infer<typeof phoneSchema>>({ resolver: zodResolver(phoneSchema), defaultValues: { phoneNumber: "+91" } })
@@ -253,6 +261,13 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
                 const result = await getActiveEvent()
                 if (result.success && result.event) {
                     setActiveEvent(result.event)
+                    // Set default ticket type if available
+                    if (result.event.ticketsPrice && result.event.ticketsPrice.length > 0) {
+                        setEventData(prev => ({
+                            ...prev,
+                            ticketType: result.event.ticketsPrice[0].name
+                        }))
+                    }
                 }
             } catch (error) {
                 console.error("Failed to fetch active event:", error)
@@ -321,9 +336,155 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
         setStep(Step.EVENT_DETAILS)
     }
 
+    const handleOnlinePayment = async () => {
+        try {
+            // Per-member tax breakdown
+            const perPersonTax = Math.round((pricePerPerson * taxCalculation.taxRate) / 100)
+            const perPersonTotal = pricePerPerson + perPersonTax
+            const filteredSecondaryMembers = secondaryMembers.filter(m => m.name.trim() !== '')
+            
+            const secondaryMembersWithTax = filteredSecondaryMembers.map(member => ({
+                ...member,
+                baseAmount: pricePerPerson,
+                taxAmount: perPersonTax,
+                totalAmount: perPersonTotal
+            }))
+
+            const paymentRegistrationData = {
+                mobileNumber: verifiedPhone,
+                name: personalData.name,
+                email: personalData.email,
+                businessName: personalData.businessName,
+                businessCategory: personalData.businessCategory,
+                location: personalData.location,
+                gender: personalData.gender,
+                registrationLanguage: i18n.language as "en" | "ta",
+                guestCount: filteredSecondaryMembers.length,
+                memberCount: 1 + filteredSecondaryMembers.length,
+                ticketType: eventData.ticketType,
+                paymentMethod: 'online',
+                paymentStatus: 'completed',
+                ticketPrice: pricePerPerson,
+                totalAmount: taxCalculation.totalAmount,
+                taxRate: taxCalculation.taxRate,
+                taxAmount: taxCalculation.taxAmount,
+                baseAmount: taxCalculation.baseAmount,
+                secondaryMembers: secondaryMembersWithTax,
+                gstNumber: gstNumber.trim() || undefined,
+                termsAccepted: termsAccepted,
+                termsAcceptedAt: new Date(),
+                eventId: activeEvent?._id,
+                eventDate: activeEvent?.eventDate,
+                isRegistered: true,
+                approvalStatus: 'approved',
+                createdBy: createdBy ? {
+                    _id: createdBy._id,
+                    role: createdBy.role,
+                    email: createdBy.email,
+                    name: createdBy.name
+                } : undefined
+            }
+
+            // Create Razorpay order
+            const res = await fetch("/api/payment/create-order", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    amount: taxCalculation.totalAmount,
+                    participantId: null,
+                }),
+            })
+
+            const order = await res.json()
+
+            if (!order.id) {
+                throw new Error(order.error || "Failed to create payment order")
+            }
+
+            // Check if Razorpay is loaded
+            if (!window.Razorpay) {
+                throw new Error("Payment gateway not loaded. Please refresh the page.")
+            }
+
+            const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY
+            if (!razorpayKey) {
+                throw new Error("Payment configuration error. Please contact support.")
+            }
+
+            const options = {
+                key: razorpayKey,
+                amount: order.amount,
+                currency: "INR",
+                name: "RIFAH ANNUAL SUMMIT",
+                description: "Event Ticket",
+                order_id: order.id,
+
+                handler: async function (response: { razorpay_payment_id: string; razorpay_order_id: string; razorpay_signature: string }) {
+                    try {
+                        const verifyRes = await fetch("/api/payment/verify", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                ...response,
+                                registrationData: paymentRegistrationData,
+                            }),
+                        })
+
+                        const verifyData = await verifyRes.json()
+
+                        if (verifyData.success) {
+                            if (verifyData.invoiceUrl) {
+                                setInvoiceLink(verifyData.invoiceUrl)
+                            }
+                            setStep(Step.SUCCESS)
+                        } else {
+                            setDbError(`Payment verification failed: ${verifyData.error || "Unknown error"}`)
+                            setIsSubmitting(false)
+                        }
+                    } catch (err) {
+                        console.error("Error calling verify endpoint:", err)
+                        setDbError("Payment successful but registration failed. Please contact support.")
+                        setIsSubmitting(false)
+                    }
+                },
+
+                modal: {
+                    ondismiss: function () {
+                        setDbError("Payment was cancelled.")
+                        setIsSubmitting(false)
+                    }
+                },
+
+                prefill: {
+                    name: personalData.name,
+                    email: personalData.email,
+                    contact: verifiedPhone.replace("+91", ""),
+                },
+
+                theme: {
+                    color: "#C45A2D",
+                },
+            }
+
+            const rzp = new window.Razorpay(options)
+            rzp.open()
+        } catch (error) {
+            console.error("Payment error:", error)
+            setDbError(error instanceof Error ? error.message : "Payment failed.")
+            setIsSubmitting(false)
+        }
+    }
+
     const onFinalSubmit = async () => {
         setIsSubmitting(true)
         setDbError(null)
+
+        // For online payment, trigger payment first
+        if (eventData.paymentMethod === 'online') {
+            await handleOnlinePayment()
+            return
+        }
+
         try {
             const filteredSecondaryMembers = secondaryMembers.filter(m => m.name.trim() !== '')
 
@@ -741,7 +902,7 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
                                         className="h-8 w-8 p-0"
                                         onClick={() => {
                                             setShowAddMemberForm(false)
-                                            setCurrentMember({ name: '', mobileNumber: '', email: '', businessName: '', businessCategory: '', location: '', isMember: false, showCustomLocation: false, customLocation: '' })
+                                            setCurrentMember({ name: '', mobileNumber: '', email: '', businessName: '', businessCategory: '', location: '', gender: '', isMember: false, showCustomLocation: false, customLocation: '' })
                                         }}
                                     >
                                         <X className="h-4 w-4" />
@@ -856,6 +1017,22 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
                                             />
                                         )}
                                     </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-xs">{t("Gender")}</Label>
+                                        <Select
+                                            value={currentMember.gender || ''}
+                                            onValueChange={(value) => setCurrentMember(prev => ({ ...prev, gender: value }))}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder={t("Select gender")} />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="male">{t("Male")}</SelectItem>
+                                                <SelectItem value="female">{t("Female")}</SelectItem>
+                                                <SelectItem value="other">{t("Other")}</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
                                 </div>
                                 <div className="flex gap-2">
                                     <Button
@@ -864,7 +1041,7 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
                                         size="sm"
                                         onClick={() => {
                                             setShowAddMemberForm(false)
-                                            setCurrentMember({ name: '', mobileNumber: '', email: '', businessName: '', businessCategory: '', location: '', isMember: false, showCustomLocation: false, customLocation: '' })
+                                            setCurrentMember({ name: '', mobileNumber: '', email: '', businessName: '', businessCategory: '', location: '', gender: '', isMember: false, showCustomLocation: false, customLocation: '' })
                                         }}
                                     >
                                         {t("Cancel")}
@@ -883,7 +1060,7 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
                                             }
                                               
                                             setSecondaryMembers(prev => [...prev, { ...currentMember }])
-                                            setCurrentMember({ name: '', mobileNumber: '', email: '', businessName: '', businessCategory: '', location: '', isMember: false, showCustomLocation: false, customLocation: '' })
+                                            setCurrentMember({ name: '', mobileNumber: '', email: '', businessName: '', businessCategory: '', location: '', gender: '', isMember: false, showCustomLocation: false, customLocation: '' })
                                             setShowAddMemberForm(false)
                                             setDbError(null)
                                         }}
@@ -930,29 +1107,18 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
                         </Select>
                     </div>
 
-                    {/* Payment Method */}
+                    {/* Payment Method - Online Only */}
                     <div className="space-y-3">
                         <div className="flex items-center gap-2">
                             <Receipt className="h-5 w-5 text-primary" />
                             <h3 className="font-semibold">{t("Payment Method")}</h3>
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4">
                             <Button
                                 type="button"
-                                variant={eventData.paymentMethod === 'cash' ? 'default' : 'outline'}
+                                variant="default"
                                 className="w-full h-14"
-                                onClick={() => setEventData(prev => ({ ...prev, paymentMethod: 'cash' }))}
-                            >
-                                <div className="flex flex-col items-center">
-                                    <span className="font-semibold">{t("Cash")}</span>
-                                    <span className="text-xs opacity-70">{t("Pay at venue")}</span>
-                                </div>
-                            </Button>
-                            <Button
-                                type="button"
-                                variant={eventData.paymentMethod === 'online' ? 'default' : 'outline'}
-                                className="w-full h-14"
-                                onClick={() => setEventData(prev => ({ ...prev, paymentMethod: 'online' }))}
+                                disabled
                             >
                                 <div className="flex flex-col items-center">
                                     <span className="font-semibold">{t("Online")}</span>
@@ -1138,14 +1304,30 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
                         <div className="flex justify-between"><span>{t("Ticket Type")}:</span><span className="font-medium">{eventData.ticketType}</span></div>
                         <div className="flex justify-between"><span>{t("Total Amount")}:</span><span className="font-bold text-primary">₹{taxCalculation.totalAmount}</span></div>
                     </div>
+                    {invoiceLink && (
+                        <Button
+                            variant="outline"
+                            className="w-full"
+                            onClick={() => window.open(invoiceLink, '_blank')}
+                        >
+                            <Receipt className="mr-2 h-4 w-4" />
+                            {t("Download Invoice")}
+                        </Button>
+                    )}
                     <Button className="w-full" onClick={() => {
                         setStep(Step.PHONE_INPUT)
                         phoneForm.reset()
                         personalForm.reset()
                         setPersonalData({ name: "", email: "", gender: "", businessName: "", businessCategory: "", location: "" })
-                        setEventData({ ticketType: "", paymentMethod: "cash" })
+                        setEventData({ 
+                            ticketType: activeEvent?.ticketsPrice?.[0]?.name || "", 
+                            paymentMethod: "online" 
+                        })
                         setSecondaryMembers([])
                         setVerifiedPhone("")
+                        setGstNumber("")
+                        setDbError(null)
+                        setInvoiceLink(null)
                     }}>{t("Add Another")}</Button>
                 </CardContent>
             </Card>
