@@ -942,16 +942,14 @@ export default function PongalLandingPage() {
                 <span className="inline-block text-lg font-bold uppercase tracking-widest text-red-700 border border-red-300/30 bg-red-50/50 px-8 py-2 rounded-full mb-3">
                   {t("Our Sponsors")}
                 </span>
-                {/* <h3 className="text-2xl font-bold mt-2">Brands That Trust RIFAH</h3> */}
               </div>
 
-              {/* Slider wrapper */}
-              <div className="relative overflow-hidden rounded-2xl border border-border/40 bg-white py-8 px-2">
+              <div className="relative overflow-hidden rounded-2xl border border-border/40 bg-white py-8 px-2 space-y-6">
                 {/* Fade edges */}
                 <div className="pointer-events-none absolute inset-y-0 left-0 w-20 sm:w-32 z-10 bg-gradient-to-r from-white to-transparent" />
                 <div className="pointer-events-none absolute inset-y-0 right-0 w-20 sm:w-32 z-10 bg-gradient-to-l from-white to-transparent" />
 
-                {/* Scrolling track */}
+                {/* ROW 1 — Right to Left (first 10 logos) */}
                 <div className="flex animate-sponsor-scroll w-max">
                   {[...Array(2)].map((_, dupIdx) => (
                     <div key={dupIdx} className="flex items-center">
@@ -966,33 +964,51 @@ export default function PongalLandingPage() {
                         "/assets/slider8.jpeg",
                         "/assets/slider9.jpeg",
                         "/assets/slider10.jpeg",
-                        "/assets/slider20.jpeg",
-                        "/assets/slider18.jpeg",
-                        "/assets/slider13.jpeg",
-                        "/assets/slider14.jpg",
-                        "/assets/slider19.jpeg",
-                        "/assets/slider-22.png",
-                        "/assets/slider23.png",
-                        "/assets/slider24.jpeg",
-                        "/assets/slider25.jpeg",
                       ].map((src, i) => (
                         <div
-                          key={`${dupIdx}-${i}`}
+                          key={`row1-${dupIdx}-${i}`}
                           className="relative flex-shrink-0 h-20 sm:h-24 md:h-28 w-36 sm:w-44 md:w-52 mx-4 sm:mx-6"
                         >
-                          <Image
-                            src={src}
-                            alt={`Sponsor ${i + 1}`}
-                            fill
-                            className="object-contain"
-                          />
+                          <Image src={src} alt={`Sponsor ${i + 1}`} fill className="object-contain" />
                         </div>
                       ))}
                     </div>
                   ))}
                 </div>
-              </div>
 
+
+                {/* ROW 2 — Left to Right */}
+                <div className="overflow-hidden w-full mt-8">
+                  <div
+                    className="flex w-max"
+                    style={{ animation: 'sponsor-scroll-reverse 18s linear infinite' }}
+                  >
+                    {[...Array(2)].map((_, dupIdx) => (
+                      <div key={dupIdx} className="flex items-center">
+                        {[
+                          "/assets/slider20.jpeg",
+                          "/assets/slider18.jpeg",
+                          "/assets/slider13.jpeg",
+                          "/assets/slider14.jpg",
+                          "/assets/slider19.jpeg",
+                          "/assets/slider-22.png",
+                          "/assets/slider23.png",
+                          "/assets/slider24.jpeg",
+                          "/assets/slider25.jpeg",
+                          "/assets/slider26.png",
+                        ].map((src, i) => (
+                          <div
+                            key={`row2-${dupIdx}-${i}`}
+                            className="relative flex-shrink-0 h-20 sm:h-24 md:h-28 w-36 sm:w-44 md:w-52 mx-4 sm:mx-6"
+                          >
+                            <Image src={src} alt={`Sponsor ${i + 1}`} fill className="object-contain" />
+                          </div>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Key Benefits */}
