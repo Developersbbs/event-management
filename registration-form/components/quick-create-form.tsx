@@ -1,6 +1,8 @@
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
+import { useTranslation } from "react-i18next"
+import "@/lib/i18n"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -43,6 +45,7 @@ const otpSchema = z.object({
 const personalDetailsSchema = z.object({
     name: z.string().min(2, "Name must be at least 2 characters"),
     email: z.string().email("Please enter a valid email"),
+    gender: z.string().min(1, "Please select a gender"),
     businessName: z.string().min(2, "Business name is required"),
     businessCategory: z.string().min(1, "Please enter a business category"),
     location: z.string().min(1, "Please select a location"),
@@ -69,6 +72,7 @@ interface QuickCreateFormProps {
 }
 
 export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
+    const { t } = useTranslation()
     const [step, setStep] = useState<Step>(Step.PHONE_INPUT)
     const { sendOtp, verifyOtp, loading: authLoading, error: authError } = usePhoneAuth()
     const [isCheckingDb, setIsCheckingDb] = useState(false)
@@ -97,6 +101,7 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
     const [personalData, setPersonalData] = useState({ 
         name: "",
         email: "",
+        gender: "",
         businessName: "", 
         businessCategory: "",
         location: ""
@@ -130,6 +135,7 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
         defaultValues: { 
             name: "",
             email: "",
+            gender: "",
             businessName: "", 
             businessCategory: "",
             location: ""
@@ -325,6 +331,7 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
                 mobileNumber: verifiedPhone,
                 name: personalData.name,
                 email: personalData.email,
+                gender: personalData.gender,
                 businessName: personalData.businessName,
                 businessCategory: personalData.businessCategory,
                 location: personalData.location,
@@ -384,9 +391,9 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
                     <div className="p-3 bg-primary/10 rounded-full text-primary">
                         <Phone className="h-6 w-6" />
                     </div>
-                    <h1 className="text-2xl font-bold">Quick Create</h1>
+                    <h1 className="text-2xl font-bold">{t("Quick Create")}</h1>
                     <p className="text-sm text-muted-foreground">
-                        Verify your mobile number to begin.
+                        {t("Verify your mobile number to begin.")}
                     </p>
                 </div>
 
@@ -394,7 +401,7 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
                     <form onSubmit={phoneForm.handleSubmit(onPhoneSubmit)} className="space-y-4">
                         <FormField control={phoneForm.control} name="phoneNumber" render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Mobile Number</FormLabel>
+                                <FormLabel>{t("Mobile Number")}</FormLabel>
                                 <FormControl>
                                     <div className="relative">
                                         <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -405,7 +412,7 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
                             </FormItem>
                         )} />
                         {authError && <Alert variant="destructive"><AlertCircle className="h-4 w-4" /><AlertTitle>Error</AlertTitle><AlertDescription>{authError}</AlertDescription></Alert>}
-                        <Button type="submit" className="w-full" disabled={authLoading}>{authLoading ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : "Send OTP"}</Button>
+                        <Button type="submit" className="w-full" disabled={authLoading}>{authLoading ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : t("Send OTP")}</Button>
                     </form>
                 </Form>
             </div>
@@ -420,9 +427,9 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
                     <div className="p-3 bg-primary/10 rounded-full text-primary">
                         <Phone className="h-6 w-6" />
                     </div>
-                    <h1 className="text-2xl font-bold">Quick Create</h1>
+                    <h1 className="text-2xl font-bold">{t("Quick Create")}</h1>
                     <p className="text-sm text-muted-foreground">
-                        Enter the 6-digit code sent to you.
+                        {t("Enter the 6-digit code sent to you.")}
                     </p>
                 </div>
 
@@ -453,8 +460,8 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
                         )} />
                         {authError && <Alert variant="destructive"><AlertTitle>Error</AlertTitle><AlertDescription>{authError}</AlertDescription></Alert>}
                         {dbError && <Alert variant="destructive"><AlertCircle className="h-4 w-4" /><AlertTitle>Error</AlertTitle><AlertDescription>{dbError}</AlertDescription></Alert>}
-                        <Button type="submit" className="w-full" disabled={authLoading || isCheckingDb}>{authLoading || isCheckingDb ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : "Verify"}</Button>
-                        <Button variant="ghost" type="button" className="w-full" onClick={() => setStep(Step.PHONE_INPUT)}>Change Phone</Button>
+                        <Button type="submit" className="w-full" disabled={authLoading || isCheckingDb}>{authLoading || isCheckingDb ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : t("Verify")}</Button>
+                        <Button variant="ghost" type="button" className="w-full" onClick={() => setStep(Step.PHONE_INPUT)}>{t("Change Phone")}</Button>
                     </form>
                 </Form>
             </div>
@@ -467,9 +474,9 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
             <div className="flex flex-col gap-6 w-full max-w-sm mx-auto">
                 <Alert>
                     <Info className="h-4 w-4" />
-                    <AlertTitle>Already Registered</AlertTitle>
+                    <AlertTitle>{t("Already Registered")}</AlertTitle>
                     <AlertDescription>
-                        This number is already registered.
+                        {t("This number is already registered.")}
                     </AlertDescription>
                 </Alert>
                 <div className="flex flex-col gap-2">
@@ -497,7 +504,7 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
                     }}>
                         Edit
                     </Button> */}
-                    <Button variant="outline" onClick={() => setStep(Step.PHONE_INPUT)}>Use Different Number</Button>
+                    <Button variant="outline" onClick={() => setStep(Step.PHONE_INPUT)}>{t("Use Different Number")}</Button>
                 </div>
             </div>
         )
@@ -509,33 +516,35 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
             <Card className="w-full max-w-lg mx-auto animate-in fade-in zoom-in-95 duration-300">
                 <CardHeader>
                     {renderStepsIndicator()}
-                    <CardTitle>Personal Details</CardTitle>
-                    <CardDescription>Member details.</CardDescription>
+                    <CardTitle>{t("Personal Details")}</CardTitle>
+                    <CardDescription>{t("Member details.")}</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <Form {...personalForm}>
                         <form onSubmit={personalForm.handleSubmit(onPersonalSubmit)} className="space-y-4">
                             <FormField control={personalForm.control} name="name" render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Full Name</FormLabel>
-                                    <FormControl><Input placeholder="Enter member name" {...field} /></FormControl>
+                                    <FormLabel>{t("Full Name")}</FormLabel>
+                                    <FormControl><Input placeholder={t("Enter member name")} {...field} /></FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )} />
 
                             <FormField control={personalForm.control} name="email" render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Email</FormLabel>
-                                    <FormControl><Input type="email" placeholder="Enter email" {...field} /></FormControl>
+                                    <FormLabel>{t("Email")}</FormLabel>
+                                    <FormControl><Input type="email" placeholder={t("Enter email")} {...field} /></FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )} />
 
+                            
+
                             <FormField control={personalForm.control} name="businessName" render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Business Name</FormLabel>
+                                    <FormLabel>{t("Business Name")}</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="Enter business name" {...field} />
+                                        <Input placeholder={t("Enter business name")} {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -543,17 +552,35 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
 
                             <FormField control={personalForm.control} name="businessCategory" render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Business Category</FormLabel>
+                                    <FormLabel>{t("Business Category")}</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="Enter business category" {...field} />
+                                        <Input placeholder={t("Enter business category")} {...field} />
                                     </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )} />
+                            <FormField control={personalForm.control} name="gender" render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>{t("Gender")}</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder={t("Select gender")} />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            <SelectItem value="male">{t("Male")}</SelectItem>
+                                            <SelectItem value="female">{t("Female")}</SelectItem>
+                                            <SelectItem value="other">{t("Other")}</SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                     <FormMessage />
                                 </FormItem>
                             )} />
 
                             <FormField control={personalForm.control} name="location" render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Location</FormLabel>
+                                    <FormLabel>{t("Location")}</FormLabel>
                                     <Popover open={primaryLocationOpen} onOpenChange={setPrimaryLocationOpen}>
                                         <PopoverTrigger asChild>
                                             <FormControl>
@@ -565,15 +592,15 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
                                                         !field.value && "text-muted-foreground"
                                                     )}
                                                 >
-                                                    {showPrimaryCustomInput ? primaryCustomLocation || "Enter custom location" : field.value || "Select district"}
+                                                    {showPrimaryCustomInput ? primaryCustomLocation || t("Enter custom location") : t(field.value) || t("Select district")}
                                                     <Check className="ml-2 h-4 w-4 opacity-50" />
                                                 </Button>
                                             </FormControl>
                                         </PopoverTrigger>
                                         <PopoverContent className="w-full p-0 max-h-[350px] overflow-y-auto" align="start">
                                             <Command>
-                                                <CommandInput placeholder="Search district..." />
-                                                <CommandEmpty>No district found.</CommandEmpty>
+                                                <CommandInput placeholder={t("Search district...")} />
+                                                <CommandEmpty>{t("No district found.")}</CommandEmpty>
                                                 <CommandGroup>
                                                     {TAMIL_NADU_DISTRICTS.map((district) => (
                                                         <CommandItem
@@ -587,7 +614,7 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
                                                                     field.value === district ? "opacity-100" : "opacity-0"
                                                                 )}
                                                             />
-                                                            {district}
+                                                            {t(district)}
                                                         </CommandItem>
                                                     ))}
                                                     <CommandItem
@@ -600,7 +627,7 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
                                                                 showPrimaryCustomInput ? "opacity-100" : "opacity-0"
                                                             )}
                                                         />
-                                                        Other (enter manually)
+                                                        {t("Other (enter manually)")}
                                                     </CommandItem>
                                                 </CommandGroup>
                                             </Command>
@@ -608,7 +635,7 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
                                     </Popover>
                                     {showPrimaryCustomInput && (
                                         <Input
-                                            placeholder="Enter your location"
+                                            placeholder={t("Enter your location")}
                                             value={primaryCustomLocation}
                                             onChange={(e) => {
                                                 setPrimaryCustomLocation(e.target.value)
@@ -621,7 +648,7 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
                                 </FormItem>
                             )} />
 
-                            <Button type="submit" className="w-full">Next</Button>
+                            <Button type="submit" className="w-full">{t("Next")}</Button>
                         </form>
                     </Form>
                 </CardContent>
@@ -635,17 +662,17 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
             <Card className="w-full max-h-[calc(100vh-8rem)] overflow-y-auto mx-auto animate-in fade-in zoom-in-95 duration-300">
                 <CardHeader>
                     {renderStepsIndicator()}
-                    <CardTitle>Event Details</CardTitle>
-                    <CardDescription>Member participation details.</CardDescription>
+                    <CardTitle>{t("Event Details")}</CardTitle>
+                    <CardDescription>{t("Member participation details.")}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                     {/* Active Event Error Alert */}
                     {!isLoadingEvent && !activeEvent && (
                         <Alert variant="destructive">
                             <AlertCircle className="h-4 w-4" />
-                            <AlertTitle>No Active Event</AlertTitle>
+                            <AlertTitle>{t("No Active Event")}</AlertTitle>
                             <AlertDescription>
-                                Unable to load event details. Please contact the administrator or try again later.
+                                {t("Unable to load event details. Please contact the administrator or try again later.")}
                             </AlertDescription>
                         </Alert>
                     )}
@@ -655,10 +682,10 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <UserPlus className="h-5 w-5 text-primary" />
-                                <h3 className="font-semibold">Additional Members</h3>
+                                <h3 className="font-semibold">{t("Additional Members")}</h3>
                             </div>
                             <span className="text-xs text-muted-foreground">
-                                {secondaryMembers.length} members added
+                                {secondaryMembers.length} {t("members added")}
                             </span>
                         </div>
                           
@@ -666,7 +693,7 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
                         {secondaryMembers.map((member, index) => (
                             <div key={index} className="border rounded-lg p-4 space-y-3 bg-muted/30">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium text-muted-foreground">Member {index + 1}</span>
+                                    <span className="text-sm font-medium text-muted-foreground">{t("Member")} {index + 1}</span>
                                     <div className="flex gap-1">
                                         <Button
                                             type="button"
@@ -693,11 +720,11 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
                                     </div>
                                 </div>
                                 <div className="text-sm space-y-1">
-                                    <p><span className="font-medium">Name:</span> {member.name}</p>
-                                    {member.mobileNumber && <p><span className="font-medium">Mobile:</span> {member.mobileNumber}</p>}
-                                    {member.email && <p><span className="font-medium">Email:</span> {member.email}</p>}
-                                    {member.businessName && <p><span className="font-medium">Business:</span> {member.businessName}</p>}
-                                    {member.location && <p><span className="font-medium">Location:</span> {member.location}</p>}
+                                    <p><span className="font-medium">{t("Name")}:</span> {member.name}</p>
+                                    {member.mobileNumber && <p><span className="font-medium">{t("Mobile")}:</span> {member.mobileNumber}</p>}
+                                    {member.email && <p><span className="font-medium">{t("Email")}:</span> {member.email}</p>}
+                                    {member.businessName && <p><span className="font-medium">{t("Business Name")}:</span> {member.businessName}</p>}
+                                    {member.location && <p><span className="font-medium">{t("Location")}:</span> {t(member.location)}</p>}
                                 </div>
                             </div>
                         ))}
@@ -706,7 +733,7 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
                         {showAddMemberForm && (
                             <div className="border rounded-lg p-4 space-y-3 bg-primary/5">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium">Add Member {secondaryMembers.length + 1}</span>
+                                    <span className="text-sm font-medium">{t("Add Member")} {secondaryMembers.length + 1}</span>
                                     <Button
                                         type="button"
                                         variant="ghost"
@@ -722,48 +749,48 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     <div className="space-y-2">
-                                        <Label className="text-xs">Name *</Label>
+                                        <Label className="text-xs">{t("Name")} *</Label>
                                         <Input
-                                            placeholder="Member name"
+                                            placeholder={t("Member name")}
                                             value={currentMember.name}
                                             onChange={(e) => setCurrentMember(prev => ({ ...prev, name: e.target.value }))}
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="text-xs">Mobile</Label>
+                                        <Label className="text-xs">{t("Mobile")}</Label>
                                         <Input
-                                            placeholder="Mobile number"
+                                            placeholder={t("Mobile number")}
                                             value={currentMember.mobileNumber}
                                             onChange={(e) => setCurrentMember(prev => ({ ...prev, mobileNumber: e.target.value }))}
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="text-xs">Email</Label>
+                                        <Label className="text-xs">{t("Email")}</Label>
                                         <Input
                                             type="email"
-                                            placeholder="Email address"
+                                            placeholder={t("Email address")}
                                             value={currentMember.email}
                                             onChange={(e) => setCurrentMember(prev => ({ ...prev, email: e.target.value }))}
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="text-xs">Business Name</Label>
+                                        <Label className="text-xs">{t("Business Name")}</Label>
                                         <Input
-                                            placeholder="Business name"
+                                            placeholder={t("Business name")}
                                             value={currentMember.businessName}
                                             onChange={(e) => setCurrentMember(prev => ({ ...prev, businessName: e.target.value }))}
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="text-xs">Business Category</Label>
+                                        <Label className="text-xs">{t("Business Category")}</Label>
                                         <Input
-                                            placeholder="Business category"
+                                            placeholder={t("Business category")}
                                             value={currentMember.businessCategory}
                                             onChange={(e) => setCurrentMember(prev => ({ ...prev, businessCategory: e.target.value }))}
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="text-xs">Location</Label>
+                                        <Label className="text-xs">{t("Location")}</Label>
                                         <Popover open={secondaryLocationOpen} onOpenChange={setSecondaryLocationOpen}>
                                             <PopoverTrigger asChild>
                                                 <Button
@@ -774,14 +801,14 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
                                                         !currentMember.location && "text-muted-foreground"
                                                     )}
                                                 >
-                                                    {currentMember.showCustomLocation ? currentMember.customLocation || "Enter custom location" : currentMember.location || "Select district"}
+                                                    {currentMember.showCustomLocation ? currentMember.customLocation || t("Enter custom location") : t(currentMember.location) || t("Select district")}
                                                     <Check className="ml-2 h-4 w-4 opacity-50" />
                                                 </Button>
                                             </PopoverTrigger>
                                             <PopoverContent className="w-full p-0 max-h-[350px] overflow-y-auto" align="start">
                                                 <Command>
-                                                    <CommandInput placeholder="Search district..." />
-                                                    <CommandEmpty>No district found.</CommandEmpty>
+                                                    <CommandInput placeholder={t("Search district...")} />
+                                                    <CommandEmpty>{t("No district found.")}</CommandEmpty>
                                                     <CommandGroup>
                                                         {TAMIL_NADU_DISTRICTS.map((district) => (
                                                             <CommandItem
@@ -795,7 +822,7 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
                                                                         currentMember.location === district ? "opacity-100" : "opacity-0"
                                                                     )}
                                                                 />
-                                                                {district}
+                                                                {t(district)}
                                                             </CommandItem>
                                                         ))}
                                                         <CommandItem
@@ -808,7 +835,7 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
                                                                     currentMember.showCustomLocation ? "opacity-100" : "opacity-0"
                                                                 )}
                                                             />
-                                                            Other (enter manually)
+                                                            {t("Other (enter manually)")}
                                                         </CommandItem>
                                                     </CommandGroup>
                                                 </Command>
@@ -816,7 +843,7 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
                                         </Popover>
                                         {currentMember.showCustomLocation && (
                                             <Input
-                                                placeholder="Enter your location"
+                                                placeholder={t("Enter your location")}
                                                 value={currentMember.customLocation || ""}
                                                 onChange={(e) => {
                                                     setCurrentMember(prev => ({ 
@@ -840,18 +867,18 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
                                             setCurrentMember({ name: '', mobileNumber: '', email: '', businessName: '', businessCategory: '', location: '', isMember: false, showCustomLocation: false, customLocation: '' })
                                         }}
                                     >
-                                        Cancel
+                                        {t("Cancel")}
                                     </Button>
                                     <Button
                                         type="button"
                                         size="sm"
                                         onClick={() => {
                                             if (!currentMember.name.trim()) {
-                                                setDbError("Member name is required")
+                                                setDbError(t("Member name is required"))
                                                 return
                                             }
                                             if (currentMember.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(currentMember.email)) {
-                                                setDbError("Invalid email format for member")
+                                                setDbError(t("Invalid email format for member"))
                                                 return
                                             }
                                               
@@ -862,7 +889,7 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
                                         }}
                                     >
                                         <Check className="h-4 w-4 mr-2" />
-                                        Add Member
+                                        {t("Add Member")}
                                     </Button>
                                 </div>
                             </div>
@@ -876,7 +903,7 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
                                 onClick={() => setShowAddMemberForm(true)}
                             >
                                 <UserPlus className="h-4 w-4 mr-2" />
-                                Add Member
+                                {t("Add Member")}
                             </Button>
                         )}
                     </div>
@@ -887,11 +914,11 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
                     <div className="space-y-3">
                         <div className="flex items-center gap-2">
                             <Receipt className="h-5 w-5 text-primary" />
-                            <h3 className="font-semibold">Ticket Type</h3>
+                            <h3 className="font-semibold">{t("Ticket Type")}</h3>
                         </div>
                         <Select value={eventData.ticketType} onValueChange={(value) => setEventData(prev => ({ ...prev, ticketType: value }))}>
                             <SelectTrigger>
-                                <SelectValue placeholder="Select ticket type" />
+                                <SelectValue placeholder={t("Select ticket type")} />
                             </SelectTrigger>
                             <SelectContent>
                                 {activeEvent?.ticketsPrice?.map((ticket: { name: string; price: number }) => (
@@ -907,7 +934,7 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
                     <div className="space-y-3">
                         <div className="flex items-center gap-2">
                             <Receipt className="h-5 w-5 text-primary" />
-                            <h3 className="font-semibold">Payment Method</h3>
+                            <h3 className="font-semibold">{t("Payment Method")}</h3>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <Button
@@ -917,8 +944,8 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
                                 onClick={() => setEventData(prev => ({ ...prev, paymentMethod: 'cash' }))}
                             >
                                 <div className="flex flex-col items-center">
-                                    <span className="font-semibold">Cash</span>
-                                    <span className="text-xs opacity-70">Pay at venue</span>
+                                    <span className="font-semibold">{t("Cash")}</span>
+                                    <span className="text-xs opacity-70">{t("Pay at venue")}</span>
                                 </div>
                             </Button>
                             <Button
@@ -928,8 +955,8 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
                                 onClick={() => setEventData(prev => ({ ...prev, paymentMethod: 'online' }))}
                             >
                                 <div className="flex flex-col items-center">
-                                    <span className="font-semibold">Online</span>
-                                    <span className="text-xs opacity-70">Pay now</span>
+                                    <span className="font-semibold">{t("Online")}</span>
+                                    <span className="text-xs opacity-70">{t("Pay now")}</span>
                                 </div>
                             </Button>
                         </div>
@@ -938,12 +965,12 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
                     {/* GST Number Input with Real-time Validation */}
                     {taxCalculation.taxRate > 0 && (
                         <div className="space-y-2">
-                            <Label htmlFor="gstNumber" className="text-sm">GST Number (Optional)</Label>
+                            <Label htmlFor="gstNumber" className="text-sm">{t("GST Number (Optional)")}</Label>
                             <div className="relative">
                                 <Input
                                     id="gstNumber"
                                     type="text"
-                                    placeholder="Enter GST Number (e.g., 22ABCDE1234F1Z5)"
+                                    placeholder={t("Enter GST Number (e.g., 22ABCDE1234F1Z5)")}
                                     value={gstNumber}
                                     onChange={(e) => setGstNumber(e.target.value.toUpperCase())}
                                     className={cn(
@@ -975,7 +1002,7 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
                                 </p>
                             )}
                             <p className="text-xs text-muted-foreground">
-                                GST will be applied at {taxCalculation.taxRate}%
+                                {t("GST will be applied at")} {taxCalculation.taxRate}%
                             </p>
                         </div>
                     )}
@@ -983,20 +1010,20 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
                     {/* Pricing Summary */}
                     {eventData.ticketType && (
                         <div className="border rounded-lg p-4 bg-muted/30">
-                            <h4 className="font-semibold mb-3">Pricing Summary</h4>
+                            <h4 className="font-semibold mb-3">{t("Pricing Summary")}</h4>
                             <div className="space-y-2 text-sm">
                                 <div className="flex justify-between items-center">
-                                    <span>Ticket Price:</span>
+                                    <span>{t("Ticket Price")}:</span>
                                     <span className="font-medium">₹{pricePerPerson}</span>
                                 </div>
                                 {taxCalculation.taxRate > 0 && (
                                     <>
                                         <div className="flex justify-between items-center">
-                                            <span>Tax Amount ({taxCalculation.taxRate}%):</span>
+                                            <span>{t("Tax Amount")} ({taxCalculation.taxRate}%):</span>
                                             <span className="font-medium">₹{Math.round((pricePerPerson * taxCalculation.taxRate) / 100)}</span>
                                         </div>
                                         <div className="flex justify-between items-center font-semibold">
-                                            <span>Total:</span>
+                                            <span>{t("Total")}:</span>
                                             <span className="font-bold">₹{pricePerPerson + Math.round((pricePerPerson * taxCalculation.taxRate) / 100)}</span>
                                         </div>
                                     </>
@@ -1006,24 +1033,24 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
                             {/* Secondary Members */}
                             {secondaryMembers.length > 0 && (
                                 <div className="space-y-2 mt-3">
-                                    <div className="font-semibold text-sm mb-2">Secondary Members ({secondaryMembers.length})</div>
+                                    <div className="font-semibold text-sm mb-2">{t("Secondary Members")} ({secondaryMembers.length})</div>
                                     {secondaryMembers.map((member, index) => (
                                         <div key={index} className="bg-white rounded p-3 space-y-2 border">
                                             <div className="flex justify-between items-center text-sm">
-                                                <span className="font-medium">{member.name || `Member ${index + 1}`}</span>
+                                                <span className="font-medium">{member.name || `${t("Member")} ${index + 1}`}</span>
                                             </div>
                                             <div className="flex justify-between items-center text-sm">
-                                                <span>Ticket Price:</span>
+                                                <span>{t("Ticket Price")}:</span>
                                                 <span className="font-medium">₹{pricePerPerson}</span>
                                             </div>
                                             {taxCalculation.taxRate > 0 && (
                                                 <>
                                                     <div className="flex justify-between items-center text-sm">
-                                                        <span>Tax Amount ({taxCalculation.taxRate}%):</span>
+                                                        <span>{t("Tax Amount")} ({taxCalculation.taxRate}%):</span>
                                                         <span className="font-medium">₹{Math.round((pricePerPerson * taxCalculation.taxRate) / 100)}</span>
                                                     </div>
                                                     <div className="flex justify-between items-center text-sm font-semibold">
-                                                        <span>Total:</span>
+                                                        <span>{t("Total")}:</span>
                                                         <span className="font-bold">₹{pricePerPerson + Math.round((pricePerPerson * taxCalculation.taxRate) / 100)}</span>
                                                     </div>
                                                 </>
@@ -1036,13 +1063,13 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
                             {/* Final Total */}
                             <div className="bg-green-50 rounded p-3 mt-3">
                                 <div className="flex justify-between items-center">
-                                    <span className="text-green-700 font-bold text-lg">Grand Total ({totalMembers} members):</span>
+                                    <span className="text-green-700 font-bold text-lg">{t("Grand Total")} ({totalMembers} {t("members added")}):</span>
                                     <span className="font-bold text-xl text-green-800">₹{taxCalculation.totalAmount}</span>
                                 </div>
                                 <p className="text-xs text-green-600 mt-1">
                                     {taxCalculation.taxRate > 0
-                                        ? `₹{taxCalculation.baseAmount} + ₹{taxCalculation.taxAmount} (GST)`
-                                        : `₹{taxCalculation.baseAmount} (No GST)`
+                                        ? `₹${taxCalculation.baseAmount} + ₹${taxCalculation.taxAmount} (GST)`
+                                        : `₹${taxCalculation.baseAmount} (${t("No GST")})`
                                     }
                                 </p>
                             </div>
@@ -1051,9 +1078,9 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
 
                     <Alert className="border-yellow-200 bg-yellow-50 dark:border-yellow-900/50 dark:bg-yellow-900/20">
                         <Info className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
-                        <AlertTitle className="text-yellow-800 dark:text-yellow-300 font-semibold mb-1">Fee Reminder</AlertTitle>
+                        <AlertTitle className="text-yellow-800 dark:text-yellow-300 font-semibold mb-1">{t("Fee Reminder")}</AlertTitle>
                         <AlertDescription className="text-yellow-700 dark:text-yellow-400 font-medium">
-                            Collect entrance fee if applicable.
+                            {t("Collect entrance fee if applicable.")}
                         </AlertDescription>
                     </Alert>
 
@@ -1061,7 +1088,7 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
 
                 </CardContent>
                 <CardFooter className="flex justify-between">
-                    <Button variant="ghost" onClick={() => setStep(Step.PERSONAL_DETAILS)}>Back</Button>
+                    <Button variant="ghost" onClick={() => setStep(Step.PERSONAL_DETAILS)}>{t("Back")}</Button>
                     <div className="flex flex-col gap-3">
                         {/* Terms & Conditions Checkbox - Only for Online Payment */}
                         {eventData.paymentMethod === 'online' && (
@@ -1074,7 +1101,7 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
                                     className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                                 />
                                 <label htmlFor="terms" className="text-xs text-muted-foreground leading-tight">
-                                    I agree to the <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Terms & Conditions</a> for event registration and payment processing.
+                                    {t("I agree to the")} <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{t("Terms & Conditions")}</a> {t("for event registration and payment processing.")}
                                 </label>
                             </div>
                         )}
@@ -1083,7 +1110,7 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
                             onClick={onFinalSubmit}
                             disabled={isSubmitting || !eventData.ticketType || !activeEvent || (eventData.paymentMethod === 'online' && !termsAccepted)}
                         >
-                            {isSubmitting ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : "Complete Registration"}
+                            {isSubmitting ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : t("Complete Registration")}
                         </Button>
                     </div>
                 </CardFooter>
@@ -1100,26 +1127,26 @@ export function QuickCreateForm({ createdBy }: QuickCreateFormProps = {}) {
                         <CheckCircle2 className="h-10 w-10 text-green-600" />
                     </div>
                     <div className="space-y-2">
-                        <h2 className="text-2xl font-bold text-foreground">Registered Successfully!</h2>
-                        <p className="text-muted-foreground">The participant has been added.</p>
+                        <h2 className="text-2xl font-bold text-foreground">{t("Registered Successfully!")}</h2>
+                        <p className="text-muted-foreground">{t("The participant has been added.")}</p>
                     </div>
                     <div className="p-4 bg-muted rounded-lg text-left text-sm space-y-2">
-                        <div className="flex justify-between"><span>Name:</span><span className="font-medium">{personalData.name}</span></div>
-                        <div className="flex justify-between"><span>Mobile:</span><span className="font-medium">{verifiedPhone}</span></div>
-                        <div className="flex justify-between"><span>Secondary Members:</span><span className="font-medium">{secondaryMembers.length}</span></div>
-                        <div className="flex justify-between"><span>Total Members:</span><span className="font-medium">{totalMembers}</span></div>
-                        <div className="flex justify-between"><span>Ticket Type:</span><span className="font-medium">{eventData.ticketType}</span></div>
-                        <div className="flex justify-between"><span>Total Amount:</span><span className="font-bold text-primary">₹{taxCalculation.totalAmount}</span></div>
+                        <div className="flex justify-between"><span>{t("Name")}:</span><span className="font-medium">{personalData.name}</span></div>
+                        <div className="flex justify-between"><span>{t("Mobile")}:</span><span className="font-medium">{verifiedPhone}</span></div>
+                        <div className="flex justify-between"><span>{t("Secondary Members")}:</span><span className="font-medium">{secondaryMembers.length}</span></div>
+                        <div className="flex justify-between"><span>{t("Total Members")}:</span><span className="font-medium">{totalMembers}</span></div>
+                        <div className="flex justify-between"><span>{t("Ticket Type")}:</span><span className="font-medium">{eventData.ticketType}</span></div>
+                        <div className="flex justify-between"><span>{t("Total Amount")}:</span><span className="font-bold text-primary">₹{taxCalculation.totalAmount}</span></div>
                     </div>
                     <Button className="w-full" onClick={() => {
                         setStep(Step.PHONE_INPUT)
                         phoneForm.reset()
                         personalForm.reset()
-                        setPersonalData({ name: "", email: "", businessName: "", businessCategory: "", location: "" })
+                        setPersonalData({ name: "", email: "", gender: "", businessName: "", businessCategory: "", location: "" })
                         setEventData({ ticketType: "", paymentMethod: "cash" })
                         setSecondaryMembers([])
                         setVerifiedPhone("")
-                    }}>Add Another</Button>
+                    }}>{t("Add Another")}</Button>
                 </CardContent>
             </Card>
         )
