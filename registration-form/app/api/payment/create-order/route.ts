@@ -46,6 +46,9 @@ export async function POST(req: Request) {
       amount: amount * 100, // ₹ → paise
       currency: "INR",
       receipt: "order_" + Date.now(),
+      notes: {
+        participantId: participantId || "",
+      }
     })
 
     console.log("Razorpay order created successfully:", order.id)

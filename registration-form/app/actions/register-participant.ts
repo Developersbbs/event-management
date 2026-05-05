@@ -208,8 +208,8 @@ export async function registerParticipant(data: RegisterParticipantData) {
         const isAdmin = createdBy && (createdBy.role === 'admin' || createdBy.role === 'super-admin')
 
         if (paymentMethod === "online") {
-            paymentStatus = "completed"
-            approvalStatus = "approved"
+            paymentStatus = "pending" // Set to pending until verified
+            approvalStatus = "pending"
         } else if (isAdmin) {
             // Admin-created participants are automatically approved
             approvalStatus = "approved"
@@ -342,10 +342,12 @@ export async function registerParticipant(data: RegisterParticipantData) {
             { $inc: { registeredCount: actualTotalPeople } }
         )
 
-        // Send confirmation emails (Async)
-        sendRegistrationEmails(participant, activeEvent.eventName).catch(err => 
-            console.error("Failed to send registration emails:", err)
-        )
+        // Send confirmation emails (Async) - ONLY for completed payments or admin created
+        if (paymentStatus === "completed" || isAdmin) {
+            sendRegistrationEmails(participant, activeEvent.eventName).catch(err => 
+                console.error("Failed to send registration emails:", err)
+            )
+        }
 
         return {
             success: true,

@@ -291,7 +291,7 @@ export function RegisterForm() {
     setStep(Step.EVENT_DETAILS)
   }
 
-  const handleOnlinePayment = async () => {
+  const handleOnlinePayment = async (participantId: string) => {
     try {
       console.log("Starting online payment")
 
@@ -337,13 +337,13 @@ export function RegisterForm() {
         approvalStatus: 'approved',
       }
 
-      // Create Razorpay order without participant ID
+      // Create Razorpay order with participant ID
       const res = await fetch("/api/payment/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           amount: taxCalculation.totalAmount,
-          participantId: null,
+          participantId: participantId,
         }),
       })
 
@@ -471,13 +471,47 @@ export function RegisterForm() {
       }
     }
 
-    // For online payment, trigger payment first (participant created after successful payment)
+    // For online payment, create participant first as 'pending'
     if (eventData.paymentMethod === 'online') {
       setIsSubmitting(true)
       setDbError(null)
 
-      // Trigger Razorpay payment without creating participant first
-      await handleOnlinePayment()
+      try {
+        const filteredSecondaryMembers = secondaryMembers.filter(m => m.name.trim() !== '')
+        const payload = {
+          mobileNumber: verifiedPhone,
+          name: personalData.name,
+          email: personalData.email,
+          businessName: personalData.businessName,
+          businessCategory: personalData.businessCategory,
+          location: i18n.language === 'ta' ? t(personalData.location) : personalData.location,
+          guestCount: 0,
+          registrationLanguage: i18n.language as "en" | "ta",
+          ticketType: eventData.ticketType,
+          paymentMethod: eventData.paymentMethod,
+          ageGuest: 0,
+          secondaryMembers: filteredSecondaryMembers.map(m => ({
+            ...m,
+            location: i18n.language === 'ta' ? t(m.location || "") : m.location
+          })),
+          gstNumber: gstNumber.trim() || undefined,
+          termsAccepted: termsAccepted,
+          termsAcceptedAt: new Date(),
+        }
+
+        const result = await registerParticipant(payload)
+        if (result.success && result.participantId) {
+          // Trigger Razorpay payment with created participant ID
+          await handleOnlinePayment(result.participantId)
+        } else {
+          setDbError(result.error || "Failed to initialize registration.")
+          setIsSubmitting(false)
+        }
+      } catch (err) {
+        console.error("Error initializing online registration:", err)
+        setDbError("An unexpected error occurred. Please try again.")
+        setIsSubmitting(false)
+      }
       return
     }
 
