@@ -207,6 +207,11 @@ const ParticipantSchema = new mongoose.Schema({
         default: "en",
     },
 
+    emailSent: {
+        type: Boolean,
+        default: false,
+    },
+
 }, { timestamps: true })
 
 // Force re-compilation of model in dev to apply schema changes

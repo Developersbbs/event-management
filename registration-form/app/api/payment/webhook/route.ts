@@ -1,72 +1,93 @@
 import crypto from "crypto"
+import dbConnect from "@/lib/db"
 import Participant from "@/models/Participant"
 import Event from "@/models/Event"
-import mongoose from "mongoose"
 
 export async function POST(req: Request) {
   try {
-    const body = await req.text()
+    await dbConnect()
+
+    const rawBody = await req.text()
     const signature = req.headers.get("x-razorpay-signature")
 
     if (!signature) {
       return Response.json({ error: "Missing signature" }, { status: 400 })
     }
 
-    const secret = process.env.RAZORPAY_WEBHOOK_SECRET || ""
-    if (secret) {
-      const expectedSignature = crypto
-        .createHmac("sha256", secret)
-        .update(body)
-        .digest("hex")
+    // 🔐 Verify signature
+    const expectedSignature = crypto
+      .createHmac("sha256", process.env.RAZORPAY_WEBHOOK_SECRET!)
+      .update(rawBody)
+      .digest("hex")
 
-      if (expectedSignature !== signature) {
-        return Response.json({ error: "Invalid signature" }, { status: 400 })
-      }
-    } else {
-      console.warn("RAZORPAY_WEBHOOK_SECRET not set, skipping signature verification")
+    if (expectedSignature !== signature) {
+      return Response.json({ error: "Invalid signature" }, { status: 400 })
     }
 
-    const event = JSON.parse(body)
-    console.log("Razorpay Webhook Event:", event.event)
+    const event = JSON.parse(rawBody)
 
+    console.log("Webhook Event:", event.event)
+
+    // ✅ Handle payment success
     if (event.event === "payment.captured") {
       const payment = event.payload.payment.entity
+
       const orderId = payment.order_id
       const paymentId = payment.id
 
-      await mongoose.connect(process.env.MONGODB_URI!)
+      console.log("Processing orderId:", orderId)
 
-      // Find participant by order ID
-      const participant = await Participant.findOneAndUpdate(
-        { razorpayOrderId: orderId },
-        {
-          $set: {
-            paymentStatus: "completed",
-            paymentId: paymentId,
-            approvalStatus: "approved",
-            isRegistered: true,
-          },
-        },
-        { new: true }
-      )
+      // 🔍 Find participant
+      let participant = await Participant.findOne({
+        razorpayOrderId: orderId,
+      })
 
-      if (participant && participant.paymentStatus === "completed") {
-        console.log("Participant updated via webhook:", participant._id)
+      // 🔥 Fallback: create if missing
+      if (!participant) {
+        console.warn("Participant not found. Creating fallback record.")
 
-        // Only send email if not already sent (though we added check in verify too)
-        // Fetch event to get name
-        const activeEvent = await Event.findById(participant.eventId).lean()
-        if (activeEvent) {
-          const { sendRegistrationEmails } = await import("@/lib/email")
-          // We can't easily check if email was already sent unless we add a flag to DB
-          // But sending twice is better than not sending at all
-          sendRegistrationEmails(participant as any, activeEvent.eventName).catch(err =>
-            console.error("Failed to send registration emails from webhook:", err)
-          )
-        }
-      } else if (!participant) {
-        console.warn("No participant found for orderId:", orderId)
-        // Optionally create from payment data if it's completely missing
+        participant = await Participant.create({
+          razorpayOrderId: orderId,
+          paymentStatus: "completed",
+          paymentId: paymentId,
+          approvalStatus: "approved",
+          isRegistered: true,
+          name: "Unknown",
+          mobileNumber: "0000000000",
+        })
+
+        return Response.json({ success: true })
+      }
+
+      // 🔁 Idempotency check
+      if (participant.paymentStatus === "completed") {
+        console.log("Already processed:", participant._id)
+        return Response.json({ success: true })
+      }
+
+      // ✅ Update participant
+      participant.paymentStatus = "completed"
+      participant.paymentId = paymentId
+      participant.approvalStatus = "approved"
+      participant.isRegistered = true
+
+      await participant.save()
+
+      console.log("Participant updated:", participant._id)
+
+      // 📧 Send email (only once)
+      const activeEvent = await Event.findById(participant.eventId)
+
+      if (activeEvent && !participant.emailSent) {
+        const { sendRegistrationEmails } = await import("@/lib/email")
+
+        await sendRegistrationEmails(
+          participant as any,
+          activeEvent.eventName
+        )
+
+        participant.emailSent = true
+        await participant.save()
       }
     }
 

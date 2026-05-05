@@ -500,13 +500,20 @@ export function RegisterForm() {
         }
 
         const result = await registerParticipant(payload)
-        if (result.success && result.participantId) {
-          // Trigger Razorpay payment with created participant ID
-          await handleOnlinePayment(result.participantId)
-        } else {
+        if (!result.success) {
           setDbError(result.error || "Failed to initialize registration.")
           setIsSubmitting(false)
+          return
         }
+        
+        if (!result.participantId) {
+          setDbError("Registration succeeded but no participant ID received. Please contact support.")
+          setIsSubmitting(false)
+          return
+        }
+        
+        // Trigger Razorpay payment with created participant ID
+        await handleOnlinePayment(result.participantId)
       } catch (err) {
         console.error("Error initializing online registration:", err)
         setDbError("An unexpected error occurred. Please try again.")
